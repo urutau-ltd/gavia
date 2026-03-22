@@ -1,0 +1,21 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="stylesheet" href="/static/css/missing.css" />
+        <title>Gavia</title>
+    </head>
+    <body hx-boost="true">
+        <header>
+            <nav>
+                <strong>Gavia</strong> | <a href="/logout">Salir</a>
+            </nav>
+        </header>
+        <main>
+            {{template "content" .}}
+        </main>
+        {{template "footer" .FooterData}}
+    </body>
+</html>
+{{end}}
