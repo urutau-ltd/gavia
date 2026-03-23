@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./static/img/log.png" width=150 />
+    <img src="./static/img/logo.png" width=150 />
 </div>
 
 # Gavia
