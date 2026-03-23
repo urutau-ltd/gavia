@@ -3,7 +3,10 @@
 <html lang="es">
     <head>
         <meta charset="UTF-8" />
+        <!-- Load Missing.CSS -->
         <link rel="stylesheet" href="/static/css/missing.css" />
+        <!-- Favicon and PWA settings -->
+        <link rel="icon" type="image/png" href="/static/img/logo.png">
         <title>Gavia</title>
     </head>
     <body hx-boost="true">
@@ -16,6 +19,9 @@
             {{template "content" .}}
         </main>
         {{template "footer" .FooterData}}
+        <!-- Load HTMX & HyperScript -->
+        <script async src="/static/js/htmx.js"></script>
+        <script async src="/static/js/hyperscript.js"></script>
     </body>
 </html>
 {{end}}

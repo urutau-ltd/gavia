@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"database/sql"
 	"fmt"
 	"html/template"
 	"io/fs"
@@ -8,14 +9,17 @@ import (
 	"net/http"
 	"runtime"
 	"time"
+
+	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
 )
 
 type Handler struct {
-	logger *slog.Logger
-	tmpl   *template.Template
+	logger       *slog.Logger
+	tmpl         *template.Template
+	providerRepo *provider.ProviderRepository
 }
 
-func NewHandler(l *slog.Logger, uiFS fs.FS) *Handler {
+func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 	t := template.Must(template.ParseFS(uiFS,
 		"layout/base.html",
 		"features/dashboard/views/index.html",
@@ -23,24 +27,39 @@ func NewHandler(l *slog.Logger, uiFS fs.FS) *Handler {
 	))
 
 	return &Handler{
-		logger: l,
-		tmpl:   t,
+		logger:       l,
+		tmpl:         t,
+		providerRepo: provider.NewProviderRepository(db),
 	}
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Loading Dashboard module...")
 
+	providers, err := h.providerRepo.GetAll(r.Context())
+
+	if err != nil {
+		h.logger.Error("Failed to get providers!")
+		http.Error(w, "Not found", http.StatusNotFound)
+		return
+	}
+
+	h.logger.Info(`Database retrieved providers: `, slog.Int("count", len(providers)))
+
 	start := time.Now()
 
 	data := map[string]any{
-		"Title": "Panel de Control",
+		"Title":         "Panel de Control",
+		"Providers":     providers,
+		"ProviderCount": len(providers),
 		"FooterData": map[string]any{
 			"RenderTime":  fmt.Sprintf("%.4fs", time.Since(start).Seconds()),
 			"AileVersion": "v1.1.0",
 			"GoVersion":   runtime.Version(),
 		},
 	}
+
+	h.logger.Info(`Page data: `, slog.Any("data", data))
 
 	w.Header().Set("Content-Type", "text/html")
 
