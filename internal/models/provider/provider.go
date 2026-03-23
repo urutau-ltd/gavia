@@ -6,10 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Provider struct {
-	Id        int       `db:"id" json:"id"`
+	Id        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
 	Website   string    `db:"website" json:"website"`
 	Notes     string    `db:"notes" json:"notes"`
@@ -26,22 +28,25 @@ func NewProviderRepository(db *sql.DB) *ProviderRepository {
 }
 
 func (r *ProviderRepository) Create(ctx context.Context, p *Provider) error {
-	result, err := r.db.ExecContext(ctx,
-		"INSERT INTO providers (name, website, notes) VALUES (?, ?, ?)",
-		p.Name, p.Website, p.Notes)
+
+	newID, err := uuid.NewV7()
 	if err != nil {
 		return err
 	}
 
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
-
-	p.Id = int(id)
+	p.Id = newID.String()
 	p.CreatedAt = time.Now()
-	p.UpdatedAt = time.Now()
-	return nil
+	p.UpdatedAt = p.CreatedAt
+
+	_, err = r.db.ExecContext(ctx,
+		"INSERT INTO providers (id, name, website, notes) VALUES (?, ?, ?, ?)",
+		p.Id,
+		p.Name,
+		p.Website,
+		p.Notes,
+	)
+
+	return err
 }
 
 func (r *ProviderRepository) GetByID(ctx context.Context, id int) (*Provider, error) {

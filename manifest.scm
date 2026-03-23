@@ -11,4 +11,6 @@
        "podman-compose"
        "curl"
        "go-golang-org-x-tools-godoc"
+       "go-github-com-go-jose-go-jose-v4"
+       "go-github-com-google-uuid"
        "git"))

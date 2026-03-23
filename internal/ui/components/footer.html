@@ -4,7 +4,15 @@
         Page loaded in <strong>{{.RenderTime}}</strong> •
         <a href="https://codeberg.org/urutau-ltd/aile">Aile {{.AileVersion}}</a>
         •
-        <chip class="info">
+        <chip class="info" _="on pointerdown
+  repeat until event pointerup from the document
+    set rand to Math.random() * 360
+    transition
+      *background-color
+      to `hsl($rand 100% 90%)`
+      over 250ms
+  end
+  transition *background-color to initial">
             Go {{.GoVersion}}
         </chip>
     </p>
