@@ -15,6 +15,7 @@ import (
 	requestid "codeberg.org/urutau-ltd/aile/x/request_id"
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/dashboard"
+	"codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 )
 
 //go:embed static
@@ -77,7 +78,9 @@ func main() {
 	}
 
 	app.GET("/static/{path...}", http.StripPrefix("/static/", http.FileServer(http.FS(staticRoot))).ServeHTTP)
+
 	app.GET("/dashboard", dashboard.NewHandler(logger, uiRoot, dbConn).Index)
+	app.GET("/providers", providers.NewHandler(logger, uiRoot, dbConn).Index)
 
 	logger.Info("Mount routes")
 

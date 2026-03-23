@@ -9,16 +9,54 @@
         <link rel="icon" type="image/png" href="/static/img/logo.png">
         <title>Gavia</title>
     </head>
-    <body hx-boost="true">
+    <body class="sidebar-layout" hx-boost="true">
         <header>
+            <div class="<h1>">Gavia</div>
             <nav>
-                <strong>Gavia</strong> | <a href="/logout">Salir</a>
+                <ul role="list">
+                    <li>
+                        <a href="/dashboard" aria-current="page">Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="/providers">Providers</a>
+                    </li>
+                    <li>
+                        <p>
+                            <b>About</b>
+                            <ul role="list" class="margin">
+					            <li>
+                                    <a href="/licenses">Free Software Licenses</a>
+					            </li>
+                            </ul>
+                        </p>
+                    </li>
+                    <li>
+                        <strong>
+                            <a 
+                                href="/demos" 
+                                class="&lt;button&gt; width:100%">
+                                Settings
+                            </a>
+                        </strong>
+			        </li>
+                    <li>
+                        <strong>
+                            <a 
+                                href="/demos" 
+                                class="&lt;button&gt; width:100%">
+                                Logout
+                            </a>
+                        </strong>
+			        </li>
+                </ul>
             </nav>
         </header>
-        <main>
-            {{template "content" .}}
-        </main>
-        {{template "footer" .FooterData}}
+        <div>
+            <main>
+                {{template "content" .}}
+            </main>
+            {{template "footer" .FooterData}}
+        </div>
         <!-- Load HTMX & HyperScript -->
         <script async src="/static/js/htmx.js"></script>
         <script async src="/static/js/hyperscript.js"></script>

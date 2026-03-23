@@ -1,0 +1,53 @@
+{{define "content"}}
+<div>
+    <h2>{{.Title}}</h2>
+</div>
+
+<section class="box">
+    <section class="tool-bar margin-block">
+        <label for="select_amount">Show:</label>
+        <select id="select_amount" class="form-select form-select-sm">
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="15">15</option>
+            <option value="15">25</option>
+            <option value="15">50</option>
+            <option value="15">100</option>
+        </select>
+        <hr aria-orientation="vertical">
+        <label for="search">Search:</label>
+        <input id="search" type="search" placeholder="Start typing here..." />
+    </section>
+    <section>
+        <table>
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">Provider</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{- range .Providers}}
+                <tr>
+                    <td>
+                        {{ .Id }}
+                    </td>
+                    <td>{{ .Name }}</td>
+                    <td>
+                        <a class="ok" href="/providers/{{ .Id }}">Ver</a>
+                        <a href="/providers/{{ .Id }}/edit">Editar</a>
+                        <a class="bad" href="/providers/{{ .Id }}/delete"
+                        >Eliminar</a>
+                    </td>
+                </tr>
+                {{- else}}
+                <tr>
+                    <td colspan="2">No providers are registered...</td>
+                </tr>
+                {{- end}}
+            </tbody>
+        </table>
+    </section>
+</section>
+{{end}}

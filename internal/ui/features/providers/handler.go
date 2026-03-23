@@ -1,4 +1,4 @@
-package dashboard
+package providers
 
 import (
 	"database/sql"
@@ -23,7 +23,7 @@ type Handler struct {
 func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 	t := template.Must(template.ParseFS(uiFS,
 		"layout/base.html",
-		"features/dashboard/views/index.html",
+		"features/providers/views/index.html",
 		"components/*.html",
 	))
 
@@ -35,7 +35,7 @@ func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 }
 
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
-	h.logger.Info("Loading Dashboard module...")
+	h.logger.Info("Loading Providers module...")
 
 	providers, err := h.providerRepo.GetAll(r.Context())
 
@@ -45,12 +45,13 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	h.logger.Info(`Database retrieved providers: `, slog.Int("count", len(providers)))
+	h.logger.Info(`Database retrieved providers: `,
+		slog.Int("count", len(providers)))
 
 	start := time.Now()
 
 	data := map[string]any{
-		"Title":         "Dashboard",
+		"Title":         "Providers",
 		"Providers":     providers,
 		"ProviderCount": len(providers),
 		"FooterData": map[string]any{
@@ -61,7 +62,6 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	h.logger.Info(`Page data: `, slog.Any("data", data))
-
 	w.Header().Set("Content-Type", "text/html")
 
 	if err := h.tmpl.ExecuteTemplate(w, "base", data); err != nil {

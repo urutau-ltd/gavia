@@ -1,9 +1,12 @@
 {{define "footer"}}
 <footer>
     <p>
-        Page loaded in <strong>{{.RenderTime}}</strong> .
-        Aile {{.AileVersion}} .
-        Go {{.GoVersion}}
+        Page loaded in <strong>{{.RenderTime}}</strong> •
+        <a href="https://codeberg.org/urutau-ltd/aile">Aile {{.AileVersion}}</a>
+        •
+        <chip class="info">
+            Go {{.GoVersion}}
+        </chip>
     </p>
 </footer>
 {{end}}
