@@ -6,15 +6,15 @@
             <p class="provider-subtitle">Manage your service providers here.</p>
         </div>
 
-        <button
-            type="button"
-            class="ok <big>"
+        <a
+            href="/providers/new"
+            class="ok &lt;button&gt; providers-create-action"
             hx-get="/providers/new"
             hx-target="#provider-editor"
             hx-swap="outerHTML"
         >
             New provider
-        </button>
+        </a>
     </header>
 
     <section class="providers-grid flex-switch">
@@ -80,7 +80,10 @@
                 </button>
             </form>
 
-            <small id="providers-loading" class="htmx-indicator"
+            <small
+                id="providers-loading"
+                class="htmx-indicator"
+                aria-live="polite"
             >Updating view...</small>
 
             <table class="providers-table width:100%">

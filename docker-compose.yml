@@ -1,11 +1,56 @@
 ---
 services:
     gavia:
-        image: 'ghcr.io/urutau-ltd/gavia:latest'
+        image: 'ghcr.io/urutau-ltd/gavia:local'
         container_name: gavia
-        restart: always
+        build:
+            context: .
+            target: runtime
+            args:
+                BUILD_VERSION: '${BUILD_VERSION:-dev}'
+                BUILD_TAG: '${BUILD_TAG:-dev}'
+                BUILD_COMMIT: '${BUILD_COMMIT:-local}'
+                BUILD_DATE: '${BUILD_DATE:-unknown}'
+                UPSTREAM_REPO: 'urutau-ltd/gavia'
+        restart: unless-stopped
         ports:
-            - '9091/tcp'
+            - '9091:9091'
+        environment:
+            GAVIA_ADDR: ':9091'
+            GAVIA_DB_PATH: '/workspace/db/app.sqlite'
+            GAVIA_LOG_FORMAT: 'text'
+            GAVIA_LOG_LEVEL: 'info'
         volumes:
-            - './db/:/workspace/db/'
+            - './db:/workspace/db'
+
+    gavia-dev:
+        image: 'ghcr.io/urutau-ltd/gavia:dev'
+        container_name: gavia-dev
+        profiles:
+            - dev
+        build:
+            context: .
+            target: dev
+        working_dir: /workspace
+        command:
+            - 'go'
+            - 'run'
+            - './main.go'
+        restart: unless-stopped
+        ports:
+            - '9091:9091'
+        environment:
+            GAVIA_ADDR: ':9091'
+            GAVIA_DB_PATH: '/workspace/db/app.sqlite'
+            GAVIA_LOG_FORMAT: 'text'
+            GAVIA_LOG_LEVEL: 'debug'
+            GOCACHE: '/tmp/go-build'
+        volumes:
+            - '.:/workspace'
+            - 'go-mod-cache:/go/pkg/mod'
+            - 'go-build-cache:/tmp/go-build'
+
+volumes:
+    go-mod-cache:
+    go-build-cache:
 ...

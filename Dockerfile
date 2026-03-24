@@ -1,11 +1,24 @@
-ARG GO_IMAGE=docker.io/library/golang:1.26-alpine
+# syntax=docker/dockerfile:1.7
+
+ARG GO_IMAGE=docker.io/library/golang:1.25-alpine
 ARG RUNTIME_IMAGE=gcr.io/distroless/static-debian12:nonroot
 
-FROM ${GO_IMAGE} AS builder
-WORKDIR src/
+FROM ${GO_IMAGE} AS base
+WORKDIR /workspace
+ENV CGO_ENABLED=0
+RUN apk add --no-cache ca-certificates make git
 
-RUN apk add --no-cache ca-certificates make
+FROM base AS deps
+COPY go.mod go.sum ./
+RUN --mount=type=cache,target=/go/pkg/mod \
+    go mod download
 
+FROM deps AS dev
+COPY . .
+ENV GOCACHE=/tmp/go-build
+CMD ["go", "run", "./main.go"]
+
+FROM deps AS builder
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
 ARG BUILD_VERSION=dev
@@ -14,25 +27,18 @@ ARG BUILD_COMMIT=unknown
 ARG BUILD_DATE=unknown
 ARG UPSTREAM_REPO=urutau-ltd/gavia
 
-COPY go.mod go.sum ./
-RUN --mount=type=cache,target=/go/pkg/mod \
-    go mod download
-
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" \
-    make build \
-      GOCACHE=/root/.cache/go-build \
+    --mount=type=cache,target=/tmp/go-build \
+    GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" GOCACHE=/tmp/go-build \
+    make build OUTPUT=/out/gv \
+      BUILD_VERSION="${BUILD_VERSION}" \
       GIT_TAG="${BUILD_TAG}" \
       GIT_COMMIT="${BUILD_COMMIT}" \
       BUILD_DATE="${BUILD_DATE}" \
       UPSTREAM_REPO="${UPSTREAM_REPO}"
 
-RUN install -d /build && \
-    install -m 0755 /bin/gv /out/gv
-
-FROM ${RUNTIME_IMAGE}
+FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /workspace
 
 ARG BUILD_VERSION=dev
@@ -49,7 +55,15 @@ LABEL org.opencontainers.image.title="Gavia" \
       org.opencontainers.image.source="https://github.com/${UPSTREAM_REPO}" \
       org.opencontainers.image.licenses="AGPL-3.0-or-later"
 
+ENV GAVIA_ADDR=:9091 \
+    GAVIA_DB_PATH=/workspace/db/app.sqlite \
+    GAVIA_LOG_FORMAT=text \
+    GAVIA_LOG_LEVEL=info
+
 COPY --from=builder /out/gv /bin/gv
+COPY --chown=nonroot:nonroot db/.gitkeep /workspace/db/.gitkeep
+
+EXPOSE 9091
 
 USER nonroot:nonroot
-CMD ["/bin/gv"]
+ENTRYPOINT ["/bin/gv"]

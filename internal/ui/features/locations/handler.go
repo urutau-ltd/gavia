@@ -490,16 +490,32 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 
 // isListRequest detects HTMX calls meant to replace only the locations table body.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	return r.Header.Get("HX-Request") == "true" &&
-		r.Header.Get("HX-Boosted") != "true" &&
-		r.Header.Get("HX-Target") == "locations-body"
+	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
+		return false
+	}
+
+	target := strings.TrimSpace(r.Header.Get("HX-Target"))
+	if target == "locations-body" || target == "#locations-body" {
+		return true
+	}
+
+	trigger := strings.TrimSpace(r.Header.Get("HX-Trigger"))
+	triggerName := strings.TrimSpace(r.Header.Get("HX-Trigger-Name"))
+
+	return trigger == "location-limit" ||
+		trigger == "location-search" ||
+		triggerName == "location-limit" ||
+		triggerName == "location-search"
 }
 
 // isEditorRequest detects HTMX calls that target the location editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	return r.Header.Get("HX-Request") == "true" &&
-		r.Header.Get("HX-Boosted") != "true" &&
-		r.Header.Get("HX-Target") == "location-editor"
+	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
+		return false
+	}
+
+	target := strings.TrimSpace(r.Header.Get("HX-Target"))
+	return target == "location-editor" || target == "#location-editor"
 }
 
 // parseListState reads shared query/form controls for the locations list.

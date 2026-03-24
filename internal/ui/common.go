@@ -18,9 +18,23 @@ type BaseData struct {
 // FooterData centralizes runtime diagnostics shown in layout/footer templates.
 // Keeping this in one struct makes footer output predictable across all pages.
 type FooterData struct {
+	AppVersion  string
 	RenderTime  string
 	AileVersion string
 	GoVersion   string
+}
+
+var appVersion = "dev"
+
+// SetAppVersion stores the running app version so shared templates can expose
+// build metadata without every handler wiring it manually.
+func SetAppVersion(version string) {
+	version = strings.TrimSpace(version)
+	if version == "" {
+		return
+	}
+
+	appVersion = version
 }
 
 // NewBaseData builds the common payload used by UI handlers.
@@ -30,6 +44,7 @@ func NewBaseData(title string, start time.Time) BaseData {
 	return BaseData{
 		Title: title,
 		FooterData: FooterData{
+			AppVersion:  appVersion,
 			RenderTime:  formatRenderTime(time.Since(start)),
 			AileVersion: "v1.1.0",
 			GoVersion: strings.Trim(

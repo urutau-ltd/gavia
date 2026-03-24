@@ -20,6 +20,20 @@ nor a competitor per se.
 - API Reference: [`docs/API_REFERENCE.md`](./docs/API_REFERENCE.md)
 - CRUD Extension Playbook:
   [`docs/CRUD_EXTENSION_PLAYBOOK.md`](./docs/CRUD_EXTENSION_PLAYBOOK.md)
+- Tempel snippets: [`docs/TEMPEL_SNIPPETS.md`](./docs/TEMPEL_SNIPPETS.md)
+
+## Local development
+
+- Native shell: `make run`
+- Guix shell: `make env`
+- OCI runtime build: `make image`
+- OCI runtime with Compose: `podman compose up --build gavia`
+- OCI development loop with bind mounts:
+  `podman compose --profile dev up --build gavia-dev`
+
+The default runtime listens on `:9091` and stores SQLite data at
+`./db/app.sqlite`. These can be overridden with `GAVIA_ADDR` and
+`GAVIA_DB_PATH`.
 
 ## COPYING
 

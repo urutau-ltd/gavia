@@ -1,10 +1,106 @@
 {{define "content"}}
-<div>
-    <h2>{{.Title}}</h2>
-</div>
+<section class="dashboard-view">
+    <section class="dashboard-hero">
+        <article class="box dashboard-intro">
+            <h2>{{.Title}}</h2>
+            <p class="dashboard-subtitle">
+                A compact overview of what is already wired and what can be the
+                next CRUD module to build. This design can be considered
+                temporal and may be replaced without prior warning before a
+                v1.0.0.
+            </p>
 
-<div>
-    <p>Providers: {{.ProviderCount}}</p>
-</div>
+            <div class="dashboard-actions">
+                <a class="ok &lt;button&gt;" href="/providers"
+                >Open providers</a>
+                <a class="plain &lt;button&gt;" href="/locations"
+                >Open locations</a>
+            </div>
+        </article>
+    </section>
 
+    <section class="dashboard-stats" aria-label="Inventory summary">
+        {{range .Stats}}
+        <article class="box dashboard-stat {{.Tone}}">
+            <p class="dashboard-stat-label">{{.Label}}</p>
+            <p class="dashboard-stat-value">{{.Value}}</p>
+            <p class="dashboard-stat-hint">{{.Hint}}</p>
+        </article>
+        {{end}}
+    </section>
+
+    <section class="dashboard-panels">
+        <article class="box dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>Providers preview</h3>
+                <a href="/providers">Open module</a>
+            </div>
+
+            <ul role="list" class="dashboard-list">
+                {{range .Providers}}
+                <li>
+                    <a href="/providers/{{.Id}}">
+                        <strong>{{.Name}}</strong>
+                        {{if .Website}}
+                        <span>{{.Website}}</span>
+                        {{else}}
+                        <span>No website yet</span>
+                        {{end}}
+                    </a>
+                </li>
+                {{else}}
+                <li class="dashboard-empty">No providers loaded yet.</li>
+                {{end}}
+            </ul>
+        </article>
+
+        <article class="box dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>Locations preview</h3>
+                <a href="/locations">Open module</a>
+            </div>
+
+            <ul role="list" class="dashboard-list">
+                {{range .Locations}}
+                <li>
+                    <a href="/locations/{{.Id}}">
+                        <strong>{{.Name}}</strong>
+                        <span>
+                            {{if .City}}{{.City}}{{else}}No city{{end}} • {{if
+                            .Country}}{{.Country}}{{else}}No country{{end}}
+                        </span>
+                    </a>
+                </li>
+                {{else}}
+                <li class="dashboard-empty">No locations loaded yet.</li>
+                {{end}}
+            </ul>
+        </article>
+    </section>
+
+    <section class="dashboard-module-grid" aria-label="Project modules">
+        {{range .Modules}}
+        <article
+            class="box dashboard-module {{if .Started}}dashboard-module-ready{{else}}dashboard-module-pending{{end}}"
+        >
+            <div class="dashboard-module-head">
+                <h3>{{.Name}}</h3>
+                <chip class="{{if .Started}}ok{{else}}warn{{end}}">
+                    {{if .Started}}Started{{else}}{{.Status}}{{end}}
+                </chip>
+            </div>
+
+            <p>{{.Summary}}</p>
+
+            {{if .Href}}
+            <a class="plain &lt;button&gt;" href="{{.Href}}">Open {{.Name}}</a>
+            {{else}}
+            <span class="dashboard-module-placeholder">
+                Keep this one as the next scaffold target.
+            </span>
+            {{end}}
+        </article>
+        {{end}}
+    </section>
+</section>
 {{end}}

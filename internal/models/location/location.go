@@ -133,6 +133,14 @@ func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limi
 	return locations, rows.Err()
 }
 
+// Count returns the total number of stored locations.
+// Overview pages use it to summarize inventory without fetching full records.
+func (r *LocationRepository) Count(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM locations").Scan(&count)
+	return count, err
+}
+
 // Update writes mutable fields and refreshes UpdatedAt.
 func (r *LocationRepository) Update(ctx context.Context, l *Location) error {
 	l.UpdatedAt = time.Now()

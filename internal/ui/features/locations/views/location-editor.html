@@ -17,15 +17,17 @@
     {{template "location-list" .}}
 </tbody>
 {{end}} {{define "location-empty"}}
-<h3>Locations panel</h3>
-<p class="location-muted">
-    Select a location from the list or create a new one.
-</p>
+<div class="location-empty-state">
+    <h3>Locations panel</h3>
+    <p class="location-muted">
+        Select a location from the list or create a new one.
+    </p>
+</div>
 {{end}} {{define "location-detail"}} {{with .Location}}
 <header class="location-editor-head">
     <h3>{{.Name}}</h3>
     <a
-        class="ok"
+        class="ok location-action-control"
         href="/locations/{{.Id}}/edit"
         hx-get="/locations/{{.Id}}/edit"
         hx-target="#location-editor"
@@ -64,7 +66,7 @@
 <div class="location-editor-actions">
     <button
         type="button"
-        class="bad"
+        class="bad location-action-control"
         hx-delete="/locations/{{.Id}}"
         hx-target="#location-editor"
         hx-swap="outerHTML"
@@ -74,15 +76,15 @@
         Delete
     </button>
 
-    <button
-        type="button"
-        class="plain"
+    <a
+        class="plain location-action-control"
+        href="/locations"
         hx-get="/locations"
         hx-target="#location-editor"
         hx-swap="outerHTML"
     >
         Close
-    </button>
+    </a>
 </div>
 {{else}} {{template "location-empty" .}} {{end}} {{end}} {{define
 "location-form"}}
@@ -132,16 +134,18 @@
     >{{with .Location}}{{.Notes}}{{end}}</textarea>
 
     <div class="location-editor-actions">
-        <button type="submit" class="ok">{{.FormSubmit}}</button>
-        <button
-            type="button"
-            class="plain"
+        <button type="submit" class="ok location-action-control">
+            {{.FormSubmit}}
+        </button>
+        <a
+            class="plain location-action-control"
+            href="/locations"
             hx-get="/locations"
             hx-target="#location-editor"
             hx-swap="outerHTML"
         >
             Cancel
-        </button>
+        </a>
     </div>
 </form>
 {{end}}

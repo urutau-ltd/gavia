@@ -1,9 +1,9 @@
 {{define "footer"}}
-<footer>
-    <p>
-        Page loaded in <strong>{{.RenderTime}}</strong> •
+<footer class="gavia-footer">
+    <p class="gavia-footer-meta">
+        <chip class="ok">Gavia {{.AppVersion}}</chip>
+        <span>Page loaded in <strong>{{.RenderTime}}</strong></span>
         <a href="https://codeberg.org/urutau-ltd/aile">Aile {{.AileVersion}}</a>
-        •
         <chip
             class="info"
             _="on pointerdown

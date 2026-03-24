@@ -16,8 +16,10 @@ The `.dir-locals.el` block resolves the repo root and prepends this file to
 The snippets focus on repeated patterns in this codebase:
 
 - Go handler/repository scaffolds
+- Dashboard summary scaffolds
 - HTMX template skeletons (`index`, `list`, `editor` partials)
 - CSS grid layout pattern for list + editor views
+- Responsive table-to-card pattern for mobile CRUD screens
 - Docstring starter oriented to "where" and "why"
 
 This keeps new CRUD features consistent with providers/locations and reduces
@@ -31,16 +33,19 @@ manual boilerplate.
 - `gindex`: Index handler with HTMX/full-page branch pattern
 - `ghandler`: handler struct + constructor scaffold
 - `grepo`: repository scaffold with `GetAll` query pattern
+- `gcount`: repository `Count` helper for dashboards and overview pages
 
 ### `html-mode` / `nhtml-mode` / `web-mode`
 
 - `htmxindex`: main CRUD view skeleton
 - `htmxlist`: table-body partial with row actions
 - `htmxeditor`: right-side editor panel partial
+- `dashboardview`: dashboard hero + stat-card starter
 
 ### `css-mode`
 
 - `crudcss`: responsive list/editor layout block
+- `crudtablecards`: mobile table-to-card CSS using `td[data-label]`
 
 ## Usage
 

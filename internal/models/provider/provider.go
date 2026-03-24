@@ -129,6 +129,14 @@ func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limi
 	return providers, rows.Err()
 }
 
+// Count returns the total number of providers in storage.
+// Dashboards and overview pages use it to show inventory size without loading rows.
+func (r *ProviderRepository) Count(ctx context.Context) (int, error) {
+	var count int
+	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM providers").Scan(&count)
+	return count, err
+}
+
 // Update persists mutable provider fields and refreshes UpdatedAt.
 // Timestamp assignment lives here so every update path behaves consistently.
 func (r *ProviderRepository) Update(ctx context.Context, p *Provider) error {

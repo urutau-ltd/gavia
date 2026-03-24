@@ -100,6 +100,15 @@ go-mode
  :ann "Repository scaffold"
  :doc "Repository skeleton with GetAll pattern")
 
+(gcount
+ "func (r *" (p "Entity" "Provider") "Repository) Count(ctx context.Context) (int, error) {" n
+ > "var count int" n
+ > "err := r.db.QueryRowContext(ctx, \"SELECT COUNT(*) FROM " (p "table" "providers") "\").Scan(&count)" n
+ > "return count, err" n
+ "}"
+ :ann "Repository count"
+ :doc "Count helper for dashboards and summary pages")
+
 
 ;; -----------------------------------------------------------------------------
 ;; HTML/HTMX snippets
@@ -155,6 +164,37 @@ html-mode nhtml-mode web-mode
  :ann "HTMX editor panel"
  :doc "Editor panel partial scaffold")
 
+(dashboardview
+ "{{define \"content\"}}" n
+ "<section class=\"dashboard-view\">" n
+ > "<section class=\"dashboard-hero\">" n
+ > > "<article class=\"box dashboard-intro\">" n
+ > > > "<h2>{{.Title}}</h2>" n
+ > > > "<p class=\"dashboard-subtitle\">" (p "subtitle" "A compact view of started and pending modules.") "</p>" n
+ > > > "<div class=\"dashboard-actions\">" n
+ > > > > "<a class=\"ok &lt;button&gt;\" href=\"/" (p "primary route" "providers") "\">" (p "primary label" "Open providers") "</a>" n
+ > > > > "<a class=\"plain &lt;button&gt;\" href=\"/" (p "secondary route" "locations") "\">" (p "secondary label" "Open locations") "</a>" n
+ > > > "</div>" n
+ > > "</article>" n
+ > > "<aside class=\"box dashboard-note\">" n
+ > > > "<strong class=\"titlebar\">" (p "note title" "Next steps") "</strong>" n
+ > > > "<p>" (p "note body" "Keep pending tables visible here so the next CRUD is easy to pick.") "</p>" n
+ > > "</aside>" n
+ > "</section>" n n
+ > "<section class=\"dashboard-stats\">" n
+ > > "{{range .Stats}}" n
+ > > "<article class=\"box dashboard-stat {{.Tone}}\">" n
+ > > > "<p class=\"dashboard-stat-label\">{{.Label}}</p>" n
+ > > > "<p class=\"dashboard-stat-value\">{{.Value}}</p>" n
+ > > > "<p class=\"dashboard-stat-hint\">{{.Hint}}</p>" n
+ > > "</article>" n
+ > > "{{end}}" n
+ > "</section>" n
+ "</section>" n
+ "{{end}}"
+ :ann "Dashboard view"
+ :doc "Dashboard starter with hero and summary cards")
+
 
 ;; -----------------------------------------------------------------------------
 ;; CSS snippet
@@ -178,3 +218,45 @@ css-mode
  "}"
  :ann "CRUD view css"
  :doc "Base responsive grid CSS for list/editor layout")
+
+(crudtablecards
+ "." (p "table selector" ".providers-table") "," n
+ "." (p "table selector 2" ".locations-table") " {" n
+ > "table-layout: auto;" n
+ "}" n n
+ "@media (max-width: " (p "breakpoint" "780px") ") {" n
+ > "." (p "table selector" ".providers-table") " thead," n
+ > "." (p "table selector 2" ".locations-table") " thead {" n
+ > > "display: none;" n
+ > "}" n n
+ > "." (p "table selector" ".providers-table") " tbody," n
+ > "." (p "table selector 2" ".locations-table") " tbody {" n
+ > > "display: grid;" n
+ > > "gap: 0.75rem;" n
+ > "}" n n
+ > "." (p "table selector" ".providers-table") " tr," n
+ > "." (p "table selector 2" ".locations-table") " tr {" n
+ > > "display: grid;" n
+ > > "gap: 0.6rem;" n
+ > > "padding: 0.9rem;" n
+ > > "border: var(--interactive-border-width) var(--interactive-border-style) var(--graphical-fg);" n
+ > > "border-radius: var(--interactive-border-radius);" n
+ > > "background: var(--box-bg);" n
+ > "}" n n
+ > "." (p "table selector" ".providers-table") " td," n
+ > "." (p "table selector 2" ".locations-table") " td {" n
+ > > "display: grid;" n
+ > > "grid-template-columns: minmax(6.75rem, 8.5rem) minmax(0, 1fr);" n
+ > > "gap: 0.6rem;" n
+ > > "padding: 0;" n
+ > > "border: 0;" n
+ > "}" n n
+ > "." (p "table selector" ".providers-table") " td::before," n
+ > "." (p "table selector 2" ".locations-table") " td::before {" n
+ > > "content: attr(data-label);" n
+ > > "color: var(--muted-fg);" n
+ > > "font-weight: 600;" n
+ > "}" n
+ "}"
+ :ann "CRUD table cards"
+ :doc "Mobile table-to-card pattern using td[data-label]")

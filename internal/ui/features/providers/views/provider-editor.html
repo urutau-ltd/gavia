@@ -17,10 +17,12 @@
     {{template "provider-list" .}}
 </tbody>
 {{end}} {{define "provider-empty"}}
-<h3>Providers panel</h3>
-<p class="provider-muted">
-    Select a provider from the list or create a new one.
-</p>
+<div class="provider-empty-state">
+    <h3>Providers panel</h3>
+    <p class="provider-muted">
+        Select a provider from the list or create a new one.
+    </p>
+</div>
 {{end}} {{define "provider-detail"}} {{with .Provider}}
 <header class="provider-editor-head">
     <h3>{{.Name}}</h3>

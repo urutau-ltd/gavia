@@ -3,26 +3,31 @@
     <header class="locations-head">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="location-subtitle">Manage the location of your assets here.</p>
+            <p class="location-subtitle">
+                Manage the location of your assets here.
+            </p>
         </div>
 
-        <button
-            type="button"
-            class="ok"
+        <a
+            href="/locations/new"
+            class="ok &lt;button&gt; locations-create-action"
             hx-get="/locations/new"
             hx-target="#location-editor"
             hx-swap="outerHTML"
         >
             New location
-        </button>
+        </a>
     </header>
 
     <section class="locations-grid flex-switch">
         <article class="box locations-list-box width:100%">
-            <section
+            <form
+                id="locations-filters"
                 class="tool-bar locations-toolbar margin-block-end"
+                method="get"
+                action="/locations"
                 role="toolbar"
-                aria-label="Filtros de locations"
+                aria-label="Filter locations"
             >
                 <div class="location-field">
                     <label for="location-limit">Show</label>
@@ -35,6 +40,7 @@
                         hx-include="#location-search,#location-limit"
                         hx-indicator="#locations-loading"
                         hx-trigger="change"
+                        onchange="if (!window.htmx) this.form.submit();"
                     >
                         <option value="5" {{if eq .Limit 5}}selected{{end}}>
                             5
@@ -68,11 +74,19 @@
                         hx-include="#location-search,#location-limit"
                         hx-indicator="#locations-loading"
                         hx-trigger="keyup changed delay:300ms, search"
+                        onchange="if (!window.htmx) this.form.submit();"
                     >
                 </div>
-            </section>
 
-            <small id="locations-loading" class="htmx-indicator"
+                <button type="submit" class="plain location-filter-apply">
+                    Apply
+                </button>
+            </form>
+
+            <small
+                id="locations-loading"
+                class="htmx-indicator"
+                aria-live="polite"
             >Updating view...</small>
 
             <table class="locations-table width:100%">
