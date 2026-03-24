@@ -31,4 +31,5 @@ go.work.sum
 # .idea/
 # .vscode/
 
-app.sqlite*
+db/app.sqlite*
+!db/.gitkeep

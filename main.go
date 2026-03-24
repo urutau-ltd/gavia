@@ -34,7 +34,7 @@ func main() {
 	}
 
 	// Database
-	dbConn, err := database.Client("./app.sqlite")
+	dbConn, err := database.Client("./db/app.sqlite")
 	if err != nil {
 		logger.Error("Failed to initialize database", "err", err)
 		os.Exit(1)

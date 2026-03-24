@@ -1,0 +1,11 @@
+---
+services:
+    gavia:
+        image: 'ghcr.io/urutau-ltd/gavia:latest'
+        container_name: gavia
+        restart: always
+        ports:
+            - '9091/tcp'
+        volumes:
+            - './db/:/workspace/db/'
+...
