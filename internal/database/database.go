@@ -5,6 +5,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"log/slog"
 	"sync"
 
 	_ "modernc.org/sqlite"
@@ -47,5 +48,38 @@ PRAGMA cache_size = -64000;`
 		)
 	}
 
+	return nil
+}
+
+func RunMigrations(db *sql.DB, logger *slog.Logger) error {
+	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS migrations (id INTEGER PRIMARY KEY, name TEXT UNIQUE)`)
+	if err != nil {
+		return err
+	}
+
+	entries, _ := migrationsFS.ReadDir("migrations")
+	for _, entry := range entries {
+		var exists bool
+		db.QueryRow("SELECT EXISTS(SELECT 1 FROM migrations WHERE name = ?)", entry.Name()).Scan(&exists)
+		if exists {
+			continue
+		}
+
+		content, _ := migrationsFS.ReadFile("migrations/" + entry.Name())
+
+		tx, err := db.Begin()
+		if err != nil {
+			return err
+		}
+
+		if _, err := tx.Exec(string(content)); err != nil {
+			tx.Rollback()
+			return fmt.Errorf("error en %s: %w", entry.Name(), err)
+		}
+
+		tx.Exec("INSERT INTO migrations (name) VALUES (?)", entry.Name())
+		tx.Commit()
+		logger.Info("Migración aplicada: ", "entry_name", entry.Name())
+	}
 	return nil
 }

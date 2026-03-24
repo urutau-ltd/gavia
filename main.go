@@ -54,7 +54,19 @@ func main() {
 		os.Exit(1)
 	}
 	logger.Info("Load database pragmas")
-	logger.Info("Load database")
+
+	if err := database.RunMigrations(dbConn, logger); err != nil {
+		logger.Error("Migrations failed", "err", err)
+		os.Exit(1)
+	}
+
+	logger.Info("Ran migrations")
+
+	if err := database.SeedProviders(dbConn); err != nil {
+		logger.Error("Seeding providers failed", "err", err)
+	}
+
+	logger.Info("Database initialized and seeded")
 
 	// Middleware
 	app.Use(combine.Middleware(
