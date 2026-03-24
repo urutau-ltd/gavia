@@ -139,6 +139,7 @@ func main() {
 
 	app.GET("/dashboard", dashboardHandler.Index)
 
+	// providers/ routes
 	app.GET("/providers", providerHandler.Index)
 	app.GET("/providers/new", providerHandler.New)
 	app.POST("/providers", providerHandler.Create)
@@ -147,6 +148,7 @@ func main() {
 	app.POST("/providers/{id}/edit", providerHandler.Update)
 	app.DELETE("/providers/{id}", providerHandler.Delete)
 
+	// locations/ routes
 	app.GET("/locations", locationHandler.Index)
 	app.GET("/locations/new", locationHandler.New)
 	app.POST("/locations", locationHandler.Create)

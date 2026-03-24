@@ -3,17 +3,17 @@
     <header class="providers-head">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="provider-subtitle">CRUD de providers con HTMX.</p>
+            <p class="provider-subtitle">Manage your service providers here.</p>
         </div>
 
         <button
             type="button"
-            class="ok"
+            class="ok <big>"
             hx-get="/providers/new"
             hx-target="#provider-editor"
             hx-swap="outerHTML"
         >
-            Nuevo provider
+            New provider
         </button>
     </header>
 
@@ -25,10 +25,10 @@
                 method="get"
                 action="/providers"
                 role="toolbar"
-                aria-label="Filtros de providers"
+                aria-label="Filter providers..."
             >
                 <div class="provider-field">
-                    <label for="provider-limit">Mostrar</label>
+                    <label for="provider-limit">Show</label>
                     <select
                         id="provider-limit"
                         name="limit"
@@ -59,12 +59,12 @@
                 </div>
 
                 <div class="provider-field provider-search-field">
-                    <label for="provider-search">Buscar</label>
+                    <label for="provider-search">Search</label>
                     <input
                         id="provider-search"
                         name="q"
                         type="search"
-                        placeholder="Nombre del provider"
+                        placeholder="Provider name"
                         value="{{.SearchTerm}}"
                         hx-get="/providers"
                         hx-target="#providers-body"
@@ -76,19 +76,19 @@
                 </div>
 
                 <button type="submit" class="plain provider-filter-apply">
-                    Aplicar
+                    Apply
                 </button>
             </form>
 
             <small id="providers-loading" class="htmx-indicator"
-            >Actualizando listado...</small>
+            >Updating view...</small>
 
             <table class="providers-table width:100%">
                 <thead>
                     <tr>
                         <th scope="col">Provider</th>
                         <th scope="col">Website</th>
-                        <th scope="col">Acciones</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="providers-body">

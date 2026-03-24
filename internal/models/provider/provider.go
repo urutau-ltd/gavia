@@ -10,6 +10,9 @@ import (
 	"github.com/google/uuid"
 )
 
+// Provider models one provider record from the providers table.
+// This struct is shared by repository methods and UI handlers to keep a single
+// source of truth for provider fields.
 type Provider struct {
 	Id        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
@@ -19,16 +22,21 @@ type Provider struct {
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
 }
 
+// ProviderRepository contains all SQL operations for providers.
+// Keeping persistence here prevents HTTP handlers from depending on SQL details.
 type ProviderRepository struct {
 	db *sql.DB
 }
 
+// NewProviderRepository wires a database handle into a provider repository.
+// Handlers call this once during bootstrap and reuse it per request.
 func NewProviderRepository(db *sql.DB) *ProviderRepository {
 	return &ProviderRepository{db: db}
 }
 
+// Create inserts a new provider and assigns identity/timestamps in one place.
+// This guarantees all callers follow the same ID and time conventions.
 func (r *ProviderRepository) Create(ctx context.Context, p *Provider) error {
-
 	newID, err := uuid.NewV7()
 	if err != nil {
 		return err
@@ -49,8 +57,10 @@ func (r *ProviderRepository) Create(ctx context.Context, p *Provider) error {
 	return err
 }
 
+// GetByID returns one provider by UUID.
+// It returns nil,nil when the record does not exist so handlers can map that
+// case to 404 responses without treating it as a storage failure.
 func (r *ProviderRepository) GetByID(ctx context.Context, id string) (*Provider, error) {
-
 	if _, err := uuid.Parse(id); err != nil {
 		return nil, fmt.Errorf("invalid uuid format: %w", err)
 	}
@@ -75,6 +85,9 @@ func (r *ProviderRepository) GetByID(ctx context.Context, id string) (*Provider,
 	return p, nil
 }
 
+// GetAll returns providers filtered by optional search term and limit.
+// The method owns query composition so pagination/filter logic is not duplicated
+// across handlers.
 func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limit int) ([]*Provider, error) {
 	query := `SELECT id, name, notes, website, created_at, updated_at FROM providers WHERE 1=1`
 	var args []any
@@ -116,6 +129,8 @@ func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limi
 	return providers, rows.Err()
 }
 
+// Update persists mutable provider fields and refreshes UpdatedAt.
+// Timestamp assignment lives here so every update path behaves consistently.
 func (r *ProviderRepository) Update(ctx context.Context, p *Provider) error {
 	p.UpdatedAt = time.Now()
 	_, err := r.db.ExecContext(ctx,
@@ -128,6 +143,8 @@ func (r *ProviderRepository) Update(ctx context.Context, p *Provider) error {
 	return err
 }
 
+// Delete removes one provider by UUID.
+// UUID validation is done here to fail fast before issuing SQL.
 func (r *ProviderRepository) Delete(ctx context.Context, id string) error {
 	if _, err := uuid.Parse(id); err != nil {
 		return fmt.Errorf("invalid uuid format: %w", err)

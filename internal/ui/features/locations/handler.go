@@ -16,17 +16,22 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
 )
 
+// defaultLimit and maxLimit keep list endpoints bounded even when query params are missing or invalid.
 const (
-	defaultLimit = 10
-	maxLimit     = 100
+	defaultLimit int = 10
+	maxLimit     int = 100
 )
 
+// Handler coordinates HTTP endpoints, HTML templates and repository calls for the locations feature.
+// It lives in the UI layer to isolate transport decisions from persistence code.
 type Handler struct {
 	logger       *slog.Logger
 	tmpl         *template.Template
 	locationRepo *location.LocationRepository
 }
 
+// pageData is the template contract for locations screens.
+// Keeping this consolidated makes list/editor rendering predictable and easier to extend.
 type pageData struct {
 	ui.BaseData
 	Locations  []*location.Location
@@ -40,6 +45,8 @@ type pageData struct {
 	ErrorHTML  template.HTML
 }
 
+// NewHandler builds the locations feature handler and preloads all required templates.
+// Parsing templates at startup avoids repeating work at request time.
 func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 	t := template.Must(template.ParseFS(uiFS,
 		"layout/base.html",
@@ -54,6 +61,8 @@ func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 	}
 }
 
+// Index serves GET /locations.
+// It returns full HTML or only the list fragment depending on HTMX request headers.
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
@@ -77,6 +86,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// New serves GET /locations/new and prepares the editor in create mode.
 func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
@@ -88,7 +98,7 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "new"
 	data.FormAction = "/locations"
-	data.FormSubmit = "Crear location"
+	data.FormSubmit = "Create location"
 	data.Location = &location.Location{}
 
 	writeHTMLHeader(w)
@@ -100,6 +110,7 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// Show serves GET /locations/{id} and loads detail data into the editor panel.
 func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
@@ -150,6 +161,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// Edit serves GET /locations/{id}/edit with current values preloaded in the form.
 func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
@@ -202,6 +214,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// Create handles POST /locations and persists a new location.
+// On success it returns a response that updates both editor and table when HTMX is used.
 func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "invalid form", http.StatusBadRequest)
@@ -281,6 +295,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// Update handles POST /locations/{id}/edit and persists location changes.
+// It first checks existence to keep not-found and write errors distinct.
 func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "invalid form", http.StatusBadRequest)
@@ -397,6 +413,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// Delete handles DELETE /locations/{id} and refreshes list state after removal.
 func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := r.ParseForm(); err != nil {
 		http.Error(w, "invalid form", http.StatusBadRequest)
@@ -445,6 +462,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	h.renderTemplate(w, "base", data)
 }
 
+// loadPageData resolves table state (filters, limits, records) for location views.
 func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, error) {
 	searchTerm, limit := parseListState(r)
 	locations, err := h.locationRepo.GetAll(r.Context(), searchTerm, limit)
@@ -463,24 +481,28 @@ func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, erro
 	}, nil
 }
 
+// renderTemplate executes a named template and centralizes render-error logging.
 func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 	if err := h.tmpl.ExecuteTemplate(w, tmpl, data); err != nil {
 		h.logger.Error("Error rendering template", "template", tmpl, "err", err)
 	}
 }
 
+// isListRequest detects HTMX calls meant to replace only the locations table body.
 func (h *Handler) isListRequest(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true" &&
 		r.Header.Get("HX-Boosted") != "true" &&
 		r.Header.Get("HX-Target") == "locations-body"
 }
 
+// isEditorRequest detects HTMX calls that target the location editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true" &&
 		r.Header.Get("HX-Boosted") != "true" &&
 		r.Header.Get("HX-Target") == "location-editor"
 }
 
+// parseListState reads shared query/form controls for the locations list.
 func parseListState(r *http.Request) (string, int) {
 	_ = r.ParseForm()
 	searchTerm := strings.TrimSpace(r.Form.Get("q"))
@@ -488,6 +510,7 @@ func parseListState(r *http.Request) (string, int) {
 	return searchTerm, limit
 }
 
+// parseLimit normalizes user-provided limits into a safe bounded value.
 func parseLimit(raw string) int {
 	if raw == "" {
 		return defaultLimit
@@ -505,6 +528,7 @@ func parseLimit(raw string) int {
 	return limit
 }
 
+// bannerHTML builds a sanitized alert block compatible with Missing.css status classes.
 func bannerHTML(kind, msg string) template.HTML {
 	className := "info"
 	switch kind {
@@ -516,6 +540,7 @@ func bannerHTML(kind, msg string) template.HTML {
 	return template.HTML(`<p class="location-alert ` + className + `">` + escaped + `</p>`)
 }
 
+// writeHTMLHeader enforces a consistent HTML content type for template responses.
 func writeHTMLHeader(w http.ResponseWriter) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 }

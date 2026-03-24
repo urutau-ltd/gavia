@@ -3,7 +3,7 @@
     <header class="locations-head">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="location-subtitle">CRUD de locations con HTMX.</p>
+            <p class="location-subtitle">Manage the location of your assets here.</p>
         </div>
 
         <button
@@ -13,7 +13,7 @@
             hx-target="#location-editor"
             hx-swap="outerHTML"
         >
-            Nueva location
+            New location
         </button>
     </header>
 
@@ -25,7 +25,7 @@
                 aria-label="Filtros de locations"
             >
                 <div class="location-field">
-                    <label for="location-limit">Mostrar</label>
+                    <label for="location-limit">Show</label>
                     <select
                         id="location-limit"
                         name="limit"
@@ -55,12 +55,12 @@
                 </div>
 
                 <div class="location-field location-search-field">
-                    <label for="location-search">Buscar</label>
+                    <label for="location-search">Search</label>
                     <input
                         id="location-search"
                         name="q"
                         type="search"
-                        placeholder="Nombre, ciudad o país"
+                        placeholder="Name, city or country"
                         value="{{.SearchTerm}}"
                         hx-get="/locations"
                         hx-target="#locations-body"
@@ -73,15 +73,15 @@
             </section>
 
             <small id="locations-loading" class="htmx-indicator"
-            >Actualizando listado...</small>
+            >Updating view...</small>
 
             <table class="locations-table width:100%">
                 <thead>
                     <tr>
                         <th scope="col">Location</th>
-                        <th scope="col">Ciudad</th>
-                        <th scope="col">País</th>
-                        <th scope="col">Acciones</th>
+                        <th scope="col">City</th>
+                        <th scope="col">Country</th>
+                        <th scope="col">Actions</th>
                     </tr>
                 </thead>
                 <tbody id="locations-body">

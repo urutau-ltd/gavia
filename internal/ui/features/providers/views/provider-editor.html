@@ -17,9 +17,9 @@
     {{template "provider-list" .}}
 </tbody>
 {{end}} {{define "provider-empty"}}
-<h3>Panel de provider</h3>
+<h3>Providers panel</h3>
 <p class="provider-muted">
-    Selecciona un provider del listado o crea uno nuevo.
+    Select a provider from the list or create a new one.
 </p>
 {{end}} {{define "provider-detail"}} {{with .Provider}}
 <header class="provider-editor-head">
@@ -31,7 +31,7 @@
         hx-target="#provider-editor"
         hx-swap="outerHTML"
     >
-        Editar
+        Edit
     </a>
 </header>
 
@@ -44,14 +44,14 @@
         {{if .Website}}
         <a href="{{.Website}}" target="_blank" rel="noreferrer">{{.Website}}</a>
         {{else}}
-        <span class="provider-muted">Sin website</span>
+        <span class="provider-muted">No website</span>
         {{end}}
     </dd>
 
-    <dt>Notas</dt>
+    <dt>Notes</dt>
     <dd class="provider-note">
         {{if .Notes}} {{.Notes}} {{else}}
-        <span class="provider-muted">Sin notas</span>
+        <span class="provider-muted">No notes</span>
         {{end}}
     </dd>
 </dl>
@@ -66,7 +66,7 @@
         hx-include="#provider-search,#provider-limit"
         hx-confirm="¿Seguro que quieres eliminar este provider?"
     >
-        Eliminar
+        Delete
     </button>
 
     <a
@@ -76,13 +76,13 @@
         hx-target="#provider-editor"
         hx-swap="outerHTML"
     >
-        Cerrar
+        Close
     </a>
 </div>
 {{else}} {{template "provider-empty" .}} {{end}} {{end}} {{define
 "provider-form"}}
 <h3>
-    {{if eq .EditorMode "edit"}}Editar provider{{else}}Nuevo provider{{end}}
+    {{if eq .EditorMode "edit"}}Edit provider{{else}}New provider{{end}}
 </h3>
 
 <form
@@ -94,7 +94,7 @@
     hx-swap="outerHTML"
     hx-include="#provider-search,#provider-limit"
 >
-    <label for="provider-name">Nombre</label>
+    <label for="provider-name">Name</label>
     <input
         id="provider-name"
         name="name"
@@ -113,7 +113,7 @@
         value="{{with .Provider}}{{.Website}}{{end}}"
     >
 
-    <label for="provider-notes">Notas</label>
+    <label for="provider-notes">Notes</label>
     <textarea id="provider-notes" name="notes" rows="6"
     >{{with .Provider}}{{.Notes}}{{end}}</textarea>
 
@@ -128,7 +128,7 @@
             hx-target="#provider-editor"
             hx-swap="outerHTML"
         >
-            Cancelar
+            Cancel
         </a>
     </div>
 </form>

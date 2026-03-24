@@ -42,7 +42,17 @@
      (geiser-insert-actual-lambda . nil)
      (eval . (progn
                (add-to-list 'completion-ignored-extensions ".go")
-               (add-to-list 'auto-mode-alist '("\\.mdx\\'" . markdown-mode))))))
+               (add-to-list 'auto-mode-alist '("\\.mdx\\'" . markdown-mode))
+               (let* ((root-dir (locate-dominating-file default-directory ".dir-locals.el"))
+                      (tempel-file (and root-dir
+                                        (expand-file-name "etc/snippets/tempel/templates.eld" root-dir))))
+                 (when (and tempel-file (file-exists-p tempel-file))
+                   (setq-local tempel-path
+                               (delete-dups
+                                (append (list tempel-file)
+                                        (if (listp tempel-path)
+                                            tempel-path
+                                          (when tempel-path (list tempel-path))))))))))))
  (emacs-lisp-mode . ((indent-tabs-mode . nil)))
  (markdown-mode    . ((indent-tabs-mode . nil)
                      (fill-column      . 80)))
