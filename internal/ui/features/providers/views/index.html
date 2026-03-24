@@ -1,53 +1,103 @@
 {{define "content"}}
-<div>
-    <h2>{{.Title}}</h2>
-</div>
+<section class="providers-view fullbleed">
+    <header class="providers-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="provider-subtitle">CRUD de providers con HTMX.</p>
+        </div>
 
-<section class="container box">
-    <section class="tool-bar margin-block">
-        <label for="select_amount">Show:</label>
-        <select id="select_amount" class="form-select form-select-sm">
-            <option value="5">5</option>
-            <option value="10">10</option>
-            <option value="15">15</option>
-            <option value="15">25</option>
-            <option value="15">50</option>
-            <option value="15">100</option>
-        </select>
-        <hr aria-orientation="vertical">
-        <label for="search">Search:</label>
-        <input id="search" type="search" placeholder="Start typing here..." />
-    </section>
-    <section>
-        <table>
-            <thead>
-                <tr>
-                    <th scope="col">ID</th>
-                    <th scope="col">Provider</th>
-                    <th scope="col">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{- range .Providers}}
-                <tr>
-                    <td>
-                        {{ .Id }}
-                    </td>
-                    <td>{{ .Name }}</td>
-                    <td>
-                        <a class="ok" href="/providers/{{ .Id }}">Ver</a>
-                        <a href="/providers/{{ .Id }}/edit">Editar</a>
-                        <a class="bad" href="/providers/{{ .Id }}/delete"
-                        >Eliminar</a>
-                    </td>
-                </tr>
-                {{- else}}
-                <tr>
-                    <td colspan="2">No providers are registered...</td>
-                </tr>
-                {{- end}}
-            </tbody>
-        </table>
+        <button
+            type="button"
+            class="ok"
+            hx-get="/providers/new"
+            hx-target="#provider-editor"
+            hx-swap="outerHTML"
+        >
+            Nuevo provider
+        </button>
+    </header>
+
+    <section class="providers-grid flex-switch">
+        <article class="box providers-list-box width:100%">
+            <form
+                id="providers-filters"
+                class="tool-bar providers-toolbar margin-block-end"
+                method="get"
+                action="/providers"
+                role="toolbar"
+                aria-label="Filtros de providers"
+            >
+                <div class="provider-field">
+                    <label for="provider-limit">Mostrar</label>
+                    <select
+                        id="provider-limit"
+                        name="limit"
+                        hx-get="/providers"
+                        hx-target="#providers-body"
+                        hx-swap="innerHTML"
+                        hx-include="#provider-search,#provider-limit"
+                        hx-indicator="#providers-loading"
+                        hx-trigger="change"
+                        onchange="if (!window.htmx) this.form.submit();"
+                    >
+                        <option value="5" {{if eq .Limit 5}}selected{{end}}>
+                            5
+                        </option>
+                        <option value="10" {{if eq .Limit 10}}selected{{end}}>
+                            10
+                        </option>
+                        <option value="25" {{if eq .Limit 25}}selected{{end}}>
+                            25
+                        </option>
+                        <option value="50" {{if eq .Limit 50}}selected{{end}}>
+                            50
+                        </option>
+                        <option value="100" {{if eq .Limit 100}}selected{{end}}>
+                            100
+                        </option>
+                    </select>
+                </div>
+
+                <div class="provider-field provider-search-field">
+                    <label for="provider-search">Buscar</label>
+                    <input
+                        id="provider-search"
+                        name="q"
+                        type="search"
+                        placeholder="Nombre del provider"
+                        value="{{.SearchTerm}}"
+                        hx-get="/providers"
+                        hx-target="#providers-body"
+                        hx-swap="innerHTML"
+                        hx-include="#provider-search,#provider-limit"
+                        hx-indicator="#providers-loading"
+                        hx-trigger="keyup changed delay:300ms, search"
+                    >
+                </div>
+
+                <button type="submit" class="plain provider-filter-apply">
+                    Aplicar
+                </button>
+            </form>
+
+            <small id="providers-loading" class="htmx-indicator"
+            >Actualizando listado...</small>
+
+            <table class="providers-table width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col">Provider</th>
+                        <th scope="col">Website</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="providers-body">
+                    {{template "provider-list" .}}
+                </tbody>
+            </table>
+        </article>
+
+        {{template "provider-editor-panel" .}}
     </section>
 </section>
 {{end}}

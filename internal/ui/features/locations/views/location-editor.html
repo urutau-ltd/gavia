@@ -1,0 +1,147 @@
+{{define "location-editor-panel"}}
+<section
+    id="location-editor"
+    class="box location-editor"
+    _="on htmx:beforeRequest add .is-loading to me end
+       on htmx:afterSwap remove .is-loading from me"
+>
+    {{template "location-editor-content" .}}
+</section>
+{{end}} {{define "location-editor-content"}} {{if .NoticeHTML}} {{.NoticeHTML}}
+{{end}} {{if .ErrorHTML}} {{.ErrorHTML}} {{end}} {{if eq .EditorMode "new"}}
+{{template "location-form" .}} {{else if eq .EditorMode "edit"}} {{template
+"location-form" .}} {{else if eq .EditorMode "detail"}} {{template
+"location-detail" .}} {{else}} {{template "location-empty" .}} {{end}} {{end}}
+{{define "location-editor-response"}} {{template "location-editor-panel" .}}
+<tbody id="locations-body" hx-swap-oob="outerHTML">
+    {{template "location-list" .}}
+</tbody>
+{{end}} {{define "location-empty"}}
+<h3>Panel de location</h3>
+<p class="location-muted">
+    Selecciona una location del listado o crea una nueva.
+</p>
+{{end}} {{define "location-detail"}} {{with .Location}}
+<header class="location-editor-head">
+    <h3>{{.Name}}</h3>
+    <a
+        class="ok"
+        href="/locations/{{.Id}}/edit"
+        hx-get="/locations/{{.Id}}/edit"
+        hx-target="#location-editor"
+        hx-swap="outerHTML"
+    >
+        Editar
+    </a>
+</header>
+
+<dl class="location-meta">
+    <dt>ID</dt>
+    <dd><code>{{.Id}}</code></dd>
+
+    <dt>Ciudad</dt>
+    <dd>
+        {{if .City}} {{.City}} {{else}}
+        <span class="location-muted">Sin ciudad</span>
+        {{end}}
+    </dd>
+
+    <dt>País</dt>
+    <dd>
+        {{if .Country}} {{.Country}} {{else}}
+        <span class="location-muted">Sin país</span>
+        {{end}}
+    </dd>
+
+    <dt>Notas</dt>
+    <dd class="location-note">
+        {{if .Notes}} {{.Notes}} {{else}}
+        <span class="location-muted">Sin notas</span>
+        {{end}}
+    </dd>
+</dl>
+
+<div class="location-editor-actions">
+    <button
+        type="button"
+        class="bad"
+        hx-delete="/locations/{{.Id}}"
+        hx-target="#location-editor"
+        hx-swap="outerHTML"
+        hx-include="#location-search,#location-limit"
+        hx-confirm="¿Seguro que quieres eliminar esta location?"
+    >
+        Eliminar
+    </button>
+
+    <button
+        type="button"
+        class="plain"
+        hx-get="/locations"
+        hx-target="#location-editor"
+        hx-swap="outerHTML"
+    >
+        Cerrar
+    </button>
+</div>
+{{else}} {{template "location-empty" .}} {{end}} {{end}} {{define
+"location-form"}}
+<h3>
+    {{if eq .EditorMode "edit"}}Editar location{{else}}Nueva location{{end}}
+</h3>
+
+<form
+    class="location-form"
+    method="post"
+    action="{{.FormAction}}"
+    hx-post="{{.FormAction}}"
+    hx-target="#location-editor"
+    hx-swap="outerHTML"
+    hx-include="#location-search,#location-limit"
+>
+    <label for="location-name">Nombre</label>
+    <input
+        id="location-name"
+        name="name"
+        type="text"
+        required
+        maxlength="120"
+        value="{{with .Location}}{{.Name}}{{end}}"
+    >
+
+    <label for="location-city">Ciudad</label>
+    <input
+        id="location-city"
+        name="city"
+        type="text"
+        maxlength="120"
+        value="{{with .Location}}{{.City}}{{end}}"
+    >
+
+    <label for="location-country">País</label>
+    <input
+        id="location-country"
+        name="country"
+        type="text"
+        maxlength="120"
+        value="{{with .Location}}{{.Country}}{{end}}"
+    >
+
+    <label for="location-notes">Notas</label>
+    <textarea id="location-notes" name="notes" rows="6"
+    >{{with .Location}}{{.Notes}}{{end}}</textarea>
+
+    <div class="location-editor-actions">
+        <button type="submit" class="ok">{{.FormSubmit}}</button>
+        <button
+            type="button"
+            class="plain"
+            hx-get="/locations"
+            hx-target="#location-editor"
+            hx-swap="outerHTML"
+        >
+            Cancelar
+        </button>
+    </div>
+</form>
+{{end}}

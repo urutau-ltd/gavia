@@ -15,6 +15,12 @@ nor a competitor per se.
 > until you see a `v1.0.0` tag. Or if you wish to be impatient, build from
 > `main` and send patches!
 
+## Documentation for developers
+
+- API Reference: [`docs/API_REFERENCE.md`](./docs/API_REFERENCE.md)
+- CRUD Extension Playbook:
+  [`docs/CRUD_EXTENSION_PLAYBOOK.md`](./docs/CRUD_EXTENSION_PLAYBOOK.md)
+
 ## COPYING
 
 Where applicable, the source code of this project is under the terms of the GNU

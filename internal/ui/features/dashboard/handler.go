@@ -2,16 +2,14 @@ package dashboard
 
 import (
 	"database/sql"
-	"fmt"
 	"html/template"
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"runtime"
-	"strings"
 	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
+	"codeberg.org/urutau-ltd/gavia/internal/ui"
 )
 
 type Handler struct {
@@ -37,7 +35,7 @@ func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	h.logger.Info("Loading Dashboard module...")
 
-	providers, err := h.providerRepo.GetAll(r.Context())
+	providers, err := h.providerRepo.GetAll(r.Context(), "", 5)
 
 	if err != nil {
 		h.logger.Error("Failed to get providers!")
@@ -49,15 +47,14 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 
 	start := time.Now()
 
-	data := map[string]any{
-		"Title":         "Dashboard",
-		"Providers":     providers,
-		"ProviderCount": len(providers),
-		"FooterData": map[string]any{
-			"RenderTime":  fmt.Sprintf("%.2fs", time.Since(start).Seconds()),
-			"AileVersion": "v1.1.0",
-			"GoVersion":   strings.Trim(runtime.Version(), "go"),
-		},
+	data := struct {
+		ui.BaseData
+		Providers     []*provider.Provider
+		ProviderCount int
+	}{
+		BaseData:      ui.NewBaseData("Dashboard", start),
+		Providers:     providers,
+		ProviderCount: len(providers),
 	}
 
 	h.logger.Info(`Page data: `, slog.Any("data", data))

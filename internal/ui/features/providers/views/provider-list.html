@@ -1,0 +1,50 @@
+{{define "provider-list"}} {{- range .Providers}}
+<tr id="provider-row-{{.Id}}">
+    <td><strong>{{.Name}}</strong></td>
+    <td>
+        {{- if .Website -}}
+        <a href="{{.Website}}" target="_blank" rel="noreferrer">{{.Website}}</a>
+        {{- else -}}
+        <span class="provider-muted">Sin website</span>
+        {{- end -}}
+    </td>
+    <td class="provider-actions">
+        <a
+            class="plain provider-action-control"
+            href="/providers/{{.Id}}"
+            hx-get="/providers/{{.Id}}"
+            hx-target="#provider-editor"
+            hx-swap="outerHTML"
+        >
+            Ver
+        </a>
+
+        <a
+            class="ok provider-action-control"
+            href="/providers/{{.Id}}/edit"
+            hx-get="/providers/{{.Id}}/edit"
+            hx-target="#provider-editor"
+            hx-swap="outerHTML"
+        >
+            Editar
+        </a>
+
+        <button
+            type="button"
+            class="bad provider-action-control"
+            hx-delete="/providers/{{.Id}}"
+            hx-target="#provider-editor"
+            hx-swap="outerHTML"
+            hx-include="#provider-search,#provider-limit"
+            hx-confirm="¿Seguro que quieres eliminar este provider?"
+            _="on click add .is-removing to #provider-row-{{.Id}}"
+        >
+            Eliminar
+        </button>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="3"><em>No hay providers registrados.</em></td>
+</tr>
+{{- end}} {{end}}

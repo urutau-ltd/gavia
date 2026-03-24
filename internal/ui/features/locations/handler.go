@@ -1,4 +1,4 @@
-package providers
+package locations
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
+	"codeberg.org/urutau-ltd/gavia/internal/models/location"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
 )
 
@@ -24,13 +24,13 @@ const (
 type Handler struct {
 	logger       *slog.Logger
 	tmpl         *template.Template
-	providerRepo *provider.ProviderRepository
+	locationRepo *location.LocationRepository
 }
 
 type pageData struct {
 	ui.BaseData
-	Providers  []*provider.Provider
-	Provider   *provider.Provider
+	Locations  []*location.Location
+	Location   *location.Location
 	SearchTerm string
 	Limit      int
 	EditorMode string
@@ -43,14 +43,14 @@ type pageData struct {
 func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 	t := template.Must(template.ParseFS(uiFS,
 		"layout/base.html",
-		"features/providers/views/*.html",
+		"features/locations/views/*.html",
 		"components/*.html",
 	))
 
 	return &Handler{
 		logger:       l,
 		tmpl:         t,
-		providerRepo: provider.NewProviderRepository(db),
+		locationRepo: location.NewLocationRepository(db),
 	}
 }
 
@@ -58,19 +58,19 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	writeHTMLHeader(w)
 	if h.isListRequest(r) {
-		h.renderTemplate(w, "provider-list", data)
+		h.renderTemplate(w, "location-list", data)
 		return
 	}
 
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-panel", data)
+		h.renderTemplate(w, "location-editor-panel", data)
 		return
 	}
 
@@ -81,19 +81,19 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	data.EditorMode = "new"
-	data.FormAction = "/providers"
-	data.FormSubmit = "Crear provider"
-	data.Provider = &provider.Provider{}
+	data.FormAction = "/locations"
+	data.FormSubmit = "Crear location"
+	data.Location = &location.Location{}
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-panel", data)
+		h.renderTemplate(w, "location-editor-panel", data)
 		return
 	}
 
@@ -104,34 +104,34 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	id := r.PathValue("id")
-	p, err := h.providerRepo.GetByID(r.Context(), id)
+	l, err := h.locationRepo.GetByID(r.Context(), id)
 	if err != nil {
-		h.logger.Error("Failed to load provider", "id", id, "err", err)
+		h.logger.Error("Failed to load location", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar el provider.")
+		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar la location.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	if p == nil {
+	if l == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
+		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -139,11 +139,11 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.Provider = p
+	data.Location = l
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-panel", data)
+		h.renderTemplate(w, "location-editor-panel", data)
 		return
 	}
 
@@ -154,34 +154,34 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	id := r.PathValue("id")
-	p, err := h.providerRepo.GetByID(r.Context(), id)
+	l, err := h.locationRepo.GetByID(r.Context(), id)
 	if err != nil {
-		h.logger.Error("Failed to load provider for edit", "id", id, "err", err)
+		h.logger.Error("Failed to load location for edit", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar el provider para editar.")
+		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar la location para editar.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	if p == nil {
+	if l == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
+		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -189,13 +189,13 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "edit"
-	data.Provider = p
-	data.FormAction = fmt.Sprintf("/providers/%s/edit", p.Id)
-	data.FormSubmit = "Update provider"
+	data.Location = l
+	data.FormAction = fmt.Sprintf("/locations/%s/edit", l.Id)
+	data.FormSubmit = "Actualizar location"
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-panel", data)
+		h.renderTemplate(w, "location-editor-panel", data)
 		return
 	}
 
@@ -211,21 +211,23 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	name := strings.TrimSpace(r.Form.Get("name"))
-	website := strings.TrimSpace(r.Form.Get("website"))
+	city := strings.TrimSpace(r.Form.Get("city"))
+	country := strings.TrimSpace(r.Form.Get("country"))
 	notes := strings.TrimSpace(r.Form.Get("notes"))
 
 	data.EditorMode = "new"
-	data.FormAction = "/providers"
-	data.FormSubmit = "Crear provider"
-	data.Provider = &provider.Provider{
+	data.FormAction = "/locations"
+	data.FormSubmit = "Crear location"
+	data.Location = &location.Location{
 		Name:    name,
-		Website: website,
+		City:    city,
+		Country: country,
 		Notes:   notes,
 	}
 
@@ -234,45 +236,45 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	if err := h.providerRepo.Create(r.Context(), data.Provider); err != nil {
-		h.logger.Error("Failed to create provider", "err", err)
+	if err := h.locationRepo.Create(r.Context(), data.Location); err != nil {
+		h.logger.Error("Failed to create location", "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo crear el provider."
+		msg := "No se pudo crear la location."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe un provider con ese nombre."
+			msg = "Ya existe una location con ese nombre."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
 		writeHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	updatedProviders, listErr := h.providerRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
+	updatedLocations, listErr := h.locationRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
 	if listErr != nil {
-		h.logger.Error("Failed to refresh provider list", "err", listErr)
+		h.logger.Error("Failed to refresh location list", "err", listErr)
 	} else {
-		data.Providers = updatedProviders
+		data.Locations = updatedLocations
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Provider creado correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Location creada correctamente.")
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.renderTemplate(w, "location-editor-response", data)
 		return
 	}
 
@@ -288,23 +290,25 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	id := r.PathValue("id")
 	name := strings.TrimSpace(r.Form.Get("name"))
-	website := strings.TrimSpace(r.Form.Get("website"))
+	city := strings.TrimSpace(r.Form.Get("city"))
+	country := strings.TrimSpace(r.Form.Get("country"))
 	notes := strings.TrimSpace(r.Form.Get("notes"))
 
 	data.EditorMode = "edit"
-	data.FormAction = fmt.Sprintf("/providers/%s/edit", id)
-	data.FormSubmit = "Actualizar provider"
-	data.Provider = &provider.Provider{
+	data.FormAction = fmt.Sprintf("/locations/%s/edit", id)
+	data.FormSubmit = "Actualizar location"
+	data.Location = &location.Location{
 		Id:      id,
 		Name:    name,
-		Website: website,
+		City:    city,
+		Country: country,
 		Notes:   notes,
 	}
 
@@ -313,22 +317,22 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	current, findErr := h.providerRepo.GetByID(r.Context(), id)
+	current, findErr := h.locationRepo.GetByID(r.Context(), id)
 	if findErr != nil {
-		h.logger.Error("Failed to load provider for update", "id", id, "err", findErr)
+		h.logger.Error("Failed to load location for update", "id", id, "err", findErr)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo validar el provider a actualizar.")
+		data.ErrorHTML = bannerHTML("bad", "No se pudo validar la location a actualizar.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -337,56 +341,56 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	if current == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
+		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	if err := h.providerRepo.Update(r.Context(), data.Provider); err != nil {
-		h.logger.Error("Failed to update provider", "id", id, "err", err)
+	if err := h.locationRepo.Update(r.Context(), data.Location); err != nil {
+		h.logger.Error("Failed to update location", "id", id, "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo actualizar el provider."
+		msg := "No se pudo actualizar la location."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe un provider con ese nombre."
+			msg = "Ya existe una location con ese nombre."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
 		writeHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-panel", data)
+			h.renderTemplate(w, "location-editor-panel", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	refreshed, getErr := h.providerRepo.GetByID(r.Context(), id)
+	refreshed, getErr := h.locationRepo.GetByID(r.Context(), id)
 	if getErr != nil {
-		h.logger.Error("Failed to reload provider after update", "id", id, "err", getErr)
+		h.logger.Error("Failed to reload location after update", "id", id, "err", getErr)
 	} else if refreshed != nil {
-		data.Provider = refreshed
+		data.Location = refreshed
 	}
 
-	updatedProviders, listErr := h.providerRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
+	updatedLocations, listErr := h.locationRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
 	if listErr != nil {
-		h.logger.Error("Failed to refresh provider list", "err", listErr)
+		h.logger.Error("Failed to refresh location list", "err", listErr)
 	} else {
-		data.Providers = updatedProviders
+		data.Locations = updatedLocations
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Provider actualizado correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Location actualizada correctamente.")
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.renderTemplate(w, "location-editor-response", data)
 		return
 	}
 
@@ -402,39 +406,39 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
 	data, err := h.loadPageData(r, start)
 	if err != nil {
-		h.logger.Error("Failed to list providers", "err", err)
+		h.logger.Error("Failed to list locations", "err", err)
 		http.Error(w, "Not found", http.StatusNotFound)
 		return
 	}
 
 	id := r.PathValue("id")
-	if err := h.providerRepo.Delete(r.Context(), id); err != nil {
-		h.logger.Error("Failed to delete provider", "id", id, "err", err)
+	if err := h.locationRepo.Delete(r.Context(), id); err != nil {
+		h.logger.Error("Failed to delete location", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "Unable to delete provider.")
+		data.ErrorHTML = bannerHTML("bad", "No se pudo eliminar la location.")
 		writeHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-response", data)
+			h.renderTemplate(w, "location-editor-response", data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
 		return
 	}
 
-	updatedProviders, listErr := h.providerRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
+	updatedLocations, listErr := h.locationRepo.GetAll(r.Context(), data.SearchTerm, data.Limit)
 	if listErr != nil {
-		h.logger.Error("Failed to refresh provider list", "err", listErr)
+		h.logger.Error("Failed to refresh location list", "err", listErr)
 	} else {
-		data.Providers = updatedProviders
+		data.Locations = updatedLocations
 	}
 
 	data.EditorMode = "flash"
-	data.NoticeHTML = bannerHTML("ok", "Provider deleted successfully.")
+	data.NoticeHTML = bannerHTML("ok", "Location eliminada correctamente.")
 
 	writeHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.renderTemplate(w, "location-editor-response", data)
 		return
 	}
 
@@ -443,19 +447,19 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, error) {
 	searchTerm, limit := parseListState(r)
-	providers, err := h.providerRepo.GetAll(r.Context(), searchTerm, limit)
+	locations, err := h.locationRepo.GetAll(r.Context(), searchTerm, limit)
 	if err != nil {
 		return pageData{}, err
 	}
 
 	return pageData{
-		BaseData:   ui.NewBaseData("Providers", start),
-		Providers:  providers,
+		BaseData:   ui.NewBaseData("Locations", start),
+		Locations:  locations,
 		SearchTerm: searchTerm,
 		Limit:      limit,
 		EditorMode: "empty",
-		FormAction: "/providers",
-		FormSubmit: "Create provider",
+		FormAction: "/locations",
+		FormSubmit: "Crear location",
 	}, nil
 }
 
@@ -466,31 +470,15 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 }
 
 func (h *Handler) isListRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	if target == "providers-body" || target == "#providers-body" {
-		return true
-	}
-
-	trigger := strings.TrimSpace(r.Header.Get("HX-Trigger"))
-	triggerName := strings.TrimSpace(r.Header.Get("HX-Trigger-Name"))
-
-	return trigger == "provider-limit" ||
-		trigger == "provider-search" ||
-		triggerName == "limit" ||
-		triggerName == "q"
+	return r.Header.Get("HX-Request") == "true" &&
+		r.Header.Get("HX-Boosted") != "true" &&
+		r.Header.Get("HX-Target") == "locations-body"
 }
 
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	return target == "provider-editor" || target == "#provider-editor"
+	return r.Header.Get("HX-Request") == "true" &&
+		r.Header.Get("HX-Boosted") != "true" &&
+		r.Header.Get("HX-Target") == "location-editor"
 }
 
 func parseListState(r *http.Request) (string, int) {
@@ -525,7 +513,7 @@ func bannerHTML(kind, msg string) template.HTML {
 	}
 
 	escaped := html.EscapeString(msg)
-	return template.HTML(`<p class="provider-alert ` + className + `">` + escaped + `</p>`)
+	return template.HTML(`<p class="location-alert ` + className + `">` + escaped + `</p>`)
 }
 
 func writeHTMLHeader(w http.ResponseWriter) {

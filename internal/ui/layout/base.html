@@ -10,13 +10,14 @@
         >
         <!-- Load Missing.CSS -->
         <link rel="stylesheet" href="/static/css/missing.css" />
+        <link rel="stylesheet" href="/static/css/gavia.css" />
         <!-- Favicon and PWA settings -->
         <link rel="icon" type="image/png" href="/static/img/logo.png">
         <title>Gavia</title>
     </head>
     <body class="sidebar-layout" hx-boost="true">
         <header>
-            <img height="96" width="96" src="/static/img/logo.png">
+            <img height="96px" width="96px" src="/static/img/logo.png">
             <div class="<h1>">Gavia</div>
             <nav>
                 <ul role="list">
@@ -25,6 +26,12 @@
                     </li>
                     <li>
                         <a href="/providers">Providers</a>
+                    </li>
+                    <li>
+                        <a href="/locations">Locations</a>
+                    </li>
+                    <li>
+                        <a href="/os">Operating Systems</a>
                     </li>
                     <li>
                         <p>
@@ -67,8 +74,8 @@
             {{template "footer" .FooterData}}
         </div>
         <!-- Load HTMX & HyperScript -->
-        <script async src="/static/js/htmx.js"></script>
-        <script async src="/static/js/hyperscript.js"></script>
+        <script defer src="/static/js/htmx.js"></script>
+        <script defer src="/static/js/hyperscript.js"></script>
     </body>
 </html>
 {{end}}

@@ -49,13 +49,19 @@ func (r *ProviderRepository) Create(ctx context.Context, p *Provider) error {
 	return err
 }
 
-func (r *ProviderRepository) GetByID(ctx context.Context, id int) (*Provider, error) {
+func (r *ProviderRepository) GetByID(ctx context.Context, id string) (*Provider, error) {
+
+	if _, err := uuid.Parse(id); err != nil {
+		return nil, fmt.Errorf("invalid uuid format: %w", err)
+	}
+
 	p := &Provider{}
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, name, notes, website, created_at, updated_at FROM providers WHERE id = ?",
 		id).Scan(
 		&p.Id,
 		&p.Name,
+		&p.Notes,
 		&p.Website,
 		&p.CreatedAt,
 		&p.UpdatedAt,
@@ -69,10 +75,23 @@ func (r *ProviderRepository) GetByID(ctx context.Context, id int) (*Provider, er
 	return p, nil
 }
 
-func (r *ProviderRepository) GetAll(ctx context.Context) ([]*Provider, error) {
-	query := `SELECT id, name, notes, website, created_at, updated_at FROM providers ORDER BY name`
+func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limit int) ([]*Provider, error) {
+	query := `SELECT id, name, notes, website, created_at, updated_at FROM providers WHERE 1=1`
+	var args []any
 
-	rows, err := r.db.QueryContext(ctx, query)
+	if searchTerm != "" {
+		query += " AND name LIKE ?"
+		args = append(args, "%"+searchTerm+"%")
+	}
+
+	query += " ORDER BY name"
+
+	if limit > 0 {
+		query += " LIMIT ?"
+		args = append(args, limit)
+	}
+
+	rows, err := r.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +128,11 @@ func (r *ProviderRepository) Update(ctx context.Context, p *Provider) error {
 	return err
 }
 
-func (r *ProviderRepository) Delete(ctx context.Context, id int) error {
+func (r *ProviderRepository) Delete(ctx context.Context, id string) error {
+	if _, err := uuid.Parse(id); err != nil {
+		return fmt.Errorf("invalid uuid format: %w", err)
+	}
+
 	_, err := r.db.ExecContext(ctx, "DELETE FROM providers WHERE id = ?", id)
 	return err
 }

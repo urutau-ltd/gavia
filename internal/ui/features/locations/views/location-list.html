@@ -1,0 +1,53 @@
+{{define "location-list"}} {{- range .Locations}}
+<tr id="location-row-{{.Id}}">
+    <td><strong>{{.Name}}</strong></td>
+    <td>
+        {{- if .City -}} {{.City}} {{- else -}}
+        <span class="location-muted">Sin ciudad</span>
+        {{- end -}}
+    </td>
+    <td>
+        {{- if .Country -}} {{.Country}} {{- else -}}
+        <span class="location-muted">Sin país</span>
+        {{- end -}}
+    </td>
+    <td class="location-actions">
+        <a
+            class="plain"
+            href="/locations/{{.Id}}"
+            hx-get="/locations/{{.Id}}"
+            hx-target="#location-editor"
+            hx-swap="outerHTML"
+        >
+            Ver
+        </a>
+
+        <a
+            class="ok"
+            href="/locations/{{.Id}}/edit"
+            hx-get="/locations/{{.Id}}/edit"
+            hx-target="#location-editor"
+            hx-swap="outerHTML"
+        >
+            Editar
+        </a>
+
+        <button
+            type="button"
+            class="bad"
+            hx-delete="/locations/{{.Id}}"
+            hx-target="#location-editor"
+            hx-swap="outerHTML"
+            hx-include="#location-search,#location-limit"
+            hx-confirm="¿Seguro que quieres eliminar esta location?"
+            _="on click add .is-removing to #location-row-{{.Id}}"
+        >
+            Eliminar
+        </button>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="4"><em>No hay locations registradas.</em></td>
+</tr>
+{{- end}} {{end}}

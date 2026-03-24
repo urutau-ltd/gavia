@@ -1,0 +1,135 @@
+{{define "provider-editor-panel"}}
+<section
+    id="provider-editor"
+    class="box provider-editor"
+    _="on htmx:beforeRequest add .is-loading to me end
+       on htmx:afterSwap remove .is-loading from me"
+>
+    {{template "provider-editor-content" .}}
+</section>
+{{end}} {{define "provider-editor-content"}} {{if .NoticeHTML}} {{.NoticeHTML}}
+{{end}} {{if .ErrorHTML}} {{.ErrorHTML}} {{end}} {{if eq .EditorMode "new"}}
+{{template "provider-form" .}} {{else if eq .EditorMode "edit"}} {{template
+"provider-form" .}} {{else if eq .EditorMode "detail"}} {{template
+"provider-detail" .}} {{else}} {{template "provider-empty" .}} {{end}} {{end}}
+{{define "provider-editor-response"}} {{template "provider-editor-panel" .}}
+<tbody id="providers-body" hx-swap-oob="outerHTML">
+    {{template "provider-list" .}}
+</tbody>
+{{end}} {{define "provider-empty"}}
+<h3>Panel de provider</h3>
+<p class="provider-muted">
+    Selecciona un provider del listado o crea uno nuevo.
+</p>
+{{end}} {{define "provider-detail"}} {{with .Provider}}
+<header class="provider-editor-head">
+    <h3>{{.Name}}</h3>
+    <a
+        class="ok provider-action-control"
+        href="/providers/{{.Id}}/edit"
+        hx-get="/providers/{{.Id}}/edit"
+        hx-target="#provider-editor"
+        hx-swap="outerHTML"
+    >
+        Editar
+    </a>
+</header>
+
+<dl class="provider-meta">
+    <dt>ID</dt>
+    <dd><code>{{.Id}}</code></dd>
+
+    <dt>Website</dt>
+    <dd>
+        {{if .Website}}
+        <a href="{{.Website}}" target="_blank" rel="noreferrer">{{.Website}}</a>
+        {{else}}
+        <span class="provider-muted">Sin website</span>
+        {{end}}
+    </dd>
+
+    <dt>Notas</dt>
+    <dd class="provider-note">
+        {{if .Notes}} {{.Notes}} {{else}}
+        <span class="provider-muted">Sin notas</span>
+        {{end}}
+    </dd>
+</dl>
+
+<div class="provider-editor-actions">
+    <button
+        type="button"
+        class="bad provider-action-control"
+        hx-delete="/providers/{{.Id}}"
+        hx-target="#provider-editor"
+        hx-swap="outerHTML"
+        hx-include="#provider-search,#provider-limit"
+        hx-confirm="¿Seguro que quieres eliminar este provider?"
+    >
+        Eliminar
+    </button>
+
+    <a
+        class="plain provider-action-control"
+        href="/providers"
+        hx-get="/providers"
+        hx-target="#provider-editor"
+        hx-swap="outerHTML"
+    >
+        Cerrar
+    </a>
+</div>
+{{else}} {{template "provider-empty" .}} {{end}} {{end}} {{define
+"provider-form"}}
+<h3>
+    {{if eq .EditorMode "edit"}}Editar provider{{else}}Nuevo provider{{end}}
+</h3>
+
+<form
+    class="provider-form"
+    method="post"
+    action="{{.FormAction}}"
+    hx-post="{{.FormAction}}"
+    hx-target="#provider-editor"
+    hx-swap="outerHTML"
+    hx-include="#provider-search,#provider-limit"
+>
+    <label for="provider-name">Nombre</label>
+    <input
+        id="provider-name"
+        name="name"
+        type="text"
+        required
+        maxlength="120"
+        value="{{with .Provider}}{{.Name}}{{end}}"
+    >
+
+    <label for="provider-website">Website</label>
+    <input
+        id="provider-website"
+        name="website"
+        type="url"
+        placeholder="https://example.com"
+        value="{{with .Provider}}{{.Website}}{{end}}"
+    >
+
+    <label for="provider-notes">Notas</label>
+    <textarea id="provider-notes" name="notes" rows="6"
+    >{{with .Provider}}{{.Notes}}{{end}}</textarea>
+
+    <div class="provider-editor-actions">
+        <button type="submit" class="ok provider-action-control">
+            {{.FormSubmit}}
+        </button>
+        <a
+            class="plain provider-action-control"
+            href="/providers"
+            hx-get="/providers"
+            hx-target="#provider-editor"
+            hx-swap="outerHTML"
+        >
+            Cancelar
+        </a>
+    </div>
+</form>
+{{end}}

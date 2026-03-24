@@ -1,0 +1,96 @@
+{{define "content"}}
+<section class="locations-view">
+    <header class="locations-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="location-subtitle">CRUD de locations con HTMX.</p>
+        </div>
+
+        <button
+            type="button"
+            class="ok"
+            hx-get="/locations/new"
+            hx-target="#location-editor"
+            hx-swap="outerHTML"
+        >
+            Nueva location
+        </button>
+    </header>
+
+    <section class="locations-grid flex-switch">
+        <article class="box locations-list-box width:100%">
+            <section
+                class="tool-bar locations-toolbar margin-block-end"
+                role="toolbar"
+                aria-label="Filtros de locations"
+            >
+                <div class="location-field">
+                    <label for="location-limit">Mostrar</label>
+                    <select
+                        id="location-limit"
+                        name="limit"
+                        hx-get="/locations"
+                        hx-target="#locations-body"
+                        hx-swap="innerHTML"
+                        hx-include="#location-search,#location-limit"
+                        hx-indicator="#locations-loading"
+                        hx-trigger="change"
+                    >
+                        <option value="5" {{if eq .Limit 5}}selected{{end}}>
+                            5
+                        </option>
+                        <option value="10" {{if eq .Limit 10}}selected{{end}}>
+                            10
+                        </option>
+                        <option value="25" {{if eq .Limit 25}}selected{{end}}>
+                            25
+                        </option>
+                        <option value="50" {{if eq .Limit 50}}selected{{end}}>
+                            50
+                        </option>
+                        <option value="100" {{if eq .Limit 100}}selected{{end}}>
+                            100
+                        </option>
+                    </select>
+                </div>
+
+                <div class="location-field location-search-field">
+                    <label for="location-search">Buscar</label>
+                    <input
+                        id="location-search"
+                        name="q"
+                        type="search"
+                        placeholder="Nombre, ciudad o país"
+                        value="{{.SearchTerm}}"
+                        hx-get="/locations"
+                        hx-target="#locations-body"
+                        hx-swap="innerHTML"
+                        hx-include="#location-search,#location-limit"
+                        hx-indicator="#locations-loading"
+                        hx-trigger="keyup changed delay:300ms, search"
+                    >
+                </div>
+            </section>
+
+            <small id="locations-loading" class="htmx-indicator"
+            >Actualizando listado...</small>
+
+            <table class="locations-table width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col">Location</th>
+                        <th scope="col">Ciudad</th>
+                        <th scope="col">País</th>
+                        <th scope="col">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="locations-body">
+                    {{template "location-list" .}}
+                </tbody>
+            </table>
+        </article>
+
+        {{template "location-editor-panel" .}}
+    </section>
+</section>
+{{end}}

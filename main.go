@@ -3,11 +3,14 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 	"io/fs"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
+	"time"
 
 	"codeberg.org/urutau-ltd/aile"
 	"codeberg.org/urutau-ltd/aile/x/combine"
@@ -15,6 +18,7 @@ import (
 	requestid "codeberg.org/urutau-ltd/aile/x/request_id"
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/dashboard"
+	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 )
 
@@ -24,8 +28,46 @@ var staticFS embed.FS
 //go:embed internal/ui
 var UIFS embed.FS
 
+func newLogger() *slog.Logger {
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{
+		AddSource: true,
+		ReplaceAttr: func(_ []string, a slog.Attr) slog.Attr {
+			switch a.Key {
+			case slog.TimeKey:
+				if t, ok := a.Value.Any().(time.Time); ok {
+					return slog.String("t", t.Format("2006-01-02 15:04:05"))
+				}
+				return slog.Attr{}
+			case slog.LevelKey:
+				if lvl, ok := a.Value.Any().(slog.Level); ok {
+					switch {
+					case lvl <= slog.LevelDebug:
+						return slog.String("lvl", "DBG")
+					case lvl <= slog.LevelInfo:
+						return slog.String("lvl", "INF")
+					case lvl <= slog.LevelWarn:
+						return slog.String("lvl", "WRN")
+					default:
+						return slog.String("lvl", "ERR")
+					}
+				}
+				return slog.String("lvl", a.Value.String())
+			case slog.MessageKey:
+				return slog.Attr{Key: "msg", Value: a.Value}
+			case slog.SourceKey:
+				if src, ok := a.Value.Any().(*slog.Source); ok {
+					return slog.String("src", fmt.Sprintf("%s:%d", filepath.Base(src.File), src.Line))
+				}
+			}
+			return a
+		},
+	})
+
+	return slog.New(handler).With("app", "gavia")
+}
+
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stderr, nil))
+	logger := newLogger()
 	slog.SetDefault(logger)
 
 	app, err := aile.New(aile.WithAddr(":9091"))
@@ -91,8 +133,27 @@ func main() {
 
 	app.GET("/static/{path...}", http.StripPrefix("/static/", http.FileServer(http.FS(staticRoot))).ServeHTTP)
 
-	app.GET("/dashboard", dashboard.NewHandler(logger, uiRoot, dbConn).Index)
-	app.GET("/providers", providers.NewHandler(logger, uiRoot, dbConn).Index)
+	dashboardHandler := dashboard.NewHandler(logger, uiRoot, dbConn)
+	providerHandler := providers.NewHandler(logger, uiRoot, dbConn)
+	locationHandler := locations.NewHandler(logger, uiRoot, dbConn)
+
+	app.GET("/dashboard", dashboardHandler.Index)
+
+	app.GET("/providers", providerHandler.Index)
+	app.GET("/providers/new", providerHandler.New)
+	app.POST("/providers", providerHandler.Create)
+	app.GET("/providers/{id}", providerHandler.Show)
+	app.GET("/providers/{id}/edit", providerHandler.Edit)
+	app.POST("/providers/{id}/edit", providerHandler.Update)
+	app.DELETE("/providers/{id}", providerHandler.Delete)
+
+	app.GET("/locations", locationHandler.Index)
+	app.GET("/locations/new", locationHandler.New)
+	app.POST("/locations", locationHandler.Create)
+	app.GET("/locations/{id}", locationHandler.Show)
+	app.GET("/locations/{id}/edit", locationHandler.Edit)
+	app.POST("/locations/{id}/edit", locationHandler.Update)
+	app.DELETE("/locations/{id}", locationHandler.Delete)
 
 	logger.Info("Mount routes")
 

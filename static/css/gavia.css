@@ -1,0 +1,352 @@
+.gavia-logo {
+    width: 96px;
+    height: 96px;
+}
+
+.providers-view {
+    display: grid;
+    gap: var(--gap);
+    max-inline-size: min(160ch, 100vw);
+}
+
+.providers-view.fullbleed {
+    padding-inline: var(--gap);
+}
+
+.providers-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gap);
+    flex-wrap: wrap;
+}
+
+.provider-subtitle {
+    margin: 0;
+    color: var(--muted-fg);
+}
+
+.providers-grid {
+    display: grid;
+    align-items: flex-start;
+    gap: var(--gap);
+    grid-template-columns: minmax(0, 1fr);
+}
+
+.providers-list-box {
+    min-width: 0;
+    overflow-x: auto;
+}
+
+.providers-toolbar {
+    width: 100%;
+    gap: var(--gap);
+    align-items: flex-end;
+    flex-wrap: wrap;
+}
+
+.provider-field {
+    min-width: 10rem;
+}
+
+.provider-search-field {
+    flex: 1 1 20rem;
+}
+
+.provider-filter-apply {
+    margin-inline-start: auto;
+}
+
+.providers-table {
+    table-layout: auto;
+}
+
+.providers-table td,
+.providers-table th {
+    vertical-align: middle;
+}
+
+.providers-table th:nth-child(1),
+.providers-table td:nth-child(1) {
+    width: 26%;
+    overflow-wrap: anywhere;
+}
+
+.providers-table th:nth-child(2),
+.providers-table td:nth-child(2) {
+    width: 44%;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.providers-table th:nth-child(3),
+.providers-table td:nth-child(3) {
+    width: 30%;
+}
+
+.providers-table a {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.provider-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.provider-action-control {
+    font-size: 0.72rem;
+    line-height: 1;
+    min-height: 1.45rem;
+    padding-inline: 0.45rem;
+}
+
+.provider-actions a.provider-action-control,
+.provider-editor-actions a.provider-action-control {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: var(--interactive-border-width) var(--interactive-border-style) var(--graphical-fg);
+    border-radius: var(--interactive-border-radius);
+    text-decoration: none;
+    color: var(--accent);
+    background: var(--box-bg);
+}
+
+.provider-actions a.provider-action-control.ok,
+.provider-editor-actions a.provider-action-control.ok {
+    color: var(--ok-fg);
+}
+
+.provider-actions a.provider-action-control.bad,
+.provider-editor-actions a.provider-action-control.bad {
+    color: var(--bad-fg);
+}
+
+.provider-editor {
+    align-self: start;
+    min-width: 0;
+    width: 100%;
+    position: static;
+}
+
+.provider-editor.is-loading {
+    opacity: 0.7;
+}
+
+.provider-editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap);
+    flex-wrap: wrap;
+}
+
+.provider-meta {
+    display: grid;
+    gap: 0.35rem 0.8rem;
+    grid-template-columns: max-content 1fr;
+    margin-block: var(--gap);
+}
+
+.provider-note {
+    white-space: pre-wrap;
+}
+
+.provider-form {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.provider-editor-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-top: var(--gap);
+}
+
+.provider-alert {
+    margin: 0 0 var(--gap);
+}
+
+.provider-muted {
+    color: var(--muted-fg);
+}
+
+#provider-editor.htmx-request,
+#providers-body.htmx-request {
+    opacity: 0.6;
+    transition: opacity 160ms ease-in;
+}
+
+#providers-body tr.is-removing {
+    opacity: 0.35;
+}
+
+.htmx-indicator {
+    display: none;
+}
+
+.htmx-request .htmx-indicator {
+    display: inline;
+}
+
+@media (min-width: 1080px) {
+    .providers-grid {
+        grid-template-columns: minmax(0, 2.3fr) minmax(22rem, 1fr);
+    }
+
+    .providers-grid > .provider-editor {
+        position: sticky;
+        top: var(--gap);
+    }
+}
+
+.locations-view {
+    display: grid;
+    gap: var(--gap);
+}
+
+.locations-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--gap);
+    flex-wrap: wrap;
+}
+
+.location-subtitle {
+    margin: 0;
+    color: var(--muted-fg);
+}
+
+.locations-grid {
+    align-items: flex-start;
+    --flex-switch-threshold: 95ch;
+}
+
+.locations-list-box {
+    min-width: 0;
+}
+
+.locations-toolbar {
+    width: 100%;
+    gap: var(--gap);
+}
+
+.location-field {
+    min-width: 10rem;
+}
+
+.location-search-field {
+    flex: 1 1 20rem;
+}
+
+.locations-table {
+    table-layout: fixed;
+}
+
+.locations-table td,
+.locations-table th {
+    vertical-align: middle;
+}
+
+.locations-table th:nth-child(1),
+.locations-table td:nth-child(1) {
+    width: 24%;
+    overflow-wrap: anywhere;
+}
+
+.locations-table th:nth-child(2),
+.locations-table td:nth-child(2) {
+    width: 18%;
+    overflow-wrap: anywhere;
+}
+
+.locations-table th:nth-child(3),
+.locations-table td:nth-child(3) {
+    width: 18%;
+    overflow-wrap: anywhere;
+}
+
+.locations-table th:nth-child(4),
+.locations-table td:nth-child(4) {
+    width: 40%;
+}
+
+.location-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+
+.location-editor {
+    align-self: start;
+    min-width: 0;
+    width: 100%;
+    position: static;
+}
+
+.location-editor.is-loading {
+    opacity: 0.7;
+}
+
+.location-editor-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--gap);
+    flex-wrap: wrap;
+}
+
+.location-meta {
+    display: grid;
+    gap: 0.35rem 0.8rem;
+    grid-template-columns: max-content 1fr;
+    margin-block: var(--gap);
+}
+
+.location-note {
+    white-space: pre-wrap;
+}
+
+.location-form {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.location-editor-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-top: var(--gap);
+}
+
+.location-alert {
+    margin: 0 0 var(--gap);
+}
+
+.location-muted {
+    color: var(--muted-fg);
+}
+
+#location-editor.htmx-request,
+#locations-body.htmx-request {
+    opacity: 0.6;
+    transition: opacity 160ms ease-in;
+}
+
+#locations-body tr.is-removing {
+    opacity: 0.35;
+}
+
+@media (min-width: 1280px) {
+    .locations-grid > .location-editor {
+        position: sticky;
+        top: var(--gap);
+    }
+}
