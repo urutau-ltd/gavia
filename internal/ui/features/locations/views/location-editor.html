@@ -43,21 +43,21 @@
 
     <dt>City</dt>
     <dd>
-        {{if .City}} {{.City}} {{else}}
+        {{if .City}} {{.CityValue}} {{else}}
         <span class="location-muted">No city</span>
         {{end}}
     </dd>
 
     <dt>Country</dt>
     <dd>
-        {{if .Country}} {{.Country}} {{else}}
+        {{if .Country}} {{.CountryValue}} {{else}}
         <span class="location-muted">No Country</span>
         {{end}}
     </dd>
 
     <dt>Notes</dt>
     <dd class="location-note">
-        {{if .Notes}} {{.Notes}} {{else}}
+        {{if .Notes}} {{.NotesValue}} {{else}}
         <span class="location-muted">Without notes</span>
         {{end}}
     </dd>
@@ -117,7 +117,7 @@
         name="city"
         type="text"
         maxlength="120"
-        value="{{with .Location}}{{.City}}{{end}}"
+        value="{{with .Location}}{{.CityValue}}{{end}}"
     >
 
     <label for="location-country">Country</label>
@@ -126,12 +126,12 @@
         name="country"
         type="text"
         maxlength="120"
-        value="{{with .Location}}{{.Country}}{{end}}"
+        value="{{with .Location}}{{.CountryValue}}{{end}}"
     >
 
     <label for="location-notes">Notes</label>
     <textarea id="location-notes" name="notes" rows="6"
-    >{{with .Location}}{{.Notes}}{{end}}</textarea>
+    >{{with .Location}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="location-editor-actions">
         <button type="submit" class="ok location-action-control">

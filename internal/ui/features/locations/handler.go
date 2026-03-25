@@ -240,9 +240,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	data.FormSubmit = "Crear location"
 	data.Location = &location.Location{
 		Name:    name,
-		City:    city,
-		Country: country,
-		Notes:   notes,
+		City:    optionalString(city),
+		Country: optionalString(country),
+		Notes:   optionalString(notes),
 	}
 
 	if name == "" {
@@ -323,9 +323,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	data.Location = &location.Location{
 		Id:      id,
 		Name:    name,
-		City:    city,
-		Country: country,
-		Notes:   notes,
+		City:    optionalString(city),
+		Country: optionalString(country),
+		Notes:   optionalString(notes),
 	}
 
 	if name == "" {
@@ -516,6 +516,14 @@ func (h *Handler) isEditorRequest(r *http.Request) bool {
 
 	target := strings.TrimSpace(r.Header.Get("HX-Target"))
 	return target == "location-editor" || target == "#location-editor"
+}
+
+func optionalString(value string) *string {
+	if value == "" {
+		return nil
+	}
+
+	return new(value)
 }
 
 // parseListState reads shared query/form controls for the locations list.

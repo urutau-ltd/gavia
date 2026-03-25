@@ -44,7 +44,8 @@
     <dt>Website</dt>
     <dd>
         {{if .Website}}
-        <a href="{{.Website}}" target="_blank" rel="noreferrer">{{.Website}}</a>
+        <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
+        >{{.WebsiteValue}}</a>
         {{else}}
         <span class="provider-muted">No website</span>
         {{end}}
@@ -52,7 +53,7 @@
 
     <dt>Notes</dt>
     <dd class="provider-note">
-        {{if .Notes}} {{.Notes}} {{else}}
+        {{if .Notes}} {{.NotesValue}} {{else}}
         <span class="provider-muted">No notes</span>
         {{end}}
     </dd>
@@ -112,12 +113,12 @@
         name="website"
         type="url"
         placeholder="https://example.com"
-        value="{{with .Provider}}{{.Website}}{{end}}"
+        value="{{with .Provider}}{{.WebsiteValue}}{{end}}"
     >
 
     <label for="provider-notes">Notes</label>
     <textarea id="provider-notes" name="notes" rows="6"
-    >{{with .Provider}}{{.Notes}}{{end}}</textarea>
+    >{{with .Provider}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="provider-editor-actions">
         <button type="submit" class="ok provider-action-control">

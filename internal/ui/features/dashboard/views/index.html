@@ -42,7 +42,7 @@
                     <a href="/providers/{{.Id}}">
                         <strong>{{.Name}}</strong>
                         {{if .Website}}
-                        <span>{{.Website}}</span>
+                        <span>{{.WebsiteValue}}</span>
                         {{else}}
                         <span>No website yet</span>
                         {{end}}
@@ -66,8 +66,9 @@
                     <a href="/locations/{{.Id}}">
                         <strong>{{.Name}}</strong>
                         <span>
-                            {{if .City}}{{.City}}{{else}}No city{{end}} • {{if
-                            .Country}}{{.Country}}{{else}}No country{{end}}
+                            {{if .City}}{{.CityValue}}{{else}}No city{{end}} •
+                            {{if .Country}}{{.CountryValue}}{{else}}No
+                            country{{end}}
                         </span>
                     </a>
                 </li>

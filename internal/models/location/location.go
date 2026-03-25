@@ -15,11 +15,23 @@ import (
 type Location struct {
 	Id        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
-	City      string    `db:"city" json:"city"`
-	Country   string    `db:"country" json:"country"`
-	Notes     string    `db:"notes" json:"notes"`
+	City      *string   `db:"city" json:"city"`
+	Country   *string   `db:"country" json:"country"`
+	Notes     *string   `db:"notes" json:"notes"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+func (l *Location) CityValue() string {
+	return stringValue(l.City)
+}
+
+func (l *Location) CountryValue() string {
+	return stringValue(l.Country)
+}
+
+func (l *Location) NotesValue() string {
+	return stringValue(l.Notes)
 }
 
 // LocationRepository centralizes SQL access for location CRUD operations.
@@ -48,9 +60,9 @@ func (r *LocationRepository) Create(ctx context.Context, l *Location) error {
 		"INSERT INTO locations (id, name, city, country, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
 		l.Id,
 		l.Name,
-		l.City,
-		l.Country,
-		l.Notes,
+		dbString(l.City),
+		dbString(l.Country),
+		dbString(l.Notes),
 		l.CreatedAt,
 		l.UpdatedAt,
 	)
@@ -65,15 +77,18 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*Location,
 		return nil, fmt.Errorf("invalid uuid format: %w", err)
 	}
 
+	var city sql.NullString
+	var country sql.NullString
+	var notes sql.NullString
 	l := &Location{}
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, name, city, country, notes, created_at, updated_at FROM locations WHERE id = ?",
 		id).Scan(
 		&l.Id,
 		&l.Name,
-		&l.City,
-		&l.Country,
-		&l.Notes,
+		&city,
+		&country,
+		&notes,
 		&l.CreatedAt,
 		&l.UpdatedAt,
 	)
@@ -84,6 +99,9 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*Location,
 		return nil, err
 	}
 
+	l.City = nullableString(city)
+	l.Country = nullableString(country)
+	l.Notes = nullableString(notes)
 	return l, nil
 }
 
@@ -114,19 +132,26 @@ func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limi
 
 	var locations []*Location
 	for rows.Next() {
+		var city sql.NullString
+		var country sql.NullString
+		var notes sql.NullString
 		l := &Location{}
 		err := rows.Scan(
 			&l.Id,
 			&l.Name,
-			&l.City,
-			&l.Country,
-			&l.Notes,
+			&city,
+			&country,
+			&notes,
 			&l.CreatedAt,
 			&l.UpdatedAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("error scanning location: %w", err)
 		}
+
+		l.City = nullableString(city)
+		l.Country = nullableString(country)
+		l.Notes = nullableString(notes)
 		locations = append(locations, l)
 	}
 
@@ -147,9 +172,9 @@ func (r *LocationRepository) Update(ctx context.Context, l *Location) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE locations SET name = ?, city = ?, country = ?, notes = ?, updated_at = ? WHERE id = ?",
 		l.Name,
-		l.City,
-		l.Country,
-		l.Notes,
+		dbString(l.City),
+		dbString(l.Country),
+		dbString(l.Notes),
 		l.UpdatedAt,
 		l.Id,
 	)
@@ -164,4 +189,28 @@ func (r *LocationRepository) Delete(ctx context.Context, id string) error {
 
 	_, err := r.db.ExecContext(ctx, "DELETE FROM locations WHERE id = ?", id)
 	return err
+}
+
+func nullableString(value sql.NullString) *string {
+	if !value.Valid || value.String == "" {
+		return nil
+	}
+
+	return new(value.String)
+}
+
+func dbString(value *string) any {
+	if value == nil {
+		return nil
+	}
+
+	return *value
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
 }

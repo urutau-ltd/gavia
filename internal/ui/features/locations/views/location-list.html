@@ -2,12 +2,12 @@
 <tr id="location-row-{{.Id}}">
     <td data-label="Location"><strong>{{.Name}}</strong></td>
     <td data-label="City">
-        {{- if .City -}} {{.City}} {{- else -}}
+        {{- if .City -}} {{.CityValue}} {{- else -}}
         <span class="location-muted">No city</span>
         {{- end -}}
     </td>
     <td data-label="Country">
-        {{- if .Country -}} {{.Country}} {{- else -}}
+        {{- if .Country -}} {{.CountryValue}} {{- else -}}
         <span class="location-muted">No country</span>
         {{- end -}}
     </td>

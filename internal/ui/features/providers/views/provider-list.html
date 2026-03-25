@@ -3,7 +3,8 @@
     <td data-label="Provider"><strong>{{.Name}}</strong></td>
     <td data-label="Website">
         {{- if .Website -}}
-        <a href="{{.Website}}" target="_blank" rel="noreferrer">{{.Website}}</a>
+        <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
+        >{{.WebsiteValue}}</a>
         {{- else -}}
         <span class="provider-muted">No website</span>
         {{- end -}}

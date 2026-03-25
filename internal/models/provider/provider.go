@@ -16,10 +16,18 @@ import (
 type Provider struct {
 	Id        string    `db:"id" json:"id"`
 	Name      string    `db:"name" json:"name"`
-	Website   string    `db:"website" json:"website"`
-	Notes     string    `db:"notes" json:"notes"`
+	Website   *string   `db:"website" json:"website"`
+	Notes     *string   `db:"notes" json:"notes"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
+}
+
+func (p *Provider) WebsiteValue() string {
+	return stringValue(p.Website)
+}
+
+func (p *Provider) NotesValue() string {
+	return stringValue(p.Notes)
 }
 
 // ProviderRepository contains all SQL operations for providers.
@@ -50,8 +58,8 @@ func (r *ProviderRepository) Create(ctx context.Context, p *Provider) error {
 		"INSERT INTO providers (id, name, website, notes) VALUES (?, ?, ?, ?)",
 		p.Id,
 		p.Name,
-		p.Website,
-		p.Notes,
+		dbString(p.Website),
+		dbString(p.Notes),
 	)
 
 	return err
@@ -65,14 +73,16 @@ func (r *ProviderRepository) GetByID(ctx context.Context, id string) (*Provider,
 		return nil, fmt.Errorf("invalid uuid format: %w", err)
 	}
 
+	var website sql.NullString
+	var notes sql.NullString
 	p := &Provider{}
 	err := r.db.QueryRowContext(ctx,
 		"SELECT id, name, notes, website, created_at, updated_at FROM providers WHERE id = ?",
 		id).Scan(
 		&p.Id,
 		&p.Name,
-		&p.Notes,
-		&p.Website,
+		&notes,
+		&website,
 		&p.CreatedAt,
 		&p.UpdatedAt,
 	)
@@ -82,6 +92,9 @@ func (r *ProviderRepository) GetByID(ctx context.Context, id string) (*Provider,
 		}
 		return nil, err
 	}
+
+	p.Notes = nullableString(notes)
+	p.Website = nullableString(website)
 	return p, nil
 }
 
@@ -111,12 +124,14 @@ func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limi
 	defer rows.Close()
 	var providers []*Provider
 	for rows.Next() {
+		var website sql.NullString
+		var notes sql.NullString
 		p := &Provider{}
 		err := rows.Scan(
 			&p.Id,
 			&p.Name,
-			&p.Notes,
-			&p.Website,
+			&notes,
+			&website,
 			&p.CreatedAt,
 			&p.UpdatedAt,
 		)
@@ -124,6 +139,8 @@ func (r *ProviderRepository) GetAll(ctx context.Context, searchTerm string, limi
 			return nil, fmt.Errorf("error scanning provider: %w", err)
 		}
 
+		p.Notes = nullableString(notes)
+		p.Website = nullableString(website)
 		providers = append(providers, p)
 	}
 	return providers, rows.Err()
@@ -144,8 +161,8 @@ func (r *ProviderRepository) Update(ctx context.Context, p *Provider) error {
 	_, err := r.db.ExecContext(ctx,
 		"UPDATE providers SET name = ?, website = ?, notes = ?, updated_at = ? WHERE id = ?",
 		p.Name,
-		p.Website,
-		p.Notes,
+		dbString(p.Website),
+		dbString(p.Notes),
 		p.UpdatedAt,
 		p.Id)
 	return err
@@ -160,4 +177,28 @@ func (r *ProviderRepository) Delete(ctx context.Context, id string) error {
 
 	_, err := r.db.ExecContext(ctx, "DELETE FROM providers WHERE id = ?", id)
 	return err
+}
+
+func nullableString(value sql.NullString) *string {
+	if !value.Valid || value.String == "" {
+		return nil
+	}
+
+	return new(value.String)
+}
+
+func dbString(value *string) any {
+	if value == nil {
+		return nil
+	}
+
+	return *value
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+
+	return *value
 }

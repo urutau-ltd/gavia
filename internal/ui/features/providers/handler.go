@@ -253,8 +253,8 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	data.FormSubmit = "Crear provider"
 	data.Provider = &provider.Provider{
 		Name:    name,
-		Website: website,
-		Notes:   notes,
+		Website: optionalString(website),
+		Notes:   optionalString(notes),
 	}
 
 	if name == "" {
@@ -334,8 +334,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	data.Provider = &provider.Provider{
 		Id:      id,
 		Name:    name,
-		Website: website,
-		Notes:   notes,
+		Website: optionalString(website),
+		Notes:   optionalString(notes),
 	}
 
 	if name == "" {
@@ -530,6 +530,14 @@ func (h *Handler) isEditorRequest(r *http.Request) bool {
 
 	target := strings.TrimSpace(r.Header.Get("HX-Target"))
 	return target == "provider-editor" || target == "#provider-editor"
+}
+
+func optionalString(value string) *string {
+	if value == "" {
+		return nil
+	}
+
+	return new(value)
 }
 
 // parseListState reads query/form list controls shared by full requests and HTMX swaps.

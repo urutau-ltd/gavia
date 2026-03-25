@@ -3,7 +3,7 @@
 ;; cualquier comando 'guix' que acepte una opción '--manifest' (o -m).
 
 (specifications->manifest
- (list "go@1.25"
+ (list "go@1.26"
        "gopls"
        "make"
        "gcc-toolchain"
