@@ -1,5 +1,5 @@
-codeberg.org/urutau-ltd/aile/v2 v2.0.0 h1:cH3uMxuywob62lzdmrwcZDWMZdbs/RGJlKx+rsDkvq4=
-codeberg.org/urutau-ltd/aile/v2 v2.0.0/go.mod h1:bzfJ4lZMyEhW7Zo7RMQRI85FxxZ4GOY4c5SgeKIoQbM=
+codeberg.org/urutau-ltd/aile/v2 v2.1.1 h1:s3kcqktAJi8V5HMouLKYbVdE338PXF3YjarflGLq4ZI=
+codeberg.org/urutau-ltd/aile/v2 v2.1.1/go.mod h1:bzfJ4lZMyEhW7Zo7RMQRI85FxxZ4GOY4c5SgeKIoQbM=
 github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkpeCY=
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/google/pprof v0.0.0-20250317173921-a4b03ec1a45e h1:ijClszYn+mADRFY17kjQEVQ1XRhq2/JR1M3sGqeJoxs=

@@ -3,7 +3,7 @@ module codeberg.org/urutau-ltd/gavia
 go 1.26.1
 
 require (
-	codeberg.org/urutau-ltd/aile/v2 v2.0.0
+	codeberg.org/urutau-ltd/aile/v2 v2.1.1
 	github.com/google/uuid v1.6.0
 	modernc.org/sqlite v1.47.0
 )
