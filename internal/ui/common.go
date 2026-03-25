@@ -5,6 +5,8 @@ import (
 	"runtime"
 	"strings"
 	"time"
+
+	"codeberg.org/urutau-ltd/aile/v2"
 )
 
 // BaseData is the shared top-level payload embedded by feature pages.
@@ -46,7 +48,7 @@ func NewBaseData(title string, start time.Time) BaseData {
 		FooterData: FooterData{
 			AppVersion:  appVersion,
 			RenderTime:  formatRenderTime(time.Since(start)),
-			AileVersion: "v1.1.0",
+			AileVersion: aile.Version,
 			GoVersion: strings.Trim(
 				runtime.Version(),
 				"go",

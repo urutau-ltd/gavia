@@ -15,14 +15,15 @@ import (
 	"strings"
 	"time"
 
-	"codeberg.org/urutau-ltd/aile"
-	"codeberg.org/urutau-ltd/aile/x/combine"
-	xlogger "codeberg.org/urutau-ltd/aile/x/logger"
-	requestid "codeberg.org/urutau-ltd/aile/x/request_id"
+	"codeberg.org/urutau-ltd/aile/v2"
+	"codeberg.org/urutau-ltd/aile/v2/x/combine"
+	xlogger "codeberg.org/urutau-ltd/aile/v2/x/logger"
+	requestid "codeberg.org/urutau-ltd/aile/v2/x/request_id"
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/dashboard"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
+	operatingsystems "codeberg.org/urutau-ltd/gavia/internal/ui/features/operating_systems"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 )
 
@@ -288,6 +289,7 @@ func main() {
 	dashboardHandler := dashboard.NewHandler(logger, uiRoot, dbConn)
 	providerHandler := providers.NewHandler(logger, uiRoot, dbConn)
 	locationHandler := locations.NewHandler(logger, uiRoot, dbConn)
+	osHandler := operatingsystems.NewHandler(logger, uiRoot, dbConn)
 
 	app.GET("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
@@ -311,6 +313,15 @@ func main() {
 	app.GET("/locations/{id}/edit", locationHandler.Edit)
 	app.POST("/locations/{id}/edit", locationHandler.Update)
 	app.DELETE("/locations/{id}", locationHandler.Delete)
+
+	// os/ routes
+	app.GET("/os", osHandler.Index)
+	app.GET("/os/new", osHandler.New)
+	app.POST("/os", osHandler.Create)
+	app.GET("/os/{id}", osHandler.Show)
+	app.GET("/os/{id}/edit", osHandler.Edit)
+	app.POST("/os/{id}/edit", osHandler.Update)
+	app.DELETE("/os/{id}", osHandler.Delete)
 
 	logger.Info("Routes mounted")
 

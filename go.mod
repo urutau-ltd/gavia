@@ -3,14 +3,13 @@ module codeberg.org/urutau-ltd/gavia
 go 1.26.1
 
 require (
-	codeberg.org/urutau-ltd/aile v1.0.1
+	codeberg.org/urutau-ltd/aile/v2 v2.0.0
+	github.com/google/uuid v1.6.0
 	modernc.org/sqlite v1.47.0
 )
 
 require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.3 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
