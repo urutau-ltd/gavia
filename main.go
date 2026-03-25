@@ -284,7 +284,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	app.GET("/static/{path...}", http.StripPrefix("/static/", http.FileServer(http.FS(staticRoot))).ServeHTTP)
+	if err := app.Static("/static", staticRoot); err != nil {
+		logger.Error("Error mounting static files", "err", err)
+		os.Exit(1)
+	}
 
 	dashboardHandler := dashboard.NewHandler(logger, uiRoot, dbConn)
 	providerHandler := providers.NewHandler(logger, uiRoot, dbConn)
