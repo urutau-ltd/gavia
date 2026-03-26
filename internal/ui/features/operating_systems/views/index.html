@@ -3,24 +3,24 @@
     <header class="os-head">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="os-subtitle">Manage your Operating Systems here.</p>
+            <p class="os-subtitle">Manage your operating systems here.</p>
         </div>
 
         <a
-            href="/oss/new"
+            href="/os/new"
             class="ok <big> <button> os-create-action"
             hx-get="/os/new"
             hx-target="#os-editor"
             hx-swap="outerHTML"
         >
-            New os
+            New operating system
         </a>
     </header>
 
     <section class="os-grid flex-switch">
         <article class="box os-list-box width:100%">
             <form
-                id="oss-filters"
+                id="os-filters"
                 class="tool-bar os-toolbar margin-block-end"
                 method="get"
                 action="/os"
@@ -64,7 +64,7 @@
                         id="os-search"
                         name="q"
                         type="search"
-                        placeholder="Operating System name"
+                        placeholder="Operating system name"
                         value="{{.SearchTerm}}"
                         hx-get="/os"
                         hx-target="#os-body"

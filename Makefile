@@ -20,12 +20,14 @@ GIT_TAG ?= $(shell git describe --tags --abbrev=0 2>/dev/null || echo dev)
 BUILD_VERSION ?= $(GIT_TAG)
 BUILD_DATE ?= $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
 UPSTREAM_REPO ?= urutau-ltd/gavia
+UPSTREAM_VENDOR ?= Urutau Limited
 BUILD_LDFLAGS ?= \
-	-X main.buildVersion=$(BUILD_VERSION) \
-	-X main.buildTag=$(GIT_TAG) \
-	-X main.buildCommit=$(GIT_COMMIT) \
-	-X main.buildDate=$(BUILD_DATE) \
-	-X main.upstreamRepo=$(UPSTREAM_REPO)
+	-X 'main.buildVersion=$(BUILD_VERSION)' \
+	-X 'main.buildTag=$(GIT_TAG)' \
+	-X 'main.buildCommit=$(GIT_COMMIT)' \
+	-X 'main.buildDate=$(BUILD_DATE)' \
+	-X 'main.upstreamRepo=$(UPSTREAM_REPO)' \
+	-X 'main.upstreamVendor=$(UPSTREAM_VENDOR)'
 BUILD_FLAGS ?= $(BUILD_LDFLAGS)
 
 FUZZTIME ?= 5s
@@ -64,7 +66,7 @@ install:
 	install -m 0755 "$(OUTPUT)" "$(INSTALL_ROOT_DIR)/$(INSTALL_NAME)"
 
 run:
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) run ./main.go
+	CGO_ENABLED=$(CGO_ENABLED) $(GO) run -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" ./main.go
 
 clean:
 	rm -rf $(BUILD_DIR)

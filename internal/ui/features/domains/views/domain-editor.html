@@ -1,0 +1,201 @@
+{{define "domain-editor-panel"}}
+<section
+    id="domain-editor"
+    class="box crud-editor"
+    _="on htmx:beforeRequest add .is-loading to me end
+       on htmx:afterSwap remove .is-loading from me"
+>
+    {{template "domain-editor-content" .}}
+</section>
+{{end}}
+
+{{define "domain-editor-content"}}
+{{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+{{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+{{if eq .EditorMode "new"}}
+{{template "domain-form" .}}
+{{else if eq .EditorMode "edit"}}
+{{template "domain-form" .}}
+{{else if eq .EditorMode "detail"}}
+{{template "domain-detail" .}}
+{{else}}
+{{template "domain-empty" .}}
+{{end}}
+{{end}}
+
+{{define "domain-editor-response"}}
+{{template "domain-editor-panel" .}}
+<tbody id="domains-body" hx-swap-oob="outerHTML">
+    {{template "domain-list" .}}
+</tbody>
+{{end}}
+
+{{define "domain-empty"}}
+<div class="crud-empty-state">
+    <h3>Domains panel</h3>
+    <p class="crud-muted">
+        Select a domain from the list or create a new one.
+    </p>
+</div>
+{{end}}
+
+{{define "domain-detail"}}
+{{with .Domain}}
+<header class="crud-editor-head">
+    <h3>{{.Domain}}</h3>
+    <a
+        class="ok crud-action-control"
+        href="/domains/{{.ID}}/edit"
+        hx-get="/domains/{{.ID}}/edit"
+        hx-target="#domain-editor"
+        hx-swap="outerHTML"
+    >
+        Edit
+    </a>
+</header>
+
+<dl class="crud-meta">
+    <dt>ID</dt>
+    <dd><code>{{.ID}}</code></dd>
+
+    <dt>Provider</dt>
+    <dd>
+        {{if .ProviderName}}
+        {{.ProviderNameValue}}
+        {{else}}
+        <span class="crud-muted">No provider</span>
+        {{end}}
+    </dd>
+
+    <dt>Due date</dt>
+    <dd>
+        {{if .DueDate}}
+        {{.DueDateValue}}
+        {{else}}
+        <span class="crud-muted">No due date</span>
+        {{end}}
+    </dd>
+
+    <dt>Price</dt>
+    <dd>
+        {{if .Price}}
+        {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
+        {{else}}
+        <span class="crud-muted">No price</span>
+        {{end}}
+    </dd>
+
+    <dt>Notes</dt>
+    <dd class="crud-note">
+        {{if .Notes}}
+        {{.NotesValue}}
+        {{else}}
+        <span class="crud-muted">No notes</span>
+        {{end}}
+    </dd>
+</dl>
+
+<div class="crud-editor-actions">
+    <button
+        type="button"
+        class="bad crud-action-control"
+        hx-delete="/domains/{{.ID}}"
+        hx-target="#domain-editor"
+        hx-swap="outerHTML"
+        hx-include="#domain-search,#domain-limit"
+        hx-confirm="Are you sure you want to delete this domain?"
+    >
+        Delete
+    </button>
+
+    <a
+        class="plain crud-action-control"
+        href="/domains"
+        hx-get="/domains"
+        hx-target="#domain-editor"
+        hx-swap="outerHTML"
+    >
+        Close
+    </a>
+</div>
+{{else}}
+{{template "domain-empty" .}}
+{{end}}
+{{end}}
+
+{{define "domain-form"}}
+<h3>{{if eq .EditorMode "edit"}}Edit domain{{else}}New domain{{end}}</h3>
+
+<form
+    class="crud-form"
+    method="post"
+    action="{{.FormAction}}"
+    hx-post="{{.FormAction}}"
+    hx-target="#domain-editor"
+    hx-swap="outerHTML"
+    hx-include="#domain-search,#domain-limit"
+>
+    {{template "csrf_input" .}}
+    <label for="domain-name">Domain</label>
+    <input
+        id="domain-name"
+        name="domain"
+        type="text"
+        required
+        maxlength="255"
+        placeholder="example.com"
+        value="{{with .Domain}}{{.Domain}}{{end}}"
+    >
+
+    <label for="domain-provider-id">Provider</label>
+    <select id="domain-provider-id" name="provider_id">
+        <option value="">No provider</option>
+        {{range .ProviderOptions}}
+        <option value="{{.Value}}" {{with $.Domain}}{{if eq .ProviderIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{end}}
+    </select>
+
+    <label for="domain-due-date">Due date</label>
+    <input
+        id="domain-due-date"
+        name="due_date"
+        type="date"
+        value="{{with .Domain}}{{.DueDateValue}}{{end}}"
+    >
+
+    <label for="domain-price">Price</label>
+    <input
+        id="domain-price"
+        name="price"
+        type="number"
+        min="0"
+        step="0.01"
+        value="{{with .Domain}}{{.PriceDisplay}}{{end}}"
+    >
+
+    <label for="domain-currency">Currency</label>
+    <input
+        id="domain-currency"
+        name="currency"
+        type="text"
+        maxlength="8"
+        value="{{if .Domain}}{{.Domain.CurrencyValue .DefaultCurrency}}{{else}}{{.DefaultCurrency}}{{end}}"
+    >
+
+    <label for="domain-notes">Notes</label>
+    <textarea id="domain-notes" name="notes" rows="6">{{with .Domain}}{{.NotesValue}}{{end}}</textarea>
+
+    <div class="crud-editor-actions">
+        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
+        <a
+            class="plain crud-action-control"
+            href="/domains"
+            hx-get="/domains"
+            hx-target="#domain-editor"
+            hx-swap="outerHTML"
+        >
+            Cancel
+        </a>
+    </div>
+</form>
+{{end}}

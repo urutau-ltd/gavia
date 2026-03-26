@@ -25,6 +25,14 @@ The snippets focus on repeated patterns in this codebase:
 This keeps new CRUD features consistent with providers/locations and reduces
 manual boilerplate.
 
+They are scaffolds, not authoritative runtime documentation. Review generated
+code against the current repository patterns, especially:
+
+- `resource.MountCollection` and `resource.MountSingleton`
+- shared HTMX helpers in `internal/ui/request.go`
+- auth-aware page layout in `internal/ui/layout/base.html`
+- generated JS bundles described in `docs/ASSET_PIPELINE.md`
+
 ## Included snippet names
 
 ### `go-mode`

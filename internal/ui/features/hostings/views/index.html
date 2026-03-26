@@ -1,0 +1,92 @@
+{{define "content"}}
+<section class="crud-view fullbleed">
+    <header class="crud-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="crud-subtitle">Manage hosting plans, related providers, linked domains, and billing metadata.</p>
+        </div>
+
+        <a
+            href="/hostings/new"
+            class="ok <big> <button> crud-create-action"
+            hx-get="/hostings/new"
+            hx-target="#hosting-editor"
+            hx-swap="outerHTML"
+        >
+            New hosting
+        </a>
+    </header>
+
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
+            <form
+                id="hostings-filters"
+                class="tool-bar crud-toolbar margin-block-end"
+                method="get"
+                action="/hostings"
+                role="toolbar"
+                aria-label="Filter hostings"
+            >
+                <div class="crud-field">
+                    <label for="hosting-limit">Show</label>
+                    <select
+                        id="hosting-limit"
+                        name="limit"
+                        hx-get="/hostings"
+                        hx-target="#hostings-body"
+                        hx-swap="innerHTML"
+                        hx-include="#hosting-search,#hosting-limit"
+                        hx-indicator="#hostings-loading"
+                        hx-trigger="change"
+                        onchange="if (!window.htmx) this.form.submit();"
+                    >
+                        <option value="5" {{if eq .Limit 5}}selected{{end}}>5</option>
+                        <option value="10" {{if eq .Limit 10}}selected{{end}}>10</option>
+                        <option value="25" {{if eq .Limit 25}}selected{{end}}>25</option>
+                        <option value="50" {{if eq .Limit 50}}selected{{end}}>50</option>
+                        <option value="100" {{if eq .Limit 100}}selected{{end}}>100</option>
+                    </select>
+                </div>
+
+                <div class="crud-field crud-search-field">
+                    <label for="hosting-search">Search</label>
+                    <input
+                        id="hosting-search"
+                        name="q"
+                        type="search"
+                        placeholder="Name, provider, location, domain"
+                        value="{{.SearchTerm}}"
+                        hx-get="/hostings"
+                        hx-target="#hostings-body"
+                        hx-swap="innerHTML"
+                        hx-include="#hosting-search,#hosting-limit"
+                        hx-indicator="#hostings-loading"
+                        hx-trigger="keyup changed delay:300ms, search"
+                    >
+                </div>
+
+                <button type="submit" class="info <button> <big> crud-filter-apply">Apply</button>
+            </form>
+
+            <small id="hostings-loading" class="htmx-indicator" aria-live="polite">Updating view...</small>
+
+            <table class="crud-table hostings-table width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col">Hosting</th>
+                        <th scope="col">Provider</th>
+                        <th scope="col">Location / Domain</th>
+                        <th scope="col">Billing</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="hostings-body">
+                    {{template "hosting-list" .}}
+                </tbody>
+            </table>
+        </article>
+
+        {{template "hosting-editor-panel" .}}
+    </section>
+</section>
+{{end}}

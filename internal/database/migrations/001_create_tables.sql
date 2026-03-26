@@ -53,15 +53,15 @@ CREATE TABLE IF NOT EXISTS locations (
        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
-/*  
-    Index: idx_locations_country  
-    Commentary: Optimiza búsquedas por país en la tabla locations  
-    Tabla: locations  
-    Columna(s): name
-    Tipo: BTREE (por defecto en SQLite)
-    Caso de uso: Consultas frecuentes que filtran por nombre de país
-    Impacto: Mejora velocidad de búsquedas, requiere espacio adicional  
-    Nota: Creado con IF NOT EXISTS para evitar errores en migraciones
+/*
+    Index: idx_locations_country
+    Commentary: Optimizes common country-related lookups in the locations table
+    Table: locations
+    Column(s): name
+    Type: BTREE (SQLite default)
+    Use case: Frequent queries filtered by location name
+    Impact: Improves lookup speed at the cost of extra storage
+    Note: Created with IF NOT EXISTS to keep migrations idempotent
 */
 CREATE INDEX IF NOT EXISTS idx_locations_country ON locations(name);
 
@@ -119,14 +119,17 @@ CREATE TABLE IF NOT EXISTS dns_records (
     id TEXT PRIMARY KEY NOT NULL,
     type TEXT NOT NULL CHECK(type IN ('A', 'AAAA', 'CNAME', 'MX', 'TXT', 'NS', 'SOA', 'SRV')),
     hostname TEXT NOT NULL,
+    domain_id TEXT,
     address TEXT NOT NULL,
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (domain_id) REFERENCES domains(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_dns_hostname ON dns_records(hostname);
 CREATE INDEX IF NOT EXISTS idx_dns_type ON dns_records(type);
+CREATE INDEX IF NOT EXISTS idx_dns_domain ON dns_records(domain_id);
 
 -- ============================================================================
 -- Table: labels
@@ -170,10 +173,10 @@ CREATE TABLE IF NOT EXISTS hostings (
     id TEXT PRIMARY KEY NOT NULL,
     name TEXT NOT NULL,
     type TEXT NOT NULL,
-    location_id INTEGER,
+    location_id TEXT,
     provider_id TEXT,
     disk_gb INTEGER,
-    domain_id INTEGER,
+    domain_id TEXT,
     price REAL,
     due_date DATE,
     since_date DATE,
@@ -199,11 +202,11 @@ CREATE TABLE IF NOT EXISTS servers (
     id TEXT PRIMARY KEY NOT NULL,
     hostname TEXT NOT NULL UNIQUE,
     type TEXT NOT NULL,
-    os_id INTEGER,
+    os_id TEXT,
     cpu_cores INTEGER,
     memory_gb INTEGER,
     disk_gb INTEGER,
-    location_id INTEGER,
+    location_id TEXT,
     provider_id TEXT,
     due_date DATE,
     price REAL,
@@ -228,8 +231,8 @@ CREATE INDEX IF NOT EXISTS idx_servers_due_date ON servers(due_date);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS server_ips (
     id TEXT PRIMARY KEY NOT NULL,
-    server_id INTEGER NOT NULL,
-    ip_id INTEGER NOT NULL,
+    server_id TEXT NOT NULL,
+    ip_id TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(server_id, ip_id),
     FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE,
@@ -246,8 +249,8 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_server_ips_ip ON server_ips(ip_id);
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS server_labels (
     id TEXT PRIMARY KEY NOT NULL,
-    server_id INTEGER NOT NULL,
-    label_id INTEGER NOT NULL,
+    server_id TEXT NOT NULL,
+    label_id TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(server_id, label_id),
     FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE,
@@ -281,32 +284,34 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_subscriptions_due_date ON subscriptions(du
 -- ============================================================================
 -- Table: account_settings
 -- Commentary: User-specific configuration and authentication data.
--- Main fields: id (PK), username, password_hash, email
+-- Main fields: id (PK, singleton), username, password_hash, email
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS account_settings (
-    id TEXT PRIMARY KEY NOT NULL,
+    id TEXT PRIMARY KEY NOT NULL DEFAULT 'account' CHECK (id = 'account'),
     username TEXT NOT NULL UNIQUE,
     password_hash TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    settings TEXT DEFAULT '{}',
+    settings TEXT NOT NULL DEFAULT '{}',
     notes TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_account_settings_singleton ON account_settings((1));
 
 -- ============================================================================
 -- Table: app_settings
 -- Commentary: Global application configurations and dashboard preferences.
--- Main fields: id (PK), default_currency, due_soon_amount
+-- Main fields: id (PK, singleton), default_currency, due_soon_amount
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS app_settings (
-    id TEXT PRIMARY KEY NOT NULL,
-    show_version_footer BOOLEAN DEFAULT true,
-    default_server_os TEXT NOT NULL,
-    default_curency TEXT NOT NULL,
-    due_soon_amount INT NOT NULL DEFAULT 5,
-    recent_add_amount INT NOT NULL DEFAULT 5, 
+    id TEXT PRIMARY KEY NOT NULL DEFAULT 'app' CHECK (id = 'app'),
+    show_version_footer BOOLEAN NOT NULL DEFAULT 1 CHECK (show_version_footer IN (0, 1)),
+    default_server_os TEXT NOT NULL DEFAULT 'Linux',
+    default_curency TEXT NOT NULL DEFAULT 'USD',
+    due_soon_amount INTEGER NOT NULL DEFAULT 5 CHECK (due_soon_amount >= 0),
+    recent_add_amount INTEGER NOT NULL DEFAULT 5 CHECK (recent_add_amount >= 0),
     description TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE UNIQUE INDEX IF NOT EXISTS idx_app_settings_singleton ON app_settings((1));

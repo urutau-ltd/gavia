@@ -1,0 +1,68 @@
+{{define "server-list"}} {{- range .Servers}}
+<tr id="server-row-{{.ID}}">
+    <td data-label="Server">
+        <strong>{{.Hostname}}</strong>
+        <div>{{.Type}}</div>
+    </td>
+    <td data-label="Specs">
+        <div>{{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted">No OS</span>{{end}}</div>
+        <div>
+            {{if .CPUCores}}{{.CPUCoresValue}} CPU{{else}}-{{end}} ·
+            {{if .MemoryGB}}{{.MemoryGBValue}} GB RAM{{else}}-{{end}} ·
+            {{if .DiskGB}}{{.DiskGBValue}} GB disk{{else}}-{{end}}
+        </div>
+    </td>
+    <td data-label="Provider / Location">
+        <div>{{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span class="crud-muted">No provider</span>{{end}}</div>
+        <div>{{if .LocationName}}{{.LocationNameValue}}{{else}}<span class="crud-muted">No location</span>{{end}}</div>
+    </td>
+    <td data-label="Billing">
+        {{if .DueDate}}
+        <div>Due {{.DueDateValue}}</div>
+        {{else}}
+        <div class="crud-muted">No due date</div>
+        {{end}}
+        {{if .Price}}
+        <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
+        {{end}}
+    </td>
+    <td data-label="Actions">
+        <div class="crud-actions">
+            <a
+                class="plain block crud-action-control"
+                href="/servers/{{.ID}}"
+                hx-get="/servers/{{.ID}}"
+                hx-target="#server-editor"
+                hx-swap="outerHTML"
+            >
+                View
+            </a>
+            <a
+                class="ok crud-action-control"
+                href="/servers/{{.ID}}/edit"
+                hx-get="/servers/{{.ID}}/edit"
+                hx-target="#server-editor"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </a>
+            <button
+                type="button"
+                class="bad crud-action-control"
+                hx-delete="/servers/{{.ID}}"
+                hx-target="#server-editor"
+                hx-swap="outerHTML"
+                hx-include="#server-search,#server-limit"
+                hx-confirm="Are you sure you want to delete this server?"
+                _="on click add .is-removing to #server-row-{{.ID}}"
+            >
+                Delete
+            </button>
+        </div>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="5"><em>No servers are registered in the database.</em></td>
+</tr>
+{{- end}} {{end}}

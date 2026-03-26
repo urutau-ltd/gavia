@@ -74,12 +74,12 @@ func RunMigrations(db *sql.DB, logger *slog.Logger) error {
 
 		if _, err := tx.Exec(string(content)); err != nil {
 			tx.Rollback()
-			return fmt.Errorf("error en %s: %w", entry.Name(), err)
+			return fmt.Errorf("migration %s failed: %w", entry.Name(), err)
 		}
 
 		tx.Exec("INSERT INTO migrations (name) VALUES (?)", entry.Name())
 		tx.Commit()
-		logger.Info("Migración aplicada: ", "entry_name", entry.Name())
+		logger.Info("Migration applied", "entry_name", entry.Name())
 	}
 	return nil
 }

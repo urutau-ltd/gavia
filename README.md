@@ -1,56 +1,139 @@
 <div align="center">
-    <img src="./static/img/logo.png" width=150 />
+    <img src="./static/img/logo.png" width="150" alt="Gavia logo" />
 </div>
 
 # Gavia
 
-Gavia is a self hosted web server inspired by
-[My Idlers](https://github.com/cp6/my-idlers) that helps you organize and store
-information about your own infrastructure. It's meant to track different things
-than _My Idlers_, it also comes with less featues so it's neither a replacement
-nor a competitor per se.
+Gavia is a self-hosted Go application for keeping infrastructure inventory,
+billing notes, settings, and small operational dashboards in one place. It uses
+server-rendered HTML with Aile, HTMX, Hyperscript, Missing.css, and SQLite.
 
-> [!IMPORTANT]
-> This project is still in very early stages of development. Please be patient
-> until you see a `v1.0.0` tag. Or if you wish to be impatient, build from
-> `main` and send patches!
+The project is intentionally explicit:
 
-## Documentation for developers
+- Go handlers render HTML templates directly.
+- CRUD modules stay readable instead of becoming a generic framework.
+- HTMX is used for partial updates, not as a second frontend.
+- SQLite is the default storage backend.
 
-- API Reference: [`docs/API_REFERENCE.md`](./docs/API_REFERENCE.md)
-- CRUD Extension Playbook:
-  [`docs/CRUD_EXTENSION_PLAYBOOK.md`](./docs/CRUD_EXTENSION_PLAYBOOK.md)
-- Tempel snippets: [`docs/TEMPEL_SNIPPETS.md`](./docs/TEMPEL_SNIPPETS.md)
+## Current scope
 
-## Local development
+The current codebase includes:
 
-- Native shell: `make run`
-- Guix shell: `make env`
-- OCI runtime build: `make image`
-- OCI runtime with Compose: `podman compose up --build gavia`
-- OCI development loop with bind mounts:
-  `podman compose --profile dev up --build gavia-dev`
+- Dashboard with due-soon summaries, expenses, FX snapshots, runtime
+  diagnostics, and uptime widgets
+- CRUD modules for providers, locations, operating systems, IP addresses, DNS
+  records, labels, domains, hostings, servers, and subscriptions
+- Singleton account settings and app settings
+- Login, logout, session cookies, API token management, and recovery-key based
+  password reset
+- CSRF protection for browser-side unsafe requests with same-origin checks plus
+  per-request tokens
+- JSON backup export/import, including encrypted backups with ML-KEM + AES-GCM
+- Lightweight uptime checks for HTTP targets
+- Page-local frontend scripts loaded only where they are needed
+
+## Quick start
+
+### Native shell
+
+```bash
+make run
+```
+
+### Development shell
+
+```bash
+make env
+```
+
+### Container image
+
+```bash
+make image
+```
+
+### Compose
+
+```bash
+podman compose up --build gavia
+```
 
 The default runtime listens on `:9091` and stores SQLite data at
-`./db/app.sqlite`. These can be overridden with `GAVIA_ADDR` and
-`GAVIA_DB_PATH`.
+`./db/app.sqlite`.
 
-## COPYING
+## Build metadata
 
-Where applicable, the source code of this project is under the terms of the GNU
-Affero General Public License version 3 or at your option any other later
-version.
+`make build` and `make run` inject runtime metadata with Go `-ldflags -X`.
+The Makefile fills:
 
-To preserve proper attribution since this builds statically, here's a list of
-resources used for this project and it's respective license.
+- `buildVersion`
+- `buildTag`
+- `buildCommit`
+- `buildDate`
+- `upstreamRepo`
+- `upstreamVendor`
 
-| Library              | License         |
-| -------------------- | --------------- |
-| `aile`               | AGPL-3.0+       |
-| `modernc.org/sqlite` | BSD-3-Clause    |
-| `htmx`               | Zero-Clause BSD |
-| `hyperscript`        | Zero-Clause BSD |
-| `missing.css`        | BSD-2-Clause    |
+That is what drives the version fields shown in logs and footer diagnostics.
 
-The Go programming language `Standard library` is under the `BSD-3-CLAUSE`
-license.
+## Environment variables
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `GAVIA_ADDR` | `:9091` | HTTP listen address |
+| `GAVIA_DB_PATH` | `./db/app.sqlite` | SQLite file path |
+| `GAVIA_LOG_FORMAT` | `text` | `text` or `json` |
+| `GAVIA_LOG_COLOR` | `auto` | `auto`, `always`, or `never` |
+| `GAVIA_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, or `error` |
+
+## Frontend assets
+
+The frontend uses vendored libraries and small page-local scripts served
+directly from `static/js/`. There is no bundling or transpilation step.
+
+The asset pipeline is documented in
+[docs/ASSET_PIPELINE.md](./docs/ASSET_PIPELINE.md).
+
+## Documentation
+
+### External and operational docs
+
+- [API reference](./docs/API_REFERENCE.md)
+- [Architecture overview](./docs/ARCHITECTURE.md)
+- [Asset pipeline](./docs/ASSET_PIPELINE.md)
+
+### Internal maintenance docs
+
+- [CRUD extension playbook](./docs/CRUD_EXTENSION_PLAYBOOK.md)
+- [Tempel snippets](./docs/TEMPEL_SNIPPETS.md)
+
+## Tests
+
+```bash
+env CGO_ENABLED=0 GOCACHE=/tmp/go-build go test ./...
+```
+
+## License and attribution
+
+Where applicable, the source code of this project is licensed under the GNU
+Affero General Public License version 3 or, at your option, any later version.
+
+The in-app `/licenses` page is intentionally editable as project content. Its
+base template lives at:
+
+- [`internal/ui/features/licenses/views/index.html`](./internal/ui/features/licenses/views/index.html)
+
+Third-party components currently used by the project include:
+
+| Library | License |
+| --- | --- |
+| `aile` | AGPL-3.0+ |
+| `modernc.org/sqlite` | BSD-3-Clause |
+| `htmx` | Zero-Clause BSD |
+| `hyperscript` | Zero-Clause BSD |
+| `missing.css` | BSD-2-Clause |
+
+The Go standard library is distributed under the BSD-3-Clause license.
+
+The `avatar-X.svg` files are based on DiceBear Rings avatars:
+
+> [Rings](https://www.dicebear.com/styles/rings/) by [DiceBear](https://www.dicebear.com/), licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

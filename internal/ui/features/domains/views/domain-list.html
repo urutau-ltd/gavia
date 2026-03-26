@@ -1,0 +1,68 @@
+{{define "domain-list"}} {{- range .Domains}}
+<tr id="domain-row-{{.ID}}">
+    <td data-label="Domain"><strong>{{.Domain}}</strong></td>
+    <td data-label="Provider">
+        {{if .ProviderName}}
+        {{.ProviderNameValue}}
+        {{else}}
+        <span class="crud-muted">No provider</span>
+        {{end}}
+    </td>
+    <td data-label="Billing">
+        {{if .DueDate}}
+        <div>Due {{.DueDateValue}}</div>
+        {{else}}
+        <div class="crud-muted">No due date</div>
+        {{end}}
+        {{if .Price}}
+        <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
+        {{end}}
+    </td>
+    <td data-label="Actions">
+        <div class="crud-actions">
+            <a
+                class="plain block crud-action-control"
+                title="View"
+                aria-label="View domain {{.Domain}}"
+                href="/domains/{{.ID}}"
+                hx-get="/domains/{{.ID}}"
+                hx-target="#domain-editor"
+                hx-swap="outerHTML"
+            >
+                View
+            </a>
+
+            <a
+                class="ok crud-action-control"
+                title="Edit"
+                aria-label="Edit domain {{.Domain}}"
+                href="/domains/{{.ID}}/edit"
+                hx-get="/domains/{{.ID}}/edit"
+                hx-target="#domain-editor"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </a>
+
+            <button
+                type="button"
+                title="Delete"
+                class="bad crud-action-control"
+                aria-label="Delete domain {{.Domain}}"
+                hx-delete="/domains/{{.ID}}"
+                hx-target="#domain-editor"
+                hx-swap="outerHTML"
+                hx-include="#domain-search,#domain-limit"
+                hx-confirm="Are you sure you want to delete this domain?"
+                _="on click add .is-removing to #domain-row-{{.ID}}"
+            >
+                Delete
+            </button>
+        </div>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="4"><em>No domains are registered in the database.</em></td>
+</tr>
+{{- end}} {{end}}

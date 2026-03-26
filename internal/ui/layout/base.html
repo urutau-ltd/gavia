@@ -1,6 +1,6 @@
 {{define "base"}}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
     <head>
         <meta charset="UTF-8" />
         <!-- Viewport -->
@@ -15,14 +15,26 @@
         <link rel="icon" type="image/png" href="/static/img/logo.png">
         <title>Gavia</title>
     </head>
-    <body class="sidebar-layout" hx-boost="true">
+    <body class="sidebar-layout" hx-boost="true" {{if .CSRFToken}}hx-headers='{"X-CSRF-Token":"{{.CSRFToken}}"}'{{end}}>
         <header>
             <img height="96px" width="96px" src="/static/img/logo.png">
             <div class="<h1>">Gavia</div>
             <nav>
                 <ul role="list">
+                    {{if .Nav.SetupRequired}}
                     <li>
-                        <a href="/dashboard" aria-current="page">Dashboard</a>
+                        <strong>
+                            <a
+                                href="/account-settings/edit"
+                                class="&lt;button&gt; width:100%"
+                            >
+                                Initial Account Setup
+                            </a>
+                        </strong>
+                    </li>
+                    {{else if .Nav.IsAuthenticated}}
+                    <li>
+                        <a href="/dashboard" {{if eq .Section "dashboard"}}aria-current="page"{{end}}>Dashboard</a>
                     </li>
                     <li>
                         <p>
@@ -30,34 +42,34 @@
                         </p>
                         <ul role="list" class="margin">
                             <li>
-                                <a href="/providers">Providers</a>
+                                <a href="/providers" {{if eq .Section "providers"}}aria-current="page"{{end}}>Providers</a>
                             </li>
                             <li>
-                                <a href="/locations">Locations</a>
+                                <a href="/locations" {{if eq .Section "locations"}}aria-current="page"{{end}}>Locations</a>
                             </li>
                             <li>
-                                <a href="/os">Operating Systems</a>
+                                <a href="/os" {{if eq .Section "os"}}aria-current="page"{{end}}>Operating Systems</a>
                             </li>
                             <li>
-                                <a href="/ips">IP Addresses</a>
+                                <a href="/ips" {{if eq .Section "ips"}}aria-current="page"{{end}}>IP Addresses</a>
                             </li>
                             <li>
-                                <a href="/dns">DNS Records</a>
+                                <a href="/dns" {{if eq .Section "dns"}}aria-current="page"{{end}}>DNS Records</a>
                             </li>
                             <li>
-                                <a href="/labels">Labels</a>
+                                <a href="/labels" {{if eq .Section "labels"}}aria-current="page"{{end}}>Labels</a>
                             </li>
                             <li>
-                                <a href="/domains">Domains</a>
+                                <a href="/domains" {{if eq .Section "domains"}}aria-current="page"{{end}}>Domains</a>
                             </li>
                             <li>
-                                <a href="/hosting">Hosting</a>
+                                <a href="/hostings" {{if eq .Section "hostings"}}aria-current="page"{{end}}>Hosting</a>
                             </li>
                             <li>
-                                <a href="/servers">Servers</a>
+                                <a href="/servers" {{if eq .Section "servers"}}aria-current="page"{{end}}>Servers</a>
                             </li>
                             <li>
-                                <a href="/subs">Subscriptions</a>
+                                <a href="/subscriptions" {{if eq .Section "subscriptions"}}aria-current="page"{{end}}>Subscriptions</a>
                             </li>
                         </ul>
                     </li>
@@ -67,14 +79,14 @@
                         </p>
                         <ul role="list" class="margin">
                             <li>
-                                <a href="/licenses">Free Software Licenses</a>
+                                <a href="/licenses" {{if eq .Section "licenses"}}aria-current="page"{{end}}>Free Software Licenses</a>
                             </li>
                         </ul>
                     </li>
                     <li>
                         <strong>
                             <a
-                                href="/demos"
+                                href="/account-settings"
                                 class="&lt;button&gt; width:100%"
                             >
                                 Account Settings
@@ -84,7 +96,7 @@
                     <li>
                         <strong>
                             <a
-                                href="/demos"
+                                href="/app-settings"
                                 class="&lt;button&gt; width:100%"
                             >
                                 App Settings
@@ -92,15 +104,25 @@
                         </strong>
                     </li>
                     <li>
+                        <form method="post" action="/logout">
+                            {{template "csrf_input" .}}
+                            <button type="submit" class="&lt;button&gt; width:100%">
+                                Logout
+                            </button>
+                        </form>
+                    </li>
+                    {{else}}
+                    <li>
                         <strong>
                             <a
-                                href="/demos"
+                                href="/login"
                                 class="&lt;button&gt; width:100%"
                             >
-                                Logout
+                                Login
                             </a>
                         </strong>
                     </li>
+                    {{end}}
                 </ul>
             </nav>
         </header>
@@ -113,6 +135,7 @@
         <!-- Load HTMX & HyperScript -->
         <script defer src="/static/js/htmx.js"></script>
         <script defer src="/static/js/hyperscript.js"></script>
+        {{block "page_scripts" .}}{{end}}
     </body>
 </html>
 {{end}}

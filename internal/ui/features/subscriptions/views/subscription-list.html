@@ -1,0 +1,63 @@
+{{define "subscription-list"}} {{- range .Subscriptions}}
+<tr id="subscription-row-{{.ID}}">
+    <td data-label="Subscription">
+        <strong>{{.Name}}</strong>
+        <div>{{.Type}}</div>
+    </td>
+    <td data-label="Renewal">
+        {{if .RenewalPeriod}}
+        {{.RenewalPeriodValue}}
+        {{else}}
+        <span class="crud-muted">No renewal period</span>
+        {{end}}
+    </td>
+    <td data-label="Billing">
+        {{if .DueDate}}
+        <div>Due {{.DueDateValue}}</div>
+        {{else}}
+        <div class="crud-muted">No due date</div>
+        {{end}}
+        {{if .Price}}
+        <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
+        {{end}}
+    </td>
+    <td data-label="Actions">
+        <div class="crud-actions">
+            <a
+                class="plain block crud-action-control"
+                href="/subscriptions/{{.ID}}"
+                hx-get="/subscriptions/{{.ID}}"
+                hx-target="#subscription-editor"
+                hx-swap="outerHTML"
+            >
+                View
+            </a>
+            <a
+                class="ok crud-action-control"
+                href="/subscriptions/{{.ID}}/edit"
+                hx-get="/subscriptions/{{.ID}}/edit"
+                hx-target="#subscription-editor"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </a>
+            <button
+                type="button"
+                class="bad crud-action-control"
+                hx-delete="/subscriptions/{{.ID}}"
+                hx-target="#subscription-editor"
+                hx-swap="outerHTML"
+                hx-include="#subscription-search,#subscription-limit"
+                hx-confirm="Are you sure you want to delete this subscription?"
+                _="on click add .is-removing to #subscription-row-{{.ID}}"
+            >
+                Delete
+            </button>
+        </div>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="4"><em>No subscriptions are registered in the database.</em></td>
+</tr>
+{{- end}} {{end}}

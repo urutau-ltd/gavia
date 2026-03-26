@@ -51,14 +51,14 @@
     <dt>Country</dt>
     <dd>
         {{if .Country}} {{.CountryValue}} {{else}}
-        <span class="location-muted">No Country</span>
+        <span class="location-muted">No country</span>
         {{end}}
     </dd>
 
     <dt>Notes</dt>
     <dd class="location-note">
         {{if .Notes}} {{.NotesValue}} {{else}}
-        <span class="location-muted">Without notes</span>
+        <span class="location-muted">No notes</span>
         {{end}}
     </dd>
 </dl>
@@ -71,7 +71,7 @@
         hx-target="#location-editor"
         hx-swap="outerHTML"
         hx-include="#location-search,#location-limit"
-        hx-confirm="¿Seguro que quieres eliminar esta location?"
+        hx-confirm="Are you sure you want to delete this location?"
     >
         Delete
     </button>
@@ -101,6 +101,7 @@
     hx-swap="outerHTML"
     hx-include="#location-search,#location-limit"
 >
+    {{template "csrf_input" .}}
     <label for="location-name">Name</label>
     <input
         id="location-name"

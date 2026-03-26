@@ -8,18 +8,11 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
-)
-
-// defaultLimit and maxLimit keep list endpoints bounded even when query params are missing or invalid.
-const (
-	defaultLimit int = 10
-	maxLimit     int = 100
 )
 
 // Handler coordinates HTTP endpoints, HTML templates and repository calls for the providers feature.
@@ -83,7 +76,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isListRequest(r) {
 		h.renderTemplate(w, "provider-list", data)
 		return
@@ -110,10 +103,10 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "new"
 	data.FormAction = "/providers"
-	data.FormSubmit = "Crear provider"
+	data.FormSubmit = "Create provider"
 	data.Provider = &provider.Provider{}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-panel", data)
 		return
@@ -138,8 +131,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load provider", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar el provider.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load provider.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -151,8 +144,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	if p == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Provider not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -165,7 +158,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "detail"
 	data.Provider = p
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-panel", data)
 		return
@@ -190,8 +183,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load provider for edit", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar el provider para editar.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load provider for editing.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -203,8 +196,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 
 	if p == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Provider not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -219,7 +212,7 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	data.FormAction = fmt.Sprintf("/providers/%s/edit", p.Id)
 	data.FormSubmit = "Update provider"
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-panel", data)
 		return
@@ -250,16 +243,16 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "new"
 	data.FormAction = "/providers"
-	data.FormSubmit = "Crear provider"
+	data.FormSubmit = "Create provider"
 	data.Provider = &provider.Provider{
 		Name:    name,
-		Website: optionalString(website),
-		Notes:   optionalString(notes),
+		Website: ui.OptionalString(website),
+		Notes:   ui.OptionalString(notes),
 	}
 
 	if name == "" {
-		data.ErrorHTML = bannerHTML("bad", "El nombre es obligatorio.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -272,13 +265,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := h.providerRepo.Create(r.Context(), data.Provider); err != nil {
 		h.logger.Error("Failed to create provider", "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo crear el provider."
+		msg := "Unable to create provider."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe un provider con ese nombre."
+			msg = "A provider with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -296,9 +289,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Provider creado correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Provider created successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-response", data)
 		return
@@ -330,17 +323,17 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "edit"
 	data.FormAction = fmt.Sprintf("/providers/%s/edit", id)
-	data.FormSubmit = "Actualizar provider"
+	data.FormSubmit = "Update provider"
 	data.Provider = &provider.Provider{
 		Id:      id,
 		Name:    name,
-		Website: optionalString(website),
-		Notes:   optionalString(notes),
+		Website: ui.OptionalString(website),
+		Notes:   ui.OptionalString(notes),
 	}
 
 	if name == "" {
-		data.ErrorHTML = bannerHTML("bad", "El nombre es obligatorio.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -354,8 +347,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if findErr != nil {
 		h.logger.Error("Failed to load provider for update", "id", id, "err", findErr)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo validar el provider a actualizar.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to validate provider before update.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -367,8 +360,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	if current == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Provider no encontrado.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Provider not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -381,13 +374,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if err := h.providerRepo.Update(r.Context(), data.Provider); err != nil {
 		h.logger.Error("Failed to update provider", "id", id, "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo actualizar el provider."
+		msg := "Unable to update provider."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe un provider con ese nombre."
+			msg = "A provider with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-panel", data)
@@ -412,9 +405,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Provider actualizado correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Provider updated successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-response", data)
 		return
@@ -444,7 +437,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("Failed to delete provider", "id", id, "err", err)
 		data.EditorMode = "flash"
 		data.ErrorHTML = bannerHTML("bad", "Unable to delete provider.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "provider-editor-response", data)
@@ -464,7 +457,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "flash"
 	data.NoticeHTML = bannerHTML("ok", "Provider deleted successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "provider-editor-response", data)
 		return
@@ -476,14 +469,14 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 // loadPageData gathers list state and records needed by provider templates.
 // Centralizing this avoids duplicating filter+query wiring across handlers.
 func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, error) {
-	searchTerm, limit := parseListState(r)
+	searchTerm, limit := ui.ParseListState(r)
 	providers, err := h.providerRepo.GetAll(r.Context(), searchTerm, limit)
 	if err != nil {
 		return pageData{}, err
 	}
 
 	return pageData{
-		BaseData:   ui.NewBaseData("Providers", start),
+		BaseData:   ui.NewBaseData(r, "Providers", start),
 		Providers:  providers,
 		SearchTerm: searchTerm,
 		Limit:      limit,
@@ -504,66 +497,17 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 // isListRequest detects HTMX calls that target only the providers table body.
 // This allows one route to serve both full and partial responses safely.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	if target == "providers-body" || target == "#providers-body" {
-		return true
-	}
-
-	trigger := strings.TrimSpace(r.Header.Get("HX-Trigger"))
-	triggerName := strings.TrimSpace(r.Header.Get("HX-Trigger-Name"))
-
-	return trigger == "provider-limit" ||
-		trigger == "provider-search" ||
-		triggerName == "limit" ||
-		triggerName == "q"
+	return ui.IsHTMXListRequest(
+		r,
+		"providers-body",
+		[]string{"provider-limit", "provider-search"},
+		[]string{"limit", "q"},
+	)
 }
 
 // isEditorRequest detects HTMX calls that target the right-side provider editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	return target == "provider-editor" || target == "#provider-editor"
-}
-
-func optionalString(value string) *string {
-	if value == "" {
-		return nil
-	}
-
-	return new(value)
-}
-
-// parseListState reads query/form list controls shared by full requests and HTMX swaps.
-func parseListState(r *http.Request) (string, int) {
-	_ = r.ParseForm()
-	searchTerm := strings.TrimSpace(r.Form.Get("q"))
-	limit := parseLimit(r.Form.Get("limit"))
-	return searchTerm, limit
-}
-
-// parseLimit normalizes user-provided limits into a safe range.
-func parseLimit(raw string) int {
-	if raw == "" {
-		return defaultLimit
-	}
-
-	limit, err := strconv.Atoi(raw)
-	if err != nil || limit <= 0 {
-		return defaultLimit
-	}
-
-	if limit > maxLimit {
-		return maxLimit
-	}
-
-	return limit
+	return ui.IsHTMXEditorRequest(r, "provider-editor")
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css semantic classes.
@@ -576,9 +520,4 @@ func bannerHTML(kind, msg string) template.HTML {
 
 	escaped := html.EscapeString(msg)
 	return template.HTML(`<p class="provider-alert ` + className + `">` + escaped + `</p>`)
-}
-
-// writeHTMLHeader enforces a consistent HTML content type for template responses.
-func writeHTMLHeader(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 }

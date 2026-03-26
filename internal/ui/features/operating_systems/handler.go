@@ -8,18 +8,11 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	operatingsystem "codeberg.org/urutau-ltd/gavia/internal/models/operating_system"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
-)
-
-// defaultLimit and maxLimit keep list endpoints bounded even when query params are missing or invalid.
-const (
-	defaultLimit int = 10
-	maxLimit     int = 100
 )
 
 type Handler struct {
@@ -72,7 +65,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isListRequest(r) {
 		h.renderTemplate(w, "os-list", data)
 		return
@@ -103,7 +96,7 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 	data.FormSubmit = "Create operating system"
 	data.OperatingSystem = &operatingsystem.OperatingSystem{}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-panel", data)
 		return
@@ -128,8 +121,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load operating system", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "Unable to load Operating System")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load operating system.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -142,7 +135,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	if p == nil {
 		data.EditorMode = "flash"
 		data.ErrorHTML = bannerHTML("warn", "Operating system not found.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -155,7 +148,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "detail"
 	data.OperatingSystem = p
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-panel", data)
 		return
@@ -180,8 +173,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load operating system for edit", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "Unable to load the operating system to be edited.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load operating system for editing.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -194,7 +187,7 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	if p == nil {
 		data.EditorMode = "flash"
 		data.ErrorHTML = bannerHTML("warn", "Operating system not found.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -209,7 +202,7 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	data.FormAction = fmt.Sprintf("/os/%s/edit", p.Id)
 	data.FormSubmit = "Update operating system"
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-panel", data)
 		return
@@ -242,12 +235,12 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	data.FormSubmit = "Create operating system"
 	data.OperatingSystem = &operatingsystem.OperatingSystem{
 		Name:  name,
-		Notes: optionalString(notes),
+		Notes: ui.OptionalString(notes),
 	}
 
 	if name == "" {
 		data.ErrorHTML = bannerHTML("bad", "Name is required.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -266,7 +259,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 			msg = "An operating system with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -284,9 +277,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Operating System created correctly.")
+	data.NoticeHTML = bannerHTML("ok", "Operating system created successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-response", data)
 		return
@@ -321,12 +314,12 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	data.OperatingSystem = &operatingsystem.OperatingSystem{
 		Id:    id,
 		Name:  name,
-		Notes: optionalString(notes),
+		Notes: ui.OptionalString(notes),
 	}
 
 	if name == "" {
 		data.ErrorHTML = bannerHTML("bad", "Name is required.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -340,8 +333,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if findErr != nil {
 		h.logger.Error("Failed to load operating system for update", "id", id, "err", findErr)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "Unable to validate the operating system to update.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to validate operating system before update.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -354,7 +347,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if current == nil {
 		data.EditorMode = "flash"
 		data.ErrorHTML = bannerHTML("warn", "Operating system not found.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -367,13 +360,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if err := h.osRepo.Update(r.Context(), data.OperatingSystem); err != nil {
 		h.logger.Error("Failed to update operating system", "id", id, "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo actualizar el operating system."
+		msg := "Unable to update operating system."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
 			msg = "An operating system with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-panel", data)
@@ -398,9 +391,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Operating system updated correctly.")
+	data.NoticeHTML = bannerHTML("ok", "Operating system updated successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-response", data)
 		return
@@ -430,7 +423,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		h.logger.Error("Failed to delete operating system", "id", id, "err", err)
 		data.EditorMode = "flash"
 		data.ErrorHTML = bannerHTML("bad", "Unable to delete operating system.")
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "os-editor-response", data)
@@ -450,7 +443,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "flash"
 	data.NoticeHTML = bannerHTML("ok", "Operating system deleted successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "os-editor-response", data)
 		return
@@ -462,15 +455,15 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 // loadPageData gathers list state and records needed by operating system templates.
 // Centralizing this avoids duplicating filter+query wiring across handlers.
 func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, error) {
-	searchTerm, limit := parseListState(r)
-	OperatingSystems, err := h.osRepo.GetAll(r.Context(), searchTerm, limit)
+	searchTerm, limit := ui.ParseListState(r)
+	operatingSystems, err := h.osRepo.GetAll(r.Context(), searchTerm, limit)
 	if err != nil {
 		return pageData{}, err
 	}
 
 	return pageData{
-		BaseData:         ui.NewBaseData("Operating Systems", start),
-		OperatingSystems: OperatingSystems,
+		BaseData:         ui.NewBaseData(r, "Operating Systems", start),
+		OperatingSystems: operatingSystems,
 		SearchTerm:       searchTerm,
 		Limit:            limit,
 		EditorMode:       "empty",
@@ -490,66 +483,17 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 // isListRequest detects HTMX calls that target only the operatingsystems table body.
 // This allows one route to serve both full and partial responses safely.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	if target == "os-body" || target == "#os-body" {
-		return true
-	}
-
-	trigger := strings.TrimSpace(r.Header.Get("HX-Trigger"))
-	triggerName := strings.TrimSpace(r.Header.Get("HX-Trigger-Name"))
-
-	return trigger == "os-limit" ||
-		trigger == "os-search" ||
-		triggerName == "limit" ||
-		triggerName == "q"
+	return ui.IsHTMXListRequest(
+		r,
+		"os-body",
+		[]string{"os-limit", "os-search"},
+		[]string{"limit", "q"},
+	)
 }
 
 // isEditorRequest detects HTMX calls that target the right-side operatingsystem editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	return target == "os-editor" || target == "#os-editor"
-}
-
-func optionalString(value string) *string {
-	if value == "" {
-		return nil
-	}
-
-	return new(value)
-}
-
-// parseListState reads query/form list controls shared by full requests and HTMX swaps.
-func parseListState(r *http.Request) (string, int) {
-	_ = r.ParseForm()
-	searchTerm := strings.TrimSpace(r.Form.Get("q"))
-	limit := parseLimit(r.Form.Get("limit"))
-	return searchTerm, limit
-}
-
-// parseLimit normalizes user-provided limits into a safe range.
-func parseLimit(raw string) int {
-	if raw == "" {
-		return defaultLimit
-	}
-
-	limit, err := strconv.Atoi(raw)
-	if err != nil || limit <= 0 {
-		return defaultLimit
-	}
-
-	if limit > maxLimit {
-		return maxLimit
-	}
-
-	return limit
+	return ui.IsHTMXEditorRequest(r, "os-editor")
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css semantic classes.
@@ -562,9 +506,4 @@ func bannerHTML(kind, msg string) template.HTML {
 
 	escaped := html.EscapeString(msg)
 	return template.HTML(`<p class="os-alert ` + className + `">` + escaped + `</p>`)
-}
-
-// writeHTMLHeader enforces a consistent HTML content type for template responses.
-func writeHTMLHeader(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 }

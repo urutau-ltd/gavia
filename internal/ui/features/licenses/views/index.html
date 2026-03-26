@@ -1,0 +1,137 @@
+{{define "content"}}
+<section class="licenses-view fullbleed padding">
+    <header class="settings-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="settings-subtitle">
+                This page serves it's purpose as an attibution list for the
+                code, images, tools and other artifacts used in this project.
+                <br />
+                If you find any licensing inconsistencies or wish that your
+                project is NOT listed here please contact the upstream
+                maintainers.
+            </p>
+        </div>
+    </header>
+
+    <div class="container">
+        <article class="box licenses-panel">
+            <p class="bold big">GAVIA</p>
+            <div class="licenses-logo-slot">
+                <img class="gavia-logo" src="/static/img/logo.png" />
+            </div>
+
+            <p class="settings-muted">
+                Gavia. Copyright 2026 - Urutaú Limited (Urutau LTD). Some rights
+                reserved.
+                <br />
+                The Gavia logo is property of Urutaú Limited (Urutau LTD). You
+                may use it under the terms of the <a
+                    href="https://creativecommons.org/licenses/by-nd/4.0/deed"
+                >Creative Commons Attribution-NoDerivatives 4.0 International (CC BY-ND 4.0)
+                </a>
+                license.
+            </p>
+        </article>
+
+        <article class="box licenses-panel">
+            <h3>Third-party software</h3>
+            <p class="settings-muted">
+                Gavia is possible thanks to these wonderful software
+                sources:
+            </p>
+
+            <div class="licenses-stack">
+                <section class="licenses-card">
+                    <div class="licenses-logo-slot">
+                        <img src="/static/img/htmx-logo.png">
+                    </div>
+                    <h4>HTMX - High Power Tools for HTML</h4>
+                    <p class="settings-muted">
+                        Copyright <a href="https://github.com/bigskysoftware">Big Sky Software</a> |
+                        Zero-Clause BSD | <a href="https://github.com/bigskysoftware/htmx">Upstream repository</a>
+                    </p>
+                </section>
+
+                <section class="licenses-card">
+                    <div class="licenses-logo-slot">Dependency logo</div>
+                    <h4>Dependency name</h4>
+                    <p class="settings-muted">
+                        Duplicate or remove these cards as needed.
+                    </p>
+                </section>
+
+
+                <section class="licenses-card">
+                    <div class="licenses-logo-slot">Dependency logo</div>
+                    <h4>Dependency name</h4>
+                    <p class="settings-muted">
+                        Duplicate or remove these cards as needed.
+                    </p>
+                </section>
+
+                <section class="licenses-card">
+                    <div class="licenses-logo-slot">Dependency logo</div>
+                    <h4>Dependency name</h4>
+                    <p class="settings-muted">
+                        Duplicate or remove these cards as needed.
+                    </p>
+                </section>
+
+            </div>
+        </article>
+    </div>
+
+    <div class="licenses-grid">
+        <article class="box licenses-panel">
+            <h3>Images and media</h3>
+            <p class="settings-muted">
+                Put logos, screenshots, badges, fonts, or illustrations used by
+                the project here.
+            </p>
+
+            <div class="licenses-media-grid">
+                <figure class="licenses-media-card">
+                    <div class="licenses-logo-slot">Image placeholder</div>
+                    <figcaption class="settings-muted">
+                        Source, author, license, and usage notes.
+                    </figcaption>
+                </figure>
+
+                <figure class="licenses-media-card">
+                    <div class="licenses-logo-slot">Image placeholder</div>
+                    <figcaption class="settings-muted">
+                        Source, author, license, and usage notes.
+                    </figcaption>
+                </figure>
+            </div>
+        </article>
+
+        <article class="box licenses-panel">
+            <h3>Full license texts or links</h3>
+            <p class="settings-muted">
+                Keep this section for the final license summaries, excerpts, or
+                links to complete texts.
+            </p>
+
+            <div class="licenses-stack">
+                <section class="licenses-card">
+                    <h4>License title</h4>
+                    <p class="settings-muted">
+                        Add your final wording here, or replace this block with
+                        links and long-form legal text.
+                    </p>
+                </section>
+
+                <section class="licenses-card">
+                    <h4>License title</h4>
+                    <p class="settings-muted">
+                        This template is intentionally generic so you can
+                        rewrite it without touching handlers.
+                    </p>
+                </section>
+            </div>
+        </article>
+    </div>
+</section>
+{{end}}

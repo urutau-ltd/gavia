@@ -1,0 +1,67 @@
+{{define "hosting-list"}} {{- range .Hostings}}
+<tr id="hosting-row-{{.ID}}">
+    <td data-label="Hosting">
+        <strong>{{.Name}}</strong>
+        <div>{{.Type}}</div>
+    </td>
+    <td data-label="Provider">
+        {{if .ProviderName}}
+        {{.ProviderNameValue}}
+        {{else}}
+        <span class="crud-muted">No provider</span>
+        {{end}}
+    </td>
+    <td data-label="Location / Domain">
+        <div>{{if .LocationName}}{{.LocationNameValue}}{{else}}<span class="crud-muted">No location</span>{{end}}</div>
+        <div>{{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted">No domain</span>{{end}}</div>
+    </td>
+    <td data-label="Billing">
+        {{if .DueDate}}
+        <div>Due {{.DueDateValue}}</div>
+        {{else}}
+        <div class="crud-muted">No due date</div>
+        {{end}}
+        {{if .Price}}
+        <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
+        {{end}}
+    </td>
+    <td data-label="Actions">
+        <div class="crud-actions">
+            <a
+                class="plain block crud-action-control"
+                href="/hostings/{{.ID}}"
+                hx-get="/hostings/{{.ID}}"
+                hx-target="#hosting-editor"
+                hx-swap="outerHTML"
+            >
+                View
+            </a>
+            <a
+                class="ok crud-action-control"
+                href="/hostings/{{.ID}}/edit"
+                hx-get="/hostings/{{.ID}}/edit"
+                hx-target="#hosting-editor"
+                hx-swap="outerHTML"
+            >
+                Edit
+            </a>
+            <button
+                type="button"
+                class="bad crud-action-control"
+                hx-delete="/hostings/{{.ID}}"
+                hx-target="#hosting-editor"
+                hx-swap="outerHTML"
+                hx-include="#hosting-search,#hosting-limit"
+                hx-confirm="Are you sure you want to delete this hosting?"
+                _="on click add .is-removing to #hosting-row-{{.ID}}"
+            >
+                Delete
+            </button>
+        </div>
+    </td>
+</tr>
+{{- else}}
+<tr>
+    <td colspan="5"><em>No hostings are registered in the database.</em></td>
+</tr>
+{{- end}} {{end}}

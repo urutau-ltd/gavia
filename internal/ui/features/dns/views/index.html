@@ -1,0 +1,40 @@
+{{define "content"}}
+<section class="crud-view fullbleed">
+    <header class="crud-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="crud-subtitle">Keep DNS records visible in the app and optionally link them back to tracked domains.</p>
+        </div>
+        <a href="/dns/new" class="ok <big> <button>" hx-get="/dns/new" hx-target="#dns-editor" hx-swap="outerHTML">New DNS record</a>
+    </header>
+
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
+            <form id="dns-filters" class="tool-bar crud-toolbar margin-block-end" method="get" action="/dns" role="toolbar" aria-label="Filter DNS records">
+                <div class="crud-field">
+                    <label for="dns-limit">Show</label>
+                    <select id="dns-limit" name="limit" hx-get="/dns" hx-target="#dns-body" hx-swap="innerHTML" hx-include="#dns-search,#dns-limit" hx-indicator="#dns-loading" hx-trigger="change" onchange="if (!window.htmx) this.form.submit();">
+                        <option value="5" {{if eq .Limit 5}}selected{{end}}>5</option>
+                        <option value="10" {{if eq .Limit 10}}selected{{end}}>10</option>
+                        <option value="25" {{if eq .Limit 25}}selected{{end}}>25</option>
+                        <option value="50" {{if eq .Limit 50}}selected{{end}}>50</option>
+                        <option value="100" {{if eq .Limit 100}}selected{{end}}>100</option>
+                    </select>
+                </div>
+                <div class="crud-field crud-search-field">
+                    <label for="dns-search">Search</label>
+                    <input id="dns-search" name="q" type="search" placeholder="Hostname, domain, address, type" value="{{.SearchTerm}}" hx-get="/dns" hx-target="#dns-body" hx-swap="innerHTML" hx-include="#dns-search,#dns-limit" hx-indicator="#dns-loading" hx-trigger="keyup changed delay:300ms, search">
+                </div>
+                <button type="submit" class="info <button> <big> crud-filter-apply">Apply</button>
+            </form>
+            <small id="dns-loading" class="htmx-indicator" aria-live="polite">Updating view...</small>
+
+            <table class="crud-table dns-table width:100%">
+                <thead><tr><th scope="col">Hostname</th><th scope="col">Domain</th><th scope="col">Type</th><th scope="col">Address</th><th scope="col">Actions</th></tr></thead>
+                <tbody id="dns-body">{{template "dns-list" .}}</tbody>
+            </table>
+        </article>
+        {{template "dns-editor-panel" .}}
+    </section>
+</section>
+{{end}}

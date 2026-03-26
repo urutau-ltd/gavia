@@ -9,22 +9,14 @@ import (
 	"io/fs"
 	"log"
 	"log/slog"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
 	"codeberg.org/urutau-ltd/aile/v2"
-	"codeberg.org/urutau-ltd/aile/v2/x/combine"
-	xlogger "codeberg.org/urutau-ltd/aile/v2/x/logger"
-	requestid "codeberg.org/urutau-ltd/aile/v2/x/request_id"
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
-	"codeberg.org/urutau-ltd/gavia/internal/ui/features/dashboard"
-	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
-	operatingsystems "codeberg.org/urutau-ltd/gavia/internal/ui/features/operating_systems"
-	"codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 )
 
 //go:embed static
@@ -34,12 +26,12 @@ var staticFS embed.FS
 var UIFS embed.FS
 
 var (
-	buildVersion   = "dev"
-	buildTag       = "dev"
-	buildCommit    = "unknown"
-	buildDate      = "unknown"
-	upstreamRepo   = "urutau-ltd/gavia"
-	upstreamVendor = "Urutau Limited"
+	buildVersion   string = "dev"
+	buildTag       string = "dev"
+	buildCommit    string = "unknown"
+	buildDate      string = "unknown"
+	upstreamRepo   string = "urutau-ltd/gavia"
+	upstreamVendor string = "Urutau Limited"
 )
 
 type appConfig struct {
@@ -257,20 +249,16 @@ func main() {
 
 	logger.Info("Migrations completed")
 
-	if err := database.SeedProviders(dbConn); err != nil {
-		logger.Error("Seeding providers failed", "err", err)
+	if err := database.SeedReferenceData(dbConn); err != nil {
+		logger.Error("Reference data seeding failed", "err", err)
 	} else {
-		logger.Info("Database seed completed")
+		logger.Info("Reference data seed completed")
 	}
 
-	// Middleware
-	app.Use(combine.Middleware(
-		aile.Recovery(),
-		requestid.Middleware(requestid.Config{
-			Header: "X-Request-ID",
-		}),
-		xlogger.Middleware(logger),
-	))
+	repositories := newRepositories(dbConn)
+	services := newServices(logger, dbConn, repositories)
+	applyUISettings(context.Background(), logger, repositories.appSettings)
+	configureMiddleware(app, logger, services.csrf, services.auth)
 
 	uiRoot, err := fs.Sub(UIFS, "internal/ui")
 	if err != nil {
@@ -289,66 +277,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	dashboardHandler := dashboard.NewHandler(logger, uiRoot, dbConn)
-	providerHandler := providers.NewHandler(logger, uiRoot, dbConn)
-	locationHandler := locations.NewHandler(logger, uiRoot, dbConn)
-	osHandler := operatingsystems.NewHandler(logger, uiRoot, dbConn)
-
-	app.GET("/", func(w http.ResponseWriter, r *http.Request) {
-		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
-	})
-	app.GET("/dashboard", dashboardHandler.Index)
-
-	// providers/ routes
-	app.GET("/providers", providerHandler.Index)
-	app.GET("/providers/new", providerHandler.New)
-	app.POST("/providers", providerHandler.Create)
-	app.GET("/providers/{id}", providerHandler.Show)
-	app.GET("/providers/{id}/edit", providerHandler.Edit)
-	app.POST("/providers/{id}/edit", providerHandler.Update)
-	app.DELETE("/providers/{id}", providerHandler.Delete)
-
-	// locations/ routes
-	app.GET("/locations", locationHandler.Index)
-	app.GET("/locations/new", locationHandler.New)
-	app.POST("/locations", locationHandler.Create)
-	app.GET("/locations/{id}", locationHandler.Show)
-	app.GET("/locations/{id}/edit", locationHandler.Edit)
-	app.POST("/locations/{id}/edit", locationHandler.Update)
-	app.DELETE("/locations/{id}", locationHandler.Delete)
-
-	// os/ routes
-	app.GET("/os", osHandler.Index)
-	app.GET("/os/new", osHandler.New)
-	app.POST("/os", osHandler.Create)
-	app.GET("/os/{id}", osHandler.Show)
-	app.GET("/os/{id}/edit", osHandler.Edit)
-	app.POST("/os/{id}/edit", osHandler.Update)
-	app.DELETE("/os/{id}", osHandler.Delete)
+	handlers := newHandlers(logger, uiRoot, dbConn, repositories, services)
+	if err := mountRoutes(app, handlers); err != nil {
+		logger.Error("Error mounting routes", "err", err)
+		os.Exit(1)
+	}
 
 	logger.Info("Routes mounted")
-
-	// Hooks
-	app.OnStart(func(ctx context.Context, st *aile.State) error {
-		logger.Info("Server started",
-			"addr", app.Addr(),
-			"db_path", cfg.DBPath,
-			"version", buildVersion,
-		)
-		return nil
-	})
-
-	app.OnShutdown(func(ctx context.Context, st *aile.State) error {
-		logger.Info("Stopping server")
-		err := dbConn.Close()
-		if err != nil {
-			logger.Error("Failed to close database", "err", err)
-			return err
-		}
-		logger.Info("Database shutdown successful")
-
-		return nil
-	})
+	registerLifecycle(app, logger, dbConn, cfg, services)
 
 	if err := app.Run(context.Background()); err != nil {
 		logger.Error("Fatal server error", "err", err)

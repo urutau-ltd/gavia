@@ -18,12 +18,12 @@
 </tbody>
 {{end}} {{define "os-empty"}}
 <div class="os-empty-state">
-    <h3>Providers panel</h3>
+    <h3>Operating systems panel</h3>
     <p class="os-muted">
-        Select a os from the list or create a new one.
+        Select an operating system from the list or create a new one.
     </p>
 </div>
-{{end}} {{define "os-detail"}} {{with .Provider}}
+{{end}} {{define "os-detail"}} {{with .OperatingSystem}}
 <header class="os-editor-head">
     <h3>{{.Name}}</h3>
     <a
@@ -63,7 +63,7 @@
 
     <a
         class="plain os-action-control"
-        href="/oss"
+        href="/os"
         hx-get="/os"
         hx-target="#os-editor"
         hx-swap="outerHTML"
@@ -73,7 +73,7 @@
 </div>
 {{else}} {{template "os-empty" .}} {{end}} {{end}} {{define "os-form"}}
 <h3>
-    {{if eq .EditorMode "edit"}}Edit os{{else}}New os{{end}}
+    {{if eq .EditorMode "edit"}}Edit operating system{{else}}New operating system{{end}}
 </h3>
 
 <form
@@ -85,6 +85,7 @@
     hx-swap="outerHTML"
     hx-include="#os-search,#os-limit"
 >
+    {{template "csrf_input" .}}
     <label for="os-name">Name</label>
     <input
         id="os-name"
@@ -97,7 +98,7 @@
 
     <label for="os-notes">Notes</label>
     <textarea id="os-notes" name="notes" rows="6"
-    >{{with .Provider}}{{.NotesValue}}{{end}}</textarea>
+    >{{with .OperatingSystem}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="os-editor-actions">
         <button type="submit" class="ok os-action-control">

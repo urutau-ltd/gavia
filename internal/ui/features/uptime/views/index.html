@@ -1,0 +1,207 @@
+{{define "content"}}
+<section class="settings-view">
+    <header class="settings-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="settings-subtitle">
+                Lightweight uptime checks for HTTP hosts with explicit monitor
+                settings and recent result history.
+            </p>
+        </div>
+    </header>
+
+    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+    {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+
+    {{with .Summary}}
+    <section class="dashboard-diagnostics-grid" aria-label="Uptime overview">
+        <article class="dashboard-mini-stat">
+            <strong>Total monitors</strong>
+            <span>{{.Total}}</span>
+            <small>Configured checks in this module.</small>
+        </article>
+        <article class="dashboard-mini-stat">
+            <strong>Up</strong>
+            <span>{{.Up}}</span>
+            <small>Latest known healthy state.</small>
+        </article>
+        <article class="dashboard-mini-stat">
+            <strong>Down</strong>
+            <span>{{.Down}}</span>
+            <small>Latest known failing state.</small>
+        </article>
+        <article class="dashboard-mini-stat">
+            <strong>Unknown</strong>
+            <span>{{.Unknown}}</span>
+            <small>Monitors without a recent sample yet.</small>
+        </article>
+    </section>
+    {{end}}
+
+    <div class="settings-grid">
+        <article class="box settings-panel">
+            <h3>Monitors</h3>
+            <ul role="list" class="settings-history-list">
+                {{range .Monitors}}
+                <li class="settings-expense-row">
+                    <div>
+                        <strong><a href="/uptime/{{.ID}}">{{.Name}}</a></strong>
+                        <div class="settings-muted">{{.TargetURL}}</div>
+                        {{if .StatusMeta}}
+                        <div class="settings-muted">Last check: {{.StatusMeta}}</div>
+                        {{end}}
+                    </div>
+                    <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
+                </li>
+                {{else}}
+                <li class="settings-muted">No uptime monitors have been created yet.</li>
+                {{end}}
+            </ul>
+        </article>
+
+        <article class="box settings-panel">
+            <h3>{{if .EditingExisting}}Edit monitor{{else}}New monitor{{end}}</h3>
+            <form
+                method="post"
+                action="{{if .EditingExisting}}/uptime/{{.Selected.ID}}/edit{{else}}/uptime{{end}}"
+                class="settings-form"
+            >
+                {{template "csrf_input" .}}
+                <label for="uptime-name">Name</label>
+                <input id="uptime-name" name="name" type="text" required value="{{.Selected.Name}}">
+
+                <label for="uptime-target-url">Target URL</label>
+                <input
+                    id="uptime-target-url"
+                    name="target_url"
+                    type="url"
+                    required
+                    value="{{.Selected.TargetURL}}"
+                >
+
+                <label for="uptime-expected-status">Expected HTTP status</label>
+                <input
+                    id="uptime-expected-status"
+                    name="expected_status"
+                    type="number"
+                    min="100"
+                    max="599"
+                    required
+                    value="{{.Selected.ExpectedStatus}}"
+                >
+
+                <label for="uptime-check-interval">Check interval in seconds</label>
+                <input
+                    id="uptime-check-interval"
+                    name="check_interval_seconds"
+                    type="number"
+                    min="30"
+                    required
+                    value="{{.Selected.CheckIntervalSeconds}}"
+                >
+
+                <label for="uptime-timeout-ms">Timeout in milliseconds</label>
+                <input
+                    id="uptime-timeout-ms"
+                    name="timeout_ms"
+                    type="number"
+                    min="250"
+                    required
+                    value="{{.Selected.TimeoutMS}}"
+                >
+
+                <label class="settings-check">
+                    <input type="checkbox" name="enabled" value="1" {{if .Selected.Enabled}}checked{{end}}>
+                    <span>Enabled</span>
+                </label>
+
+                <label for="uptime-notes">Notes</label>
+                <textarea id="uptime-notes" name="notes" rows="4">{{with .Selected.Notes}}{{.}}{{end}}</textarea>
+
+                <div class="settings-actions">
+                    <button type="submit" class="ok <button>">
+                        {{if .EditingExisting}}Save changes{{else}}Create monitor{{end}}
+                    </button>
+                    {{if .EditingExisting}}
+                    <a class="plain <button>" href="/uptime">New monitor</a>
+                    {{end}}
+                </div>
+            </form>
+
+            {{if .EditingExisting}}
+            {{if .SelectedStats}}
+            <div class="dashboard-diagnostics-grid">
+                {{range .SelectedStats}}
+                <article class="dashboard-mini-stat">
+                    <strong>{{.Label}}</strong>
+                    <span>{{.Value}}</span>
+                    <small>{{.Hint}}</small>
+                </article>
+                {{end}}
+            </div>
+            {{end}}
+
+            <form method="post" action="/uptime/{{.Selected.ID}}/delete">
+                {{template "csrf_input" .}}
+                <button type="submit" class="bad <button>">Delete</button>
+            </form>
+
+            <h3>Recent results</h3>
+            <ul role="list" class="settings-history-list">
+                {{range .Results}}
+                <li class="settings-expense-row">
+                    <div>
+                        <strong>{{.CheckedAt}}</strong>
+                        {{if .Detail}}
+                        <div class="settings-muted">{{.Detail}}</div>
+                        {{end}}
+                    </div>
+                    <div class="settings-expense-actions">
+                        <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
+                        {{if .Latency}}
+                        <span class="settings-muted">{{.Latency}}</span>
+                        {{end}}
+                    </div>
+                </li>
+                {{else}}
+                <li class="settings-muted">No results have been recorded for this monitor yet.</li>
+                {{end}}
+            </ul>
+            {{end}}
+        </article>
+    </div>
+
+    {{if .EditingExisting}}
+    <section class="dashboard-charts" aria-label="Uptime charts">
+        <article class="box settings-panel">
+            <div class="dashboard-panel-head">
+                <h3>Recent availability</h3>
+                <span class="settings-muted">Latest checks for this monitor</span>
+            </div>
+            <div class="dashboard-chart-frame">
+                <canvas id="uptime-results-chart" class="dashboard-chart-canvas"></canvas>
+            </div>
+        </article>
+
+        <article class="box settings-panel">
+            <div class="dashboard-panel-head">
+                <h3>Status split</h3>
+                <span class="settings-muted">Up versus down in the recent sample window</span>
+            </div>
+            <div class="dashboard-chart-frame">
+                <canvas id="uptime-distribution-chart" class="dashboard-chart-canvas"></canvas>
+            </div>
+        </article>
+    </section>
+
+    <script id="uptime-chart-data" type="application/json">{{.ChartsJSON}}</script>
+    {{end}}
+</section>
+{{end}}
+
+{{define "page_scripts"}}
+{{if .EditingExisting}}
+<script defer src="/static/js/chartjs.js"></script>
+<script defer src="/static/js/uptime.js"></script>
+{{end}}
+{{end}}

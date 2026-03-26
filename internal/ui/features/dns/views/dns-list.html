@@ -1,0 +1,17 @@
+{{define "dns-list"}}{{- range .Records}}
+<tr id="dns-row-{{.ID}}">
+    <td data-label="Hostname"><strong>{{.Hostname}}</strong></td>
+    <td data-label="Domain">{{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted">No linked domain</span>{{end}}</td>
+    <td data-label="Type">{{.Type}}</td>
+    <td data-label="Address">{{.Address}}</td>
+    <td data-label="Actions">
+        <div class="crud-actions">
+            <a class="plain block crud-action-control" href="/dns/{{.ID}}" hx-get="/dns/{{.ID}}" hx-target="#dns-editor" hx-swap="outerHTML">View</a>
+            <a class="ok crud-action-control" href="/dns/{{.ID}}/edit" hx-get="/dns/{{.ID}}/edit" hx-target="#dns-editor" hx-swap="outerHTML">Edit</a>
+            <button type="button" class="bad crud-action-control" hx-delete="/dns/{{.ID}}" hx-target="#dns-editor" hx-swap="outerHTML" hx-include="#dns-search,#dns-limit" hx-confirm="Are you sure you want to delete this DNS record?" _="on click add .is-removing to #dns-row-{{.ID}}">Delete</button>
+        </div>
+    </td>
+</tr>
+{{- else}}
+<tr><td colspan="5"><em>No DNS records are registered in the database.</em></td></tr>
+{{- end}}{{end}}

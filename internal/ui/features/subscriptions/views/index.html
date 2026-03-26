@@ -1,0 +1,91 @@
+{{define "content"}}
+<section class="crud-view fullbleed">
+    <header class="crud-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="crud-subtitle">Manage recurring services, renewal periods, and their billing history.</p>
+        </div>
+
+        <a
+            href="/subscriptions/new"
+            class="ok <big> <button> crud-create-action"
+            hx-get="/subscriptions/new"
+            hx-target="#subscription-editor"
+            hx-swap="outerHTML"
+        >
+            New subscription
+        </a>
+    </header>
+
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
+            <form
+                id="subscriptions-filters"
+                class="tool-bar crud-toolbar margin-block-end"
+                method="get"
+                action="/subscriptions"
+                role="toolbar"
+                aria-label="Filter subscriptions"
+            >
+                <div class="crud-field">
+                    <label for="subscription-limit">Show</label>
+                    <select
+                        id="subscription-limit"
+                        name="limit"
+                        hx-get="/subscriptions"
+                        hx-target="#subscriptions-body"
+                        hx-swap="innerHTML"
+                        hx-include="#subscription-search,#subscription-limit"
+                        hx-indicator="#subscriptions-loading"
+                        hx-trigger="change"
+                        onchange="if (!window.htmx) this.form.submit();"
+                    >
+                        <option value="5" {{if eq .Limit 5}}selected{{end}}>5</option>
+                        <option value="10" {{if eq .Limit 10}}selected{{end}}>10</option>
+                        <option value="25" {{if eq .Limit 25}}selected{{end}}>25</option>
+                        <option value="50" {{if eq .Limit 50}}selected{{end}}>50</option>
+                        <option value="100" {{if eq .Limit 100}}selected{{end}}>100</option>
+                    </select>
+                </div>
+
+                <div class="crud-field crud-search-field">
+                    <label for="subscription-search">Search</label>
+                    <input
+                        id="subscription-search"
+                        name="q"
+                        type="search"
+                        placeholder="Name, type, renewal period"
+                        value="{{.SearchTerm}}"
+                        hx-get="/subscriptions"
+                        hx-target="#subscriptions-body"
+                        hx-swap="innerHTML"
+                        hx-include="#subscription-search,#subscription-limit"
+                        hx-indicator="#subscriptions-loading"
+                        hx-trigger="keyup changed delay:300ms, search"
+                    >
+                </div>
+
+                <button type="submit" class="info <button> <big> crud-filter-apply">Apply</button>
+            </form>
+
+            <small id="subscriptions-loading" class="htmx-indicator" aria-live="polite">Updating view...</small>
+
+            <table class="crud-table subscriptions-table width:100%">
+                <thead>
+                    <tr>
+                        <th scope="col">Subscription</th>
+                        <th scope="col">Renewal</th>
+                        <th scope="col">Billing</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="subscriptions-body">
+                    {{template "subscription-list" .}}
+                </tbody>
+            </table>
+        </article>
+
+        {{template "subscription-editor-panel" .}}
+    </section>
+</section>
+{{end}}

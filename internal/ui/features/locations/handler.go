@@ -8,18 +8,11 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/models/location"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
-)
-
-// defaultLimit and maxLimit keep list endpoints bounded even when query params are missing or invalid.
-const (
-	defaultLimit int = 10
-	maxLimit     int = 100
 )
 
 // Handler coordinates HTTP endpoints, HTML templates and repository calls for the locations feature.
@@ -72,7 +65,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isListRequest(r) {
 		h.renderTemplate(w, "location-list", data)
 		return
@@ -101,7 +94,7 @@ func (h *Handler) New(w http.ResponseWriter, r *http.Request) {
 	data.FormSubmit = "Create location"
 	data.Location = &location.Location{}
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-panel", data)
 		return
@@ -125,8 +118,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load location", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar la location.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load location.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -138,8 +131,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 	if l == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Location not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -152,7 +145,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "detail"
 	data.Location = l
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-panel", data)
 		return
@@ -176,8 +169,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		h.logger.Error("Failed to load location for edit", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo cargar la location para editar.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to load location for editing.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -189,8 +182,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 
 	if l == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Location not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -203,9 +196,9 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	data.EditorMode = "edit"
 	data.Location = l
 	data.FormAction = fmt.Sprintf("/locations/%s/edit", l.Id)
-	data.FormSubmit = "Actualizar location"
+	data.FormSubmit = "Update location"
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-panel", data)
 		return
@@ -237,17 +230,17 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "new"
 	data.FormAction = "/locations"
-	data.FormSubmit = "Crear location"
+	data.FormSubmit = "Create location"
 	data.Location = &location.Location{
 		Name:    name,
-		City:    optionalString(city),
-		Country: optionalString(country),
-		Notes:   optionalString(notes),
+		City:    ui.OptionalString(city),
+		Country: ui.OptionalString(country),
+		Notes:   ui.OptionalString(notes),
 	}
 
 	if name == "" {
-		data.ErrorHTML = bannerHTML("bad", "El nombre es obligatorio.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -260,13 +253,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	if err := h.locationRepo.Create(r.Context(), data.Location); err != nil {
 		h.logger.Error("Failed to create location", "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo crear la location."
+		msg := "Unable to create location."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe una location con ese nombre."
+			msg = "A location with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -284,9 +277,9 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Location creada correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Location created successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-response", data)
 		return
@@ -319,18 +312,18 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	data.EditorMode = "edit"
 	data.FormAction = fmt.Sprintf("/locations/%s/edit", id)
-	data.FormSubmit = "Actualizar location"
+	data.FormSubmit = "Update location"
 	data.Location = &location.Location{
 		Id:      id,
 		Name:    name,
-		City:    optionalString(city),
-		Country: optionalString(country),
-		Notes:   optionalString(notes),
+		City:    ui.OptionalString(city),
+		Country: ui.OptionalString(country),
+		Notes:   ui.OptionalString(notes),
 	}
 
 	if name == "" {
-		data.ErrorHTML = bannerHTML("bad", "El nombre es obligatorio.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -344,8 +337,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if findErr != nil {
 		h.logger.Error("Failed to load location for update", "id", id, "err", findErr)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo validar la location a actualizar.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to validate location before update.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -357,8 +350,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	if current == nil {
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("warn", "Location no encontrada.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("warn", "Location not found.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusNotFound)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -371,13 +364,13 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	if err := h.locationRepo.Update(r.Context(), data.Location); err != nil {
 		h.logger.Error("Failed to update location", "id", id, "err", err)
 		status := http.StatusInternalServerError
-		msg := "No se pudo actualizar la location."
+		msg := "Unable to update location."
 		if strings.Contains(strings.ToLower(err.Error()), "unique") {
 			status = http.StatusConflict
-			msg = "Ya existe una location con ese nombre."
+			msg = "A location with that name already exists."
 		}
 		data.ErrorHTML = bannerHTML("bad", msg)
-		writeHTMLHeader(w)
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(status)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-panel", data)
@@ -402,9 +395,9 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "detail"
-	data.NoticeHTML = bannerHTML("ok", "Location actualizada correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Location updated successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-response", data)
 		return
@@ -432,8 +425,8 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.locationRepo.Delete(r.Context(), id); err != nil {
 		h.logger.Error("Failed to delete location", "id", id, "err", err)
 		data.EditorMode = "flash"
-		data.ErrorHTML = bannerHTML("bad", "No se pudo eliminar la location.")
-		writeHTMLHeader(w)
+		data.ErrorHTML = bannerHTML("bad", "Unable to delete location.")
+		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
 			h.renderTemplate(w, "location-editor-response", data)
@@ -451,9 +444,9 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data.EditorMode = "flash"
-	data.NoticeHTML = bannerHTML("ok", "Location eliminada correctamente.")
+	data.NoticeHTML = bannerHTML("ok", "Location deleted successfully.")
 
-	writeHTMLHeader(w)
+	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
 		h.renderTemplate(w, "location-editor-response", data)
 		return
@@ -464,20 +457,20 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 // loadPageData resolves table state (filters, limits, records) for location views.
 func (h *Handler) loadPageData(r *http.Request, start time.Time) (pageData, error) {
-	searchTerm, limit := parseListState(r)
+	searchTerm, limit := ui.ParseListState(r)
 	locations, err := h.locationRepo.GetAll(r.Context(), searchTerm, limit)
 	if err != nil {
 		return pageData{}, err
 	}
 
 	return pageData{
-		BaseData:   ui.NewBaseData("Locations", start),
+		BaseData:   ui.NewBaseData(r, "Locations", start),
 		Locations:  locations,
 		SearchTerm: searchTerm,
 		Limit:      limit,
 		EditorMode: "empty",
 		FormAction: "/locations",
-		FormSubmit: "Crear location",
+		FormSubmit: "Create location",
 	}, nil
 }
 
@@ -490,66 +483,17 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 
 // isListRequest detects HTMX calls meant to replace only the locations table body.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	if target == "locations-body" || target == "#locations-body" {
-		return true
-	}
-
-	trigger := strings.TrimSpace(r.Header.Get("HX-Trigger"))
-	triggerName := strings.TrimSpace(r.Header.Get("HX-Trigger-Name"))
-
-	return trigger == "location-limit" ||
-		trigger == "location-search" ||
-		triggerName == "location-limit" ||
-		triggerName == "location-search"
+	return ui.IsHTMXListRequest(
+		r,
+		"locations-body",
+		[]string{"location-limit", "location-search"},
+		[]string{"limit", "q"},
+	)
 }
 
 // isEditorRequest detects HTMX calls that target the location editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	if r.Header.Get("HX-Request") != "true" || r.Header.Get("HX-Boosted") == "true" {
-		return false
-	}
-
-	target := strings.TrimSpace(r.Header.Get("HX-Target"))
-	return target == "location-editor" || target == "#location-editor"
-}
-
-func optionalString(value string) *string {
-	if value == "" {
-		return nil
-	}
-
-	return new(value)
-}
-
-// parseListState reads shared query/form controls for the locations list.
-func parseListState(r *http.Request) (string, int) {
-	_ = r.ParseForm()
-	searchTerm := strings.TrimSpace(r.Form.Get("q"))
-	limit := parseLimit(r.Form.Get("limit"))
-	return searchTerm, limit
-}
-
-// parseLimit normalizes user-provided limits into a safe bounded value.
-func parseLimit(raw string) int {
-	if raw == "" {
-		return defaultLimit
-	}
-
-	limit, err := strconv.Atoi(raw)
-	if err != nil || limit <= 0 {
-		return defaultLimit
-	}
-
-	if limit > maxLimit {
-		return maxLimit
-	}
-
-	return limit
+	return ui.IsHTMXEditorRequest(r, "location-editor")
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css status classes.
@@ -562,9 +506,4 @@ func bannerHTML(kind, msg string) template.HTML {
 
 	escaped := html.EscapeString(msg)
 	return template.HTML(`<p class="location-alert ` + className + `">` + escaped + `</p>`)
-}
-
-// writeHTMLHeader enforces a consistent HTML content type for template responses.
-func writeHTMLHeader(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 }

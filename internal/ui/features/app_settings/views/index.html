@@ -1,0 +1,289 @@
+{{define "content"}}
+<section class="settings-view">
+    <header class="settings-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="settings-subtitle">
+                Configure defaults used across the app and manage JSON backup
+                import/export.
+            </p>
+        </div>
+
+        {{if not .Editing}}
+        <a class="ok <button>" href="/app-settings/edit">Edit app settings</a>
+        {{end}}
+    </header>
+
+    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+    {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+
+    <div class="settings-grid">
+        <article class="box settings-panel">
+            {{if .Editing}}
+            <form method="post" action="/app-settings/edit" class="settings-form">
+                {{template "csrf_input" .}}
+                <label class="settings-check">
+                    <input
+                        type="checkbox"
+                        name="show_version_footer"
+                        value="1"
+                        {{if .Settings.ShowVersionFooter}}checked{{end}}
+                    >
+                    <span>Show version footer</span>
+                </label>
+
+                <label for="default-server-os">Default server operating system</label>
+                <input
+                    id="default-server-os"
+                    name="default_server_os"
+                    type="text"
+                    list="default-server-os-list"
+                    required
+                    value="{{.Settings.DefaultServerOS}}"
+                >
+                <datalist id="default-server-os-list">
+                    {{range .OSChoices}}
+                    <option value="{{.}}">
+                    {{end}}
+                </datalist>
+
+                <label for="default-currency">Default currency</label>
+                <input
+                    id="default-currency"
+                    name="default_currency"
+                    type="text"
+                    maxlength="8"
+                    required
+                    value="{{.Settings.DefaultCurrency}}"
+                >
+
+                <label for="dashboard-currency">Dashboard currency</label>
+                <input
+                    id="dashboard-currency"
+                    name="dashboard_currency"
+                    type="text"
+                    maxlength="8"
+                    required
+                    value="{{.Settings.DashboardCurrency}}"
+                >
+
+                <label for="dashboard-due-soon-amount">Dashboard due-soon amount</label>
+                <input
+                    id="dashboard-due-soon-amount"
+                    name="dashboard_due_soon_amount"
+                    type="number"
+                    min="0"
+                    required
+                    value="{{.Settings.DashboardDueSoonAmount}}"
+                >
+
+                <div class="settings-actions">
+                    <button type="submit" class="ok <button>">Save changes</button>
+                    <a class="plain <button>" href="/app-settings">Cancel</a>
+                </div>
+            </form>
+            {{else}}
+            <h3>Summary</h3>
+            <dl class="settings-summary">
+                <dt>Version footer</dt>
+                <dd>{{if .Settings.ShowVersionFooter}}Visible{{else}}Hidden{{end}}</dd>
+
+                <dt>Default server OS</dt>
+                <dd>{{.Settings.DefaultServerOS}}</dd>
+
+                <dt>Default currency</dt>
+                <dd>{{.Settings.DefaultCurrency}}</dd>
+
+                <dt>Dashboard currency</dt>
+                <dd>{{.Settings.DashboardCurrency}}</dd>
+
+                <dt>Dashboard due-soon amount</dt>
+                <dd>{{.Settings.DashboardDueSoonAmount}}</dd>
+            </dl>
+
+            <h3>Recent expenses</h3>
+            <ul role="list" class="settings-history-list">
+                {{range .Expenses}}
+                <li class="settings-expense-row">
+                    <div>
+                        <strong>{{.Title}}</strong>
+                        <div class="settings-muted">
+                            {{.Category}} · {{.OccurredOn}}
+                            {{if .Notes}} · {{.NotesValue}}{{end}}
+                        </div>
+                    </div>
+                    <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                </li>
+                {{else}}
+                <li class="settings-muted">No expenses have been recorded yet.</li>
+                {{end}}
+            </ul>
+            {{end}}
+        </article>
+
+        <article class="box settings-panel">
+            <h3>Export</h3>
+            <p class="settings-muted">
+                Export the supported settings and collection data as JSON. The
+                encrypted variant uses the configured ML-KEM recovery key.
+            </p>
+
+            <div class="settings-actions settings-export-actions">
+                <a
+                    class="plain <button>"
+                    href="/app-settings/export"
+                    hx-boost="false"
+                >
+                    Download JSON
+                </a>
+
+                {{if .CanExportEncrypted}}
+                <a
+                    class="ok <button>"
+                    href="/app-settings/export?encrypted=1"
+                    hx-boost="false"
+                >
+                    Download encrypted JSON
+                </a>
+                {{else}}
+                <p class="settings-muted">
+                    Configure a recovery key in account settings to enable
+                    encrypted export.
+                </p>
+                {{end}}
+            </div>
+
+            <h3>Import</h3>
+            <p class="settings-muted">
+                Import replaces the current supported data snapshot and signs
+                out every active session.
+            </p>
+
+            <form method="post" action="/app-settings/import" class="settings-form">
+                {{template "csrf_input" .}}
+                <label for="import-file">Backup file</label>
+                <input
+                    id="import-file"
+                    type="file"
+                    accept=".json,application/json"
+                >
+                <p id="import-file-status" class="settings-muted" aria-live="polite">
+                    Choose a JSON backup file to load it into the text area below.
+                </p>
+
+                <label for="import-payload">Backup JSON</label>
+                <textarea
+                    id="import-payload"
+                    name="import_payload"
+                    rows="10"
+                    required
+                ></textarea>
+
+                <label for="import-recovery-key">
+                    Recovery key for encrypted backups
+                </label>
+                <textarea
+                    id="import-recovery-key"
+                    name="import_recovery_key"
+                    rows="4"
+                ></textarea>
+
+                <button type="submit" class="bad <button>">Import snapshot</button>
+            </form>
+
+            <h3>Expense entries</h3>
+            <p class="settings-muted">
+                Add manual expenses so the dashboard shows a real recent
+                history instead of free-form notes.
+            </p>
+
+            <form method="post" action="/app-settings/expenses" class="settings-form">
+                {{template "csrf_input" .}}
+                <label for="expense-title">Title</label>
+                <input
+                    id="expense-title"
+                    name="title"
+                    type="text"
+                    required
+                    value="{{.ExpenseForm.Title}}"
+                >
+
+                <label for="expense-category">Category</label>
+                <input
+                    id="expense-category"
+                    name="category"
+                    type="text"
+                    value="{{.ExpenseForm.Category}}"
+                >
+
+                <label for="expense-amount">Amount</label>
+                <input
+                    id="expense-amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    required
+                    value="{{.ExpenseForm.Amount}}"
+                >
+
+                <label for="expense-currency">Currency</label>
+                <input
+                    id="expense-currency"
+                    name="currency"
+                    type="text"
+                    maxlength="8"
+                    required
+                    value="{{.ExpenseForm.Currency}}"
+                >
+
+                <label for="expense-occurred-on">Occurred on</label>
+                <input
+                    id="expense-occurred-on"
+                    name="occurred_on"
+                    type="date"
+                    required
+                    value="{{.ExpenseForm.OccurredOn}}"
+                >
+
+                <label for="expense-notes">Notes</label>
+                <textarea
+                    id="expense-notes"
+                    name="notes"
+                    rows="4"
+                >{{.ExpenseForm.Notes}}</textarea>
+
+                <button type="submit" class="ok <button>">Add expense</button>
+            </form>
+
+            <ul role="list" class="settings-history-list">
+                {{range .Expenses}}
+                <li class="settings-expense-row">
+                    <div>
+                        <strong>{{.Title}}</strong>
+                        <div class="settings-muted">
+                            {{.Category}} · {{.OccurredOn}}
+                            {{if .Notes}} · {{.NotesValue}}{{end}}
+                        </div>
+                    </div>
+
+                    <div class="settings-expense-actions">
+                        <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                        <form method="post" action="/app-settings/expenses/{{.ID}}/delete">
+                            {{template "csrf_input" $}}
+                            <button type="submit" class="bad <button>">Delete</button>
+                        </form>
+                    </div>
+                </li>
+                {{else}}
+                <li class="settings-muted">No expenses have been recorded yet.</li>
+                {{end}}
+            </ul>
+        </article>
+    </div>
+</section>
+{{end}}
+
+{{define "page_scripts"}}
+<script defer src="/static/js/app-settings.js"></script>
+{{end}}

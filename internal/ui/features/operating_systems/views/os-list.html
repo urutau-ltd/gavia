@@ -6,8 +6,8 @@
             <a
                 class="plain block os-action-control"
                 title="View"
-                aria-label="View os {{.Name}}"
-                href="/oss/{{.Id}}"
+                aria-label="View operating system {{.Name}}"
+                href="/os/{{.Id}}"
                 hx-get="/os/{{.Id}}"
                 hx-target="#os-editor"
                 hx-swap="outerHTML"
@@ -31,8 +31,8 @@
             <a
                 class="ok os-action-control"
                 title="Edit"
-                aria-label="Edit os {{.Name}}"
-                href="/oss/{{.Id}}/edit"
+                aria-label="Edit operating system {{.Name}}"
+                href="/os/{{.Id}}/edit"
                 hx-get="/os/{{.Id}}/edit"
                 hx-target="#os-editor"
                 hx-swap="outerHTML"
@@ -56,12 +56,12 @@
                 type="button"
                 title="Delete"
                 class="bad os-action-control"
-                aria-label="Delete os {{.Name}}"
+                aria-label="Delete operating system {{.Name}}"
                 hx-delete="/os/{{.Id}}"
                 hx-target="#os-editor"
                 hx-swap="outerHTML"
                 hx-include="#os-search,#os-limit"
-                hx-confirm="¿Seguro que quieres eliminar este os?"
+                hx-confirm="Are you sure you want to delete this operating system?"
                 _="on click add .is-removing to #os-row-{{.Id}}"
             >
                 <svg
@@ -83,6 +83,6 @@
 </tr>
 {{- else}}
 <tr>
-    <td colspan="3"><em>No oss are registered in the database.</em></td>
+    <td colspan="3"><em>No operating systems are registered in the database.</em></td>
 </tr>
 {{- end}} {{end}}

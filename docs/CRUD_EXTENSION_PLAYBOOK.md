@@ -1,190 +1,159 @@
-# CRUD Extension Playbook (Where + Why)
+# CRUD Extension Playbook
 
-This playbook explains **where to extend** the project and **why each extension
-point exists** so a newcomer can add the next CRUD module from
-`001_create_tables.sql`.
+This document explains how to add the next CRUD module without fighting the
+current architecture.
 
-It is intentionally architecture-oriented (not a step-by-step code tutorial).
+## Expected shape
 
-## 1) Architectural map
+The project now uses three route styles:
 
-## 1.1 Persistence boundary
+- collection resources for repeated CRUD modules
+- singleton resources for settings-like pages
+- manual pages for special flows
 
-- Where: `internal/models/<entity>/<entity>.go`
-- Why: repository packages isolate SQL decisions from HTTP/UI concerns.
-- Contract expected by UI handlers:
-  - `New<Entity>Repository(db *sql.DB)`
-  - `Create`, `GetByID`, `GetAll(search, limit)`, `Update`, `Delete`
+Choose the shape first. Do not start by copying handlers blindly.
 
-If your next table supports list filtering, include search in `GetAll` now, not
-later. Handlers already assume list refresh uses query state.
+## Collection modules
 
-## 1.2 HTTP/UI boundary
+Use a collection resource when the domain has multiple rows and the UI follows a
+standard list/editor flow.
 
-- Where: `internal/ui/features/<entities>/handler.go`
-- Why: each feature package owns route behavior, template rendering, and HTMX
-  fragment contracts.
-- Contract expected by route mount:
-  - `NewHandler(logger, uiFS, db)`
-  - `Index`, `New`, `Show`, `Edit`, `Create`, `Update`, `Delete`
+Current examples:
 
-Keep **fragment guards** (`isListRequest`, `isEditorRequest`) per feature. This
-avoids HTMX collisions when `hx-boost` is enabled globally in layout.
+- providers
+- locations
+- operating systems
 
-## 1.3 Templates boundary
+### Repository contract
 
-- Where: `internal/ui/features/<entities>/views/`
-- Why: separates page shell, table rows, and side editor panel so HTMX swaps can
-  be targeted precisely.
-- Required templates by naming convention:
-  - `index.html` => full page shell
-  - `<entity>-list.html` => table row fragment
-  - `<entity>-editor.html` => panel content + OOB list refresh fragment
+Create a repository under `internal/models/<entity>/` with the usual explicit
+methods:
 
-The naming and target IDs are API contracts between HTML attributes and handler
-guards.
+- `Create`
+- `GetByID`
+- `GetAll`
+- `Update`
+- `Delete`
+- `Count` if dashboard visibility is useful
 
-## 1.4 Route composition boundary
+### Handler contract
 
-- Where: `main.go`
-- Why: single composition root for every runtime dependency and public URL
-  surface.
+Create a feature package under `internal/ui/features/<entities>/` with explicit
+methods:
 
-New feature route registration belongs here, not inside other packages, to keep
-startup visibility and operational debugging simple.
+- `Index`
+- `New`
+- `Create`
+- `Show`
+- `Edit`
+- `Update`
+- `Delete`
 
-## 1.5 Visual system boundary
+Keep handlers explicit. Do not hide CRUD operations behind a large generic UI
+framework.
 
-- Where: `internal/ui/layout/base.html` + `static/css/gavia.css`
-- Why: base layout loads Missing.css + htmx + hyperscript globally; `gavia.css`
-  provides feature-specific refinements.
+### Route mounting
 
-Do not copy external CSS frameworks into feature templates. Use Missing.css
-vocabulary first, then minimal local overrides.
+Mount it with:
 
-## 2) HTMX and HyperScript contracts to preserve
+```go
+resource.MountCollection(app, "/route", handler)
+```
 
-## 2.1 Why this project uses fragments
+That wiring currently lives in [`routing.go`](../routing.go).
 
-List + editor are independent fragments so user actions
-(search/create/edit/delete) can update only the affected region and keep page
-context.
+### HTMX helpers
 
-## 2.2 Required fragment IDs
+Use shared helpers from [`internal/ui/request.go`](../internal/ui/request.go):
 
-For each feature, define unique IDs to avoid cross-module collisions:
+- `ui.ParseListState`
+- `ui.IsHTMXListRequest`
+- `ui.IsHTMXEditorRequest`
+- `ui.WriteHTMLHeader`
 
-- list target: `#<entities>-body`
-- editor target: `#<entity>-editor`
+Do not reintroduce manual `HX-*` header parsing in new modules.
 
-Handler guards must match those IDs:
+## Singleton modules
 
-- list guard checks `HX-Target == <entities>-body`
-- editor guard checks `HX-Target == <entity>-editor`
+Use a singleton resource when the table should behave like configuration, not a
+repeated entity.
 
-## 2.3 OOB refresh strategy
+Current examples:
 
-For create/update/delete responses, include:
+- account settings
+- app settings
 
-- editor HTML (normal target swap)
-- list `<tbody ... hx-swap-oob="outerHTML">` (out-of-band swap)
+### Route shape
 
-Why: one server response keeps UI state coherent and avoids extra request
-choreography.
+Singletons use:
 
-## 2.4 HyperScript usage policy
+- `GET /resource`
+- `GET /resource/edit`
+- `POST /resource/edit`
 
-Where used now:
+Mount them with:
 
-- row visual feedback during deletes (`add .is-removing`)
-- panel loading state (`add/remove .is-loading`)
+```go
+resource.MountSingleton(app, "/route", handler)
+```
 
-Why: small declarative behaviors without introducing custom JS lifecycle code.
+## Manual modules
 
-Keep HyperScript snippets local to the element they control.
+Use a manual page when the flow does not fit collection or singleton semantics.
 
-## 3) Missing.css integration policy
+Current manual pages:
 
-## 3.1 Preferred primitives
+- dashboard
+- login
+- logout
+- licenses
+- uptime
+- JSON API routes
 
-Use Missing.css primitives in templates first:
+Keep these as normal handlers and plain route registration.
 
-- `tool-bar`
-- `flex-switch`
-- `width:100%`
-- semantic ARIA attributes (`role="toolbar"`)
+## Templates
 
-Why: the design system already solves responsive behavior and accessibility
-defaults.
+Template layout is still server-rendered Go HTML templates.
 
-## 3.2 Local CSS scope
+Collection modules usually use:
 
-Use namespaced selectors per feature (`.providers-*`, `.locations-*`).
+- `index.html`
+- `<entity>-list.html`
+- `<entity>-editor.html`
 
-Why: avoids visual regressions when multiple CRUD modules coexist.
+Singleton and manual pages can keep a single `index.html` if that is clearer.
 
-## 4) Error and validation policy
+## Styling
 
-Where:
+Start with Missing.css primitives and add small, local CSS in
+[`static/css/gavia.css`](../static/css/gavia.css).
 
-- handler methods (`Create`, `Update`, `Delete`, `Show`, `Edit`)
+Do not add a new CSS framework. Do not generate CSS automatically.
 
-Why:
+## Generics policy
 
-- keep user-facing status in HTML banners
-- keep operational detail in logs
+Generics are acceptable when they reduce repeated algorithmic code without
+making the flow harder to read.
 
-Rules to preserve:
+Good examples in this repository:
 
-- required fields validated before repository call
-- unique-constraint collisions mapped to `409 Conflict`
-- malformed/unknown IDs return controlled `400/404` panel responses
+- [`seedMany[T]`](../internal/database/seed.go)
+- [`AggregateByLabel[T]`](../internal/models/dashboard_summary/overview.go)
 
-## 5) Logging policy
+Bad candidates:
 
-Where:
+- generic HTTP handlers
+- generic route builders for unrelated handler signatures
+- generic template rendering layers
 
-- app-level logger shape: `main.go:newLogger`
-- request-level logs: `aile/x/logger` middleware
+## Checklist for a new module
 
-Why:
-
-- app logs need consistent, grep-friendly structure (`t`, `lvl`, `msg`, `src`)
-- request middleware keeps transport trace visibility per endpoint
-
-When adding new feature handlers, always log:
-
-- storage failures (with `err`)
-- ID/context for mutations (`id`, filters when relevant)
-
-## 6) Pattern for the next table in migrations
-
-For each new table in `internal/database/migrations/001_create_tables.sql`:
-
-1. Create repository package under `internal/models/<entity>/`.
-2. Create feature package under `internal/ui/features/<entities>/`.
-3. Add `views/index.html`, `<entity>-list.html`, `<entity>-editor.html`.
-4. Register routes in `main.go`.
-5. Add scoped CSS block in `static/css/gavia.css`.
-6. Add API entries in `docs/API_REFERENCE.md`.
-
-Why this order: DB boundary first, UI boundary second, route exposure last. It
-reduces half-wired states and keeps integration testable by layer.
-
-## 7) Current feature references
-
-Use these as canonical examples:
-
-- Providers: `internal/models/provider/` + `internal/ui/features/providers/`
-- Locations: `internal/models/location/` + `internal/ui/features/locations/`
-
-Both already implement the full pattern expected by this playbook.
-
-## 8) Design references used in current CRUD modules
-
-- Missing.css Layout docs: `https://missing.style/docs/layout/`
-- Missing.css Flexbox docs: `https://missing.style/docs/flex/`
-- Missing.css ARIA docs (toolbar role): `https://missing.style/docs/aria/`
-- Missing.css Utilities docs: `https://missing.style/docs/utils/`
-- HyperScript docs (event handlers, add/remove/toggle, transitions, queueing):
-  `https://hyperscript.org/docs/`
+1. Add or update the SQL migration.
+2. Create the repository package.
+3. Create the UI feature package.
+4. Add templates.
+5. Mount the route in [`routing.go`](../routing.go).
+6. Add CSS only if the existing patterns are not enough.
+7. Add or update docs in [`docs/API_REFERENCE.md`](./API_REFERENCE.md).
+8. Add tests for the route shape and critical behavior.

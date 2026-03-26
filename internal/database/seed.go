@@ -13,6 +13,26 @@ type seedProvider struct {
 	Notes   string
 }
 
+type seedAppSettings struct {
+	ID                string
+	ShowVersionFooter bool
+	DefaultServerOS   string
+	DefaultCurrency   string
+	DashboardCurrency string
+	DueSoonAmount     int
+	ExpenseHistory    string
+}
+
+// SeedReferenceData loads deterministic bootstrap rows that are safe to create
+// automatically on a fresh install. Account credentials remain manual.
+func SeedReferenceData(db *sql.DB) error {
+	if err := SeedProviders(db); err != nil {
+		return err
+	}
+
+	return SeedAppSettings(db)
+}
+
 func SeedProviders(db *sql.DB) error {
 	providers := []seedProvider{
 		{
@@ -111,23 +131,85 @@ func SeedProviders(db *sql.DB) error {
 		},
 	}
 
-	// Usamos una transacción para que sea ultra rápido (SQLite sufre con muchos inserts individuales)
+	return seedMany(
+		db,
+		`INSERT OR IGNORE INTO providers (id, name, website, notes) VALUES (?, ?, ?, ?)`,
+		providers,
+		func(stmt *sql.Stmt, p seedProvider) error {
+			id, err := uuid.NewV7()
+			if err != nil {
+				return fmt.Errorf("could not generate provider id for %s: %w", p.Name, err)
+			}
+
+			if _, err := stmt.Exec(id.String(), p.Name, p.Website, p.Notes); err != nil {
+				return fmt.Errorf("could not insert %s: %w", p.Name, err)
+			}
+
+			return nil
+		},
+	)
+}
+
+func SeedAppSettings(db *sql.DB) error {
+	defaultSettings := []seedAppSettings{
+		{
+			ID:                "app",
+			ShowVersionFooter: true,
+			DefaultServerOS:   "Linux",
+			DefaultCurrency:   "MXN",
+			DashboardCurrency: "MXN",
+			DueSoonAmount:     5,
+			ExpenseHistory:    "[]",
+		},
+	}
+
+	return seedMany(
+		db,
+		`INSERT OR IGNORE INTO app_settings (
+			id,
+			show_version_footer,
+			default_server_os,
+			default_currency,
+			dashboard_currency,
+			dashboard_due_soon_amount,
+			dashboard_expense_history_json
+		) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+		defaultSettings,
+		func(stmt *sql.Stmt, s seedAppSettings) error {
+			if _, err := stmt.Exec(
+				s.ID,
+				s.ShowVersionFooter,
+				s.DefaultServerOS,
+				s.DefaultCurrency,
+				s.DashboardCurrency,
+				s.DueSoonAmount,
+				s.ExpenseHistory,
+			); err != nil {
+				return fmt.Errorf("could not insert app settings: %w", err)
+			}
+
+			return nil
+		},
+	)
+}
+
+func seedMany[T any](db *sql.DB, query string, rows []T, exec func(*sql.Stmt, T) error) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
 	}
 
-	stmt, err := tx.Prepare(`INSERT OR IGNORE INTO providers (id, name, website, notes) VALUES (?, ?, ?, ?)`)
+	stmt, err := tx.Prepare(query)
 	if err != nil {
+		_ = tx.Rollback()
 		return err
 	}
 	defer stmt.Close()
 
-	for _, p := range providers {
-		id, _ := uuid.NewV7()
-		if _, err := stmt.Exec(id.String(), p.Name, p.Website, p.Notes); err != nil {
-			tx.Rollback()
-			return fmt.Errorf("could not insert %s: %w", p.Name, err)
+	for _, row := range rows {
+		if err := exec(stmt, row); err != nil {
+			_ = tx.Rollback()
+			return err
 		}
 	}
 

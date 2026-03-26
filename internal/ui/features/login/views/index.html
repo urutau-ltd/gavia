@@ -1,0 +1,103 @@
+{{define "content"}}
+<section class="auth-view">
+    <article class="box auth-card">
+        <header class="auth-head">
+            <div>
+                <h2>{{.Title}}</h2>
+                <p class="auth-subtitle">
+                    Sign in with the local administrator account or recover the
+                    password with the saved recovery key.
+                </p>
+            </div>
+        </header>
+
+        {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+        {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+
+        <div class="auth-grid">
+            <section class="auth-panel">
+                <h3>Sign in</h3>
+                <form method="post" action="/login" class="auth-form">
+                    {{template "csrf_input" .}}
+                    <input type="hidden" name="intent" value="login">
+
+                    <label for="login-username">Username</label>
+                    <input
+                        id="login-username"
+                        name="username"
+                        type="text"
+                        autocomplete="username"
+                        required
+                        value="{{.Username}}"
+                    >
+
+                    <label for="login-password">Password</label>
+                    <input
+                        id="login-password"
+                        name="password"
+                        type="password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button type="submit" class="ok <button>">
+                        Sign in
+                    </button>
+                </form>
+            </section>
+
+            <section class="auth-panel">
+                <h3>Password recovery</h3>
+                <p class="auth-muted">
+                    Email is not used here. Keep the recovery key generated in
+                    account settings and paste it here to replace the password.
+                </p>
+
+                <form method="post" action="/login" class="auth-form">
+                    {{template "csrf_input" .}}
+                    <input type="hidden" name="intent" value="recover">
+
+                    <label for="recovery-username">Username</label>
+                    <input
+                        id="recovery-username"
+                        name="recovery_username"
+                        type="text"
+                        required
+                        value="{{.RecoveryUsername}}"
+                    >
+
+                    <label for="recovery-key">Recovery key</label>
+                    <textarea
+                        id="recovery-key"
+                        name="recovery_key"
+                        rows="4"
+                        required
+                    >{{.RecoveryKey}}</textarea>
+
+                    <label for="new-password">New password</label>
+                    <input
+                        id="new-password"
+                        name="new_password"
+                        type="password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <label for="confirm-password">Confirm new password</label>
+                    <input
+                        id="confirm-password"
+                        name="confirm_password"
+                        type="password"
+                        autocomplete="new-password"
+                        required
+                    >
+
+                    <button type="submit" class="plain <button>">
+                        Reset password
+                    </button>
+                </form>
+            </section>
+        </div>
+    </article>
+</section>
+{{end}}

@@ -1,0 +1,180 @@
+{{define "content"}}
+<section class="settings-view">
+    <header class="settings-head">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="settings-subtitle">
+                {{if .SetupMode}}
+                Create the local administrator account used to access the app.
+                {{else}}
+                Update the administrator identity, rotate secrets, and keep the
+                recovery key safe.
+                {{end}}
+            </p>
+        </div>
+
+        {{if and .Account (not .Editing)}}
+        <a class="ok <button>" href="/account-settings/edit">Edit account</a>
+        {{end}}
+    </header>
+
+    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+    {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+
+    {{if .GeneratedAPIToken}}
+    <article class="box settings-secret-box">
+        <h3>New API token</h3>
+        <p class="settings-muted">
+            Copy this token now. Only the hash is stored in the database.
+        </p>
+        <pre class="settings-code">{{.GeneratedAPIToken}}</pre>
+    </article>
+    {{end}}
+
+    {{if .GeneratedRecoveryKey}}
+    <article class="box settings-secret-box">
+        <h3>Recovery key</h3>
+        <p class="settings-muted">
+            Save this key outside the app. It is required for password recovery
+            and encrypted backups.
+        </p>
+        <pre class="settings-code">{{.GeneratedRecoveryKey}}</pre>
+    </article>
+    {{end}}
+
+    {{if .Editing}}
+    <article class="box settings-panel">
+        <form method="post" action="/account-settings/edit" class="settings-form" hx-boost="false">
+            {{template "csrf_input" .}}
+            <label for="account-username">Username</label>
+            <input
+                id="account-username"
+                name="username"
+                type="text"
+                maxlength="120"
+                required
+                value="{{with .Account}}{{.Username}}{{end}}"
+            >
+
+            <label>Avatar</label>
+            <div class="avatar-picker" role="list">
+                {{range .Avatars}}
+                <label class="avatar-option">
+                    <input
+                        type="radio"
+                        name="avatar_path"
+                        value="{{.Path}}"
+                        {{if .Selected}}checked{{end}}
+                    >
+                    <img src="{{.Path}}" alt="">
+                </label>
+                {{end}}
+            </div>
+
+            <label for="account-password">
+                {{if .SetupMode}}Password{{else}}New password{{end}}
+            </label>
+            <input
+                id="account-password"
+                name="password"
+                type="password"
+                {{if .SetupMode}}required{{end}}
+                minlength="8"
+                autocomplete="{{if .SetupMode}}new-password{{else}}new-password{{end}}"
+            >
+            <small class="settings-muted">Use at least 8 characters.</small>
+
+            <label for="account-password-confirm">
+                {{if .SetupMode}}Confirm password{{else}}Confirm new password{{end}}
+            </label>
+            <input
+                id="account-password-confirm"
+                name="confirm_password"
+                type="password"
+                {{if .SetupMode}}required{{end}}
+                minlength="8"
+                autocomplete="new-password"
+            >
+
+            <label class="settings-check">
+                <input type="checkbox" name="regenerate_api_token" value="1">
+                <span>Generate a new API token</span>
+            </label>
+
+            <label class="settings-check">
+                <input type="checkbox" name="rotate_recovery_key" value="1">
+                <span>Rotate the recovery key</span>
+            </label>
+
+            <div class="settings-actions">
+                <button type="submit" class="ok <button>">
+                    {{if .SetupMode}}Create account{{else}}Save changes{{end}}
+                </button>
+                {{if not .SetupMode}}
+                <a class="plain <button>" href="/account-settings">Cancel</a>
+                {{end}}
+            </div>
+        </form>
+    </article>
+    {{else}}
+    {{with .Account}}
+    <div class="settings-grid">
+        <article class="box settings-panel">
+            <h3>Profile</h3>
+            <div class="settings-profile">
+                <img class="settings-avatar" src="{{.AvatarPath}}" alt="">
+                <dl class="settings-summary">
+                    <dt>Username</dt>
+                    <dd>{{.Username}}</dd>
+
+                    <dt>API token</dt>
+                    <dd>
+                        {{if .APITokenHint}}
+                        Configured, ends in <code>{{.APITokenHint}}</code>
+                        {{else}}
+                        Not configured yet
+                        {{end}}
+                    </dd>
+
+                    <dt>Recovery key</dt>
+                    <dd>
+                        {{if .RecoveryPublicKey}}
+                        Configured for password recovery and encrypted backups
+                        {{else}}
+                        Not configured yet
+                        {{end}}
+                    </dd>
+                </dl>
+            </div>
+        </article>
+
+        <article class="box settings-panel">
+            <h3>Recovery notes</h3>
+            <p class="settings-muted">
+                Password recovery does not use email. Keep the generated
+                recovery key outside the app and use the recovery form on the
+                login page if the password is lost.
+            </p>
+
+            <h3>API token usage</h3>
+            <p class="settings-muted">
+                The API token can authenticate backup requests with
+                <code>Authorization: Bearer &lt;token&gt;</code> or
+                <code>X-API-Token</code>.
+            </p>
+            <p class="settings-muted">
+                Export: <code>GET /api/v1/backup/export</code><br>
+                Import: <code>POST /api/v1/backup/import</code><br>
+                Summary: <code>GET /api/v1/dashboard/summary</code>
+            </p>
+
+            <div class="settings-actions">
+                <a class="plain <button>" href="/login">Open login page</a>
+                <a class="plain <button>" href="/app-settings">Open app settings</a>
+            </div>
+        </article>
+    </div>
+    {{end}}
+    {{end}}
+</section>
+{{end}}
