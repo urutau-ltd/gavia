@@ -46,7 +46,8 @@
     <label for="dns-type">Type</label>
     <select id="dns-type" name="type">
         {{range .TypeOptions}}
-        <option value="{{.Value}}" {{with $.Record}}{{if eq .Type $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Record}}{{if eq .Type $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
     <label for="dns-hostname">Hostname</label>
@@ -55,7 +56,8 @@
     <select id="dns-domain-id" name="domain_id">
         <option value="">No linked domain</option>
         {{range .DomainOptions}}
-        <option value="{{.Value}}" {{with $.Record}}{{if eq .DomainIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Record}}{{if eq .DomainIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
     <label for="dns-address">Address / target</label>

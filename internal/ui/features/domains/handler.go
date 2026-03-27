@@ -262,9 +262,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data.Domains = updatedItems
 	}
+	refreshed, getErr := h.domainRepo.GetByID(r.Context(), item.ID)
+	if getErr != nil {
+		h.logger.Error("Failed to reload domain after create", "id", item.ID, "err", getErr)
+	} else if refreshed != nil {
+		data.Domain = refreshed
+	}
 
 	data.EditorMode = "detail"
-	data.Domain = item
 	data.NoticeHTML = bannerHTML("ok", "Domain created successfully.")
 
 	ui.WriteHTMLHeader(w)

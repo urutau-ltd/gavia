@@ -58,7 +58,8 @@
     <label for="ip-type">Type</label>
     <select id="ip-type" name="type">
         {{range .TypeOptions}}
-        <option value="{{.Value}}" {{with $.IP}}{{if eq .Type $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.IP}}{{if eq .Type $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 
@@ -74,6 +75,7 @@
     <input id="ip-isp" name="isp" type="text" maxlength="160" value="{{with .IP}}{{.ISPValue}}{{end}}">
     <label for="ip-notes">Notes</label>
     <textarea id="ip-notes" name="notes" rows="6">{{with .IP}}{{.NotesValue}}{{end}}</textarea>
+    <small class="crud-muted">The list column "Origin" is built from organization or country. "Actions" are the row controls on the right.</small>
     <div class="crud-editor-actions">
         <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
         <a class="plain crud-action-control" href="/ips" hx-get="/ips" hx-target="#ip-editor" hx-swap="outerHTML">Cancel</a>

@@ -240,8 +240,16 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		}
 
 		data.SetupMode = false
+		data.Editing = false
 		data.Account = account
 		data.Avatars = avatarOptions(account.AvatarPath)
+		data.BaseData.Nav = ui.NavData{
+			HasAccount:      true,
+			IsAuthenticated: true,
+			SetupRequired:   false,
+			Username:        account.Username,
+			AvatarPath:      account.AvatarPath,
+		}
 		data.NoticeHTML = ui.BannerHTML("settings-alert", "ok", "Administrator account created successfully.")
 		ui.WriteHTMLHeader(w)
 		h.render(w, "base", data)
@@ -259,6 +267,14 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	data.Account = account
 	data.Avatars = avatarOptions(account.AvatarPath)
+	data.Editing = false
+	data.BaseData.Nav = ui.NavData{
+		HasAccount:      true,
+		IsAuthenticated: true,
+		SetupRequired:   false,
+		Username:        account.Username,
+		AvatarPath:      account.AvatarPath,
+	}
 	data.NoticeHTML = ui.BannerHTML("settings-alert", "ok", "Account settings updated successfully.")
 	ui.WriteHTMLHeader(w)
 	h.render(w, "base", data)

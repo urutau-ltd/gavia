@@ -122,12 +122,8 @@ func TestDashboardShowsDueSoonLimitAndRecentExpenses(t *testing.T) {
 	}
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "example.com") || !strings.Contains(body, "example.net") {
-		t.Fatalf("expected dashboard to show the first two due-soon items, got %q", body)
-	}
-
-	if strings.Contains(body, "Email SaaS") {
-		t.Fatalf("expected dashboard due-soon list to honor the limit and exclude later items, got %q", body)
+	if strings.Count(body, `class="dashboard-list-item-text"`) != 2 {
+		t.Fatalf("expected dashboard due-soon list to honor the limit with exactly two visible rows, got %q", body)
 	}
 
 	if !strings.Contains(body, "Hetzner invoice") {
@@ -136,6 +132,14 @@ func TestDashboardShowsDueSoonLimitAndRecentExpenses(t *testing.T) {
 
 	if !strings.Contains(body, "expense-history-chart") || !strings.Contains(body, "runtime-history-chart") {
 		t.Fatalf("expected dashboard to render chart canvases, got %q", body)
+	}
+
+	if !strings.Contains(body, "Inventory overview") || !strings.Contains(body, "inventory-distribution-chart") {
+		t.Fatalf("expected dashboard to render inventory summary widgets, got %q", body)
+	}
+
+	if strings.Contains(body, "Started modules") || strings.Contains(body, "Pending modules") {
+		t.Fatalf("expected dashboard to stop rendering module progress placeholders, got %q", body)
 	}
 
 	if !strings.Contains(body, "Runtime diagnostics") || !strings.Contains(body, "Goroutines") {

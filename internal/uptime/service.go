@@ -2,6 +2,7 @@ package uptime
 
 import (
 	"context"
+	"crypto/tls"
 	"log/slog"
 	"net/http"
 	"time"
@@ -23,7 +24,14 @@ func NewService(
 	interval time.Duration,
 ) *Service {
 	if client == nil {
-		client = &http.Client{Timeout: 10 * time.Second}
+		client = &http.Client{
+			Timeout: 10 * time.Second,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: true,
+				},
+			},
+		}
 	}
 	if interval <= 0 {
 		interval = 30 * time.Second

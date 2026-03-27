@@ -258,9 +258,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data.Subscriptions = updatedItems
 	}
+	refreshed, getErr := h.subscriptionRepo.GetByID(r.Context(), item.ID)
+	if getErr != nil {
+		h.logger.Error("Failed to reload subscription after create", "id", item.ID, "err", getErr)
+	} else if refreshed != nil {
+		data.Subscription = refreshed
+	}
 
 	data.EditorMode = "detail"
-	data.Subscription = item
 	data.NoticeHTML = bannerHTML("ok", "Subscription created successfully.")
 
 	ui.WriteHTMLHeader(w)

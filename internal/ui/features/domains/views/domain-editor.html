@@ -151,7 +151,8 @@
     <select id="domain-provider-id" name="provider_id">
         <option value="">No provider</option>
         {{range .ProviderOptions}}
-        <option value="{{.Value}}" {{with $.Domain}}{{if eq .ProviderIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Domain}}{{if eq .ProviderIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 

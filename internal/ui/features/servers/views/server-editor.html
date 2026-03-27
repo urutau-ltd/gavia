@@ -175,7 +175,8 @@
     <select id="server-os-id" name="os_id">
         <option value="">No operating system</option>
         {{range .OSOptions}}
-        <option value="{{.Value}}" {{with $.Server}}{{if eq .OSIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .OSIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 
@@ -183,7 +184,8 @@
     <select id="server-provider-id" name="provider_id">
         <option value="">No provider</option>
         {{range .ProviderOptions}}
-        <option value="{{.Value}}" {{with $.Server}}{{if eq .ProviderIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .ProviderIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 
@@ -191,7 +193,8 @@
     <select id="server-location-id" name="location_id">
         <option value="">No location</option>
         {{range .LocationOptions}}
-        <option value="{{.Value}}" {{with $.Server}}{{if eq .LocationIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .LocationIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 

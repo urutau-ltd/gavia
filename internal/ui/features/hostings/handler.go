@@ -264,9 +264,14 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data.Hostings = updatedItems
 	}
+	refreshed, getErr := h.hostingRepo.GetByID(r.Context(), item.ID)
+	if getErr != nil {
+		h.logger.Error("Failed to reload hosting after create", "id", item.ID, "err", getErr)
+	} else if refreshed != nil {
+		data.Hosting = refreshed
+	}
 
 	data.EditorMode = "detail"
-	data.Hosting = item
 	data.NoticeHTML = bannerHTML("ok", "Hosting created successfully.")
 
 	ui.WriteHTMLHeader(w)

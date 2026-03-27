@@ -336,29 +336,38 @@
 
     <script id="dashboard-chart-data" type="application/json">{{.ChartsJSON}}</script>
 
-    <section class="dashboard-module-grid" aria-label="Project modules">
-        {{range .Modules}}
-        <article
-            class="box dashboard-module {{if .Started}}dashboard-module-ready{{else}}dashboard-module-pending{{end}}"
-        >
-            <div class="dashboard-module-head">
-                <h3>{{.Name}}</h3>
-                <chip class="{{if .Started}}ok{{else}}warn{{end}}">
-                    {{if .Started}}Started{{else}}{{.Status}}{{end}}
-                </chip>
+    <section class="dashboard-panels" aria-label="Inventory summary">
+        <article class="box dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>Inventory overview</h3>
+                <span class="settings-muted">{{.InventoryTotal}} tracked records across active modules</span>
             </div>
 
-            <p>{{.Summary}}</p>
-
-            {{if .Href}}
-            <a class="plain &lt;button&gt;" href="{{.Href}}">Open {{.Name}}</a>
-            {{else}}
-            <span class="dashboard-module-placeholder">
-                Keep this one as the next scaffold target.
-            </span>
-            {{end}}
+            <ul role="list" class="dashboard-breakdown-list">
+                {{range .InventoryItems}}
+                <li class="dashboard-breakdown-row">
+                    <div class="dashboard-breakdown-copy">
+                        <strong><a href="{{.Href}}">{{.Label}}</a></strong>
+                        <span>{{.Hint}}</span>
+                    </div>
+                    <div class="dashboard-breakdown-bar" aria-hidden="true">
+                        <span style="width: {{printf "%.2f" .Share}}%;"></span>
+                    </div>
+                    <strong>{{.Count}}</strong>
+                </li>
+                {{end}}
+            </ul>
         </article>
-        {{end}}
+
+        <article class="box dashboard-panel">
+            <div class="dashboard-panel-head">
+                <h3>Inventory distribution</h3>
+                <span class="settings-muted">How the current records are spread across modules</span>
+            </div>
+            <div class="dashboard-chart-frame">
+                <canvas id="inventory-distribution-chart" class="dashboard-chart-canvas"></canvas>
+            </div>
+        </article>
     </section>
 </section>
 {{end}}

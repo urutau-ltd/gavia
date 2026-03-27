@@ -137,7 +137,8 @@
     <select id="hosting-provider-id" name="provider_id">
         <option value="">No provider</option>
         {{range .ProviderOptions}}
-        <option value="{{.Value}}" {{with $.Hosting}}{{if eq .ProviderIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Hosting}}{{if eq .ProviderIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 
@@ -145,7 +146,8 @@
     <select id="hosting-location-id" name="location_id">
         <option value="">No location</option>
         {{range .LocationOptions}}
-        <option value="{{.Value}}" {{with $.Hosting}}{{if eq .LocationIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Hosting}}{{if eq .LocationIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 
@@ -153,7 +155,8 @@
     <select id="hosting-domain-id" name="domain_id">
         <option value="">No domain</option>
         {{range .DomainOptions}}
-        <option value="{{.Value}}" {{with $.Hosting}}{{if eq .DomainIDValue $.Value}}selected{{end}}{{end}}>{{.Label}}</option>
+        {{$option := .}}
+        <option value="{{$option.Value}}" {{with $.Hosting}}{{if eq .DomainIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
         {{end}}
     </select>
 

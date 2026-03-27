@@ -65,6 +65,8 @@ if (chartDataElement && typeof ChartConstructor === "function") {
     const hasValues = (series = []) =>
       Array.isArray(series) &&
       series.some((value) => value !== null && value !== undefined && !Number.isNaN(Number(value)));
+    const hasPositiveValues = (series = []) =>
+      Array.isArray(series) && series.some((value) => Number(value) > 0);
 
     const showEmptyState = (canvas, message) => {
       if (!canvas) {
@@ -298,10 +300,54 @@ if (chartDataElement && typeof ChartConstructor === "function") {
       "No runtime diagnostics have been sampled yet.",
     );
 
+    const inventoryCanvas = document.getElementById("inventory-distribution-chart");
+    if (inventoryCanvas) {
+      const counts = chartData.inventory_distribution?.counts || [];
+      if (hasPositiveValues(counts)) {
+        const chart = new ChartConstructor(inventoryCanvas, {
+          type: "doughnut",
+          data: {
+            labels: chartData.inventory_distribution?.labels || [],
+            datasets: [
+              {
+                data: counts,
+                backgroundColor: [
+                  "#1d4ed8",
+                  "#0f766e",
+                  "#7c3aed",
+                  "#b45309",
+                  "#be123c",
+                  "#15803d",
+                  "#2563eb",
+                  "#9333ea",
+                  "#c2410c",
+                  "#334155",
+                ],
+                borderColor: "transparent",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+            },
+          },
+        });
+        window.__gaviaDashboardCharts.push(chart);
+      } else {
+        showEmptyState(inventoryCanvas, "No inventory records are available yet.");
+      }
+    }
+
     const uptimeCanvas = document.getElementById("uptime-status-chart");
     if (uptimeCanvas) {
       const counts = chartData.uptime_status?.counts || [];
-      if (hasValues(counts)) {
+      if (hasPositiveValues(counts)) {
         const chart = new ChartConstructor(uptimeCanvas, {
           type: "doughnut",
           data: {

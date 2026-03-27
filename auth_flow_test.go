@@ -100,6 +100,14 @@ func TestSetupLoginLogoutFlow(t *testing.T) {
 		t.Fatalf("expected setup response body to confirm account creation, got %q", rec.Body.String())
 	}
 
+	if strings.Contains(rec.Body.String(), "Initial Account Setup") {
+		t.Fatalf("expected setup response to stop rendering setup-only navigation, got %q", rec.Body.String())
+	}
+
+	if !strings.Contains(rec.Body.String(), "Dashboard") {
+		t.Fatalf("expected setup response to render authenticated navigation, got %q", rec.Body.String())
+	}
+
 	setupCookie := sessionCookieFromResponse(t, rec.Result().Cookies())
 
 	req = httptest.NewRequest(http.MethodGet, "/dashboard", nil)

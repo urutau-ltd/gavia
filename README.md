@@ -34,10 +34,18 @@ The current codebase includes:
 
 ## Quick start
 
-### Native shell
+### Dev runtime with Compose
 
 ```bash
 make run
+```
+
+That target starts the `gavia-dev` compose service in the foreground.
+
+### Native shell
+
+```bash
+make run-local
 ```
 
 ### Development shell
@@ -63,8 +71,9 @@ The default runtime listens on `:9091` and stores SQLite data at
 
 ## Build metadata
 
-`make build` and `make run` inject runtime metadata with Go `-ldflags -X`.
-The Makefile fills:
+`make build` and `make run-local` inject runtime metadata with Go `-ldflags -X`.
+The compose-based `make run` target uses the same source tree through the dev
+container.
 
 - `buildVersion`
 - `buildTag`

@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM deps AS dev
 COPY . .
 ENV GOCACHE=/tmp/go-build
-CMD ["go", "run", "./main.go"]
+CMD ["make", "run-local"]
 
 FROM deps AS builder
 ARG TARGETOS=linux
@@ -26,6 +26,7 @@ ARG BUILD_TAG=dev
 ARG BUILD_COMMIT=unknown
 ARG BUILD_DATE=unknown
 ARG UPSTREAM_REPO=urutau-ltd/gavia
+ARG UPSTREAM_VENDOR=Urutau Limited
 
 COPY . .
 RUN --mount=type=cache,target=/go/pkg/mod \
@@ -36,7 +37,8 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       GIT_TAG="${BUILD_TAG}" \
       GIT_COMMIT="${BUILD_COMMIT}" \
       BUILD_DATE="${BUILD_DATE}" \
-      UPSTREAM_REPO="${UPSTREAM_REPO}"
+      UPSTREAM_REPO="${UPSTREAM_REPO}" \
+      UPSTREAM_VENDOR="${UPSTREAM_VENDOR}"
 
 FROM ${RUNTIME_IMAGE} AS runtime
 WORKDIR /workspace

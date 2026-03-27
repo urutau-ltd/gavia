@@ -2,6 +2,7 @@ SHELL := /bin/sh
 
 GO ?= go
 CGO_ENABLED ?= 0
+GOCACHE := /tmp/go-build
 
 BINARY ?= gavia
 BUILD_DIR ?= build
@@ -33,7 +34,7 @@ BUILD_FLAGS ?= $(BUILD_LDFLAGS)
 FUZZTIME ?= 5s
 GO_SOURCES := $(shell find . -type f -name '*.go' -not -path './vendor/*')
 
-.PHONY: fmt fmt-check vet test test-race ci build install run clean image compose-up compose-dev-up compose-down compose-logs env pkg
+.PHONY: fmt fmt-check vet test test-race ci build install run run-local clean image compose-up compose-dev-up compose-down compose-logs env pkg
 
 fmt:
 	@gofmt -w $(GO_SOURCES)
@@ -47,26 +48,29 @@ fmt-check:
 	fi
 
 vet:
-	$(GO) vet ./...
+	GOCACHE=$(GOCACHE) $(GO) vet ./...
 
 test:
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) test -v ./...
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -v ./...
 
 test-race:
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) test -race ./...
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -race ./...
 
 ci: fmt-check vet test test-race
 
 build:
 	mkdir -p $(dir $(OUTPUT))
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) build -trimpath -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" -o $(OUTPUT) ./main.go
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) build -trimpath -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" -o $(OUTPUT) .
+
+run:
+	@podman compose --profile dev up --build gavia-dev
+
+run-local:
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) run -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" .
 
 install:
 	install -d "$(INSTALL_ROOT_DIR)"
 	install -m 0755 "$(OUTPUT)" "$(INSTALL_ROOT_DIR)/$(INSTALL_NAME)"
-
-run:
-	CGO_ENABLED=$(CGO_ENABLED) $(GO) run -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" ./main.go
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -80,6 +84,7 @@ image:
 		--build-arg BUILD_COMMIT=$(GIT_COMMIT) \
 		--build-arg BUILD_DATE=$(BUILD_DATE) \
 		--build-arg UPSTREAM_REPO=$(UPSTREAM_REPO) \
+		--build-arg UPSTREAM_VENDOR=$(UPSTREAM_VENDOR) \
 		-t $(IMAGE) .
 
 compose-up:

@@ -15,11 +15,19 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/finance"
 	appsetting "codeberg.org/urutau-ltd/gavia/internal/models/app_setting"
 	dashboardsummary "codeberg.org/urutau-ltd/gavia/internal/models/dashboard_summary"
+	"codeberg.org/urutau-ltd/gavia/internal/models/dnsrecord"
+	"codeberg.org/urutau-ltd/gavia/internal/models/domain"
 	exchangerate "codeberg.org/urutau-ltd/gavia/internal/models/exchange_rate"
 	expenseentry "codeberg.org/urutau-ltd/gavia/internal/models/expense_entry"
+	"codeberg.org/urutau-ltd/gavia/internal/models/hosting"
+	ipmodel "codeberg.org/urutau-ltd/gavia/internal/models/ip"
+	labelmodel "codeberg.org/urutau-ltd/gavia/internal/models/label"
 	"codeberg.org/urutau-ltd/gavia/internal/models/location"
+	operatingsystem "codeberg.org/urutau-ltd/gavia/internal/models/operating_system"
 	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
 	runtimesample "codeberg.org/urutau-ltd/gavia/internal/models/runtime_sample"
+	servermodel "codeberg.org/urutau-ltd/gavia/internal/models/server"
+	"codeberg.org/urutau-ltd/gavia/internal/models/subscription"
 	uptimemonitor "codeberg.org/urutau-ltd/gavia/internal/models/uptime_monitor"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
 )
@@ -31,6 +39,14 @@ type Handler struct {
 	dueRepo      *dashboardsummary.Repository
 	rateRepo     *exchangerate.Repository
 	expenseRepo  *expenseentry.ExpenseEntryRepository
+	osRepo       *operatingsystem.OperatingSystemRepository
+	ipRepo       *ipmodel.Repository
+	dnsRepo      *dnsrecord.Repository
+	labelRepo    *labelmodel.Repository
+	domainRepo   *domain.Repository
+	hostingRepo  *hosting.Repository
+	serverRepo   *servermodel.Repository
+	subRepo      *subscription.Repository
 	locationRepo *location.LocationRepository
 	providerRepo *provider.ProviderRepository
 	runtimeRepo  *runtimesample.Repository
@@ -44,12 +60,12 @@ type statCard struct {
 	Tone  string
 }
 
-type moduleCard struct {
-	Name    string
-	Status  string
-	Summary string
-	Href    string
-	Started bool
+type inventoryItem struct {
+	Label string
+	Count int
+	Hint  string
+	Href  string
+	Share float64
 }
 
 type dueSummary struct {
@@ -90,6 +106,10 @@ type chartPayload struct {
 		USD    []float64 `json:"usd"`
 		XMR    []float64 `json:"xmr"`
 	} `json:"expense_history"`
+	InventoryDistribution struct {
+		Labels []string `json:"labels"`
+		Counts []int    `json:"counts"`
+	} `json:"inventory_distribution"`
 	FXHistory struct {
 		Labels   []string   `json:"labels"`
 		MXNToUSD []*float64 `json:"mxn_to_usd"`
@@ -120,6 +140,14 @@ func NewHandler(l *slog.Logger, uiFS fs.FS, db *sql.DB) *Handler {
 		dueRepo:      dashboardsummary.NewRepository(db),
 		rateRepo:     exchangerate.NewRepository(db),
 		expenseRepo:  expenseentry.NewExpenseEntryRepository(db),
+		osRepo:       operatingsystem.NewOperatingSystemRepository(db),
+		ipRepo:       ipmodel.NewRepository(db),
+		dnsRepo:      dnsrecord.NewRepository(db),
+		labelRepo:    labelmodel.NewRepository(db),
+		domainRepo:   domain.NewRepository(db),
+		hostingRepo:  hosting.NewRepository(db),
+		serverRepo:   servermodel.NewRepository(db),
+		subRepo:      subscription.NewRepository(db),
 		locationRepo: location.NewLocationRepository(db),
 		tmpl:         t,
 		providerRepo: provider.NewProviderRepository(db),
@@ -155,6 +183,62 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	locationCount, err := h.locationRepo.Count(r.Context())
 	if err != nil {
 		h.logger.Error("Failed to count locations", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	osCount, err := h.osRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count operating systems", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	ipCount, err := h.ipRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count IP addresses", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	dnsCount, err := h.dnsRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count DNS records", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	labelCount, err := h.labelRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count labels", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	domainCount, err := h.domainRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count domains", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	hostingCount, err := h.hostingRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count hostings", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	serverCount, err := h.serverRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count servers", "err", err)
+		http.Error(w, "Not found", http.StatusInternalServerError)
+		return
+	}
+
+	subscriptionCount, err := h.subRepo.Count(r.Context())
+	if err != nil {
+		h.logger.Error("Failed to count subscriptions", "err", err)
 		http.Error(w, "Not found", http.StatusInternalServerError)
 		return
 	}
@@ -239,50 +323,59 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	inventoryItems := buildInventoryItems([]inventoryItem{
+		{Label: "Providers", Count: providerCount, Hint: "Vendors and registrars in the catalog.", Href: "/providers"},
+		{Label: "Locations", Count: locationCount, Hint: "Cities and regions used across the inventory.", Href: "/locations"},
+		{Label: "Operating systems", Count: osCount, Hint: "Selectable operating system catalog entries.", Href: "/os"},
+		{Label: "IP addresses", Count: ipCount, Hint: "Public and private network endpoints.", Href: "/ips"},
+		{Label: "DNS records", Count: dnsCount, Hint: "Tracked hostnames, records, and linked domains.", Href: "/dns"},
+		{Label: "Labels", Count: labelCount, Hint: "Reusable tags for grouping infrastructure.", Href: "/labels"},
+		{Label: "Domains", Count: domainCount, Hint: "Billable domain renewals and ownership records.", Href: "/domains"},
+		{Label: "Hostings", Count: hostingCount, Hint: "Hosting plans with provider and domain linkage.", Href: "/hostings"},
+		{Label: "Servers", Count: serverCount, Hint: "Compute nodes with OS, billing, IPs, and labels.", Href: "/servers"},
+		{Label: "Subscriptions", Count: subscriptionCount, Hint: "Recurring SaaS or service subscriptions.", Href: "/subscriptions"},
+	})
+
+	catalogCount := providerCount + locationCount + osCount
+	serviceAssetCount := domainCount + hostingCount + serverCount + subscriptionCount
+	networkRecordCount := ipCount + dnsCount + labelCount
+	totalInventoryCount := catalogCount + networkRecordCount + serviceAssetCount
+	uptimeMonitorCount := 0
+	if uptimeSummary != nil {
+		uptimeMonitorCount = uptimeSummary.Total
+	}
+
 	converter := finance.NewConverter(compactRateSamples(mxnUSDLatest, xmrUSDLatest))
-	chartsJSON, err := buildChartsJSON(allExpenses, settings.DefaultCurrency, converter, mxnUSDSeries, xmrUSDSeries, runtimeSamples, uptimeSummary)
+	chartsJSON, err := buildChartsJSON(
+		allExpenses,
+		settings.DefaultCurrency,
+		converter,
+		mxnUSDSeries,
+		xmrUSDSeries,
+		runtimeSamples,
+		uptimeSummary,
+		inventoryItems,
+	)
 	if err != nil {
 		h.logger.Error("Failed to build dashboard chart data", "err", err)
 		http.Error(w, "Not found", http.StatusInternalServerError)
 		return
 	}
 
-	modules := []moduleCard{
-		{Name: "Providers", Status: "ready", Summary: "CRUD base available with list, search and side editor.", Href: "/providers", Started: true},
-		{Name: "Locations", Status: "ready", Summary: "CRUD base available with search and responsive list layout.", Href: "/locations", Started: true},
-		{Name: "Operating systems", Status: "ready", Summary: "CRUD base available with list, search and a side editor.", Href: "/os", Started: true},
-		{Name: "IP addresses", Status: "ready", Summary: "Inventory for public and private addresses, ready to assign to servers.", Href: "/ips", Started: true},
-		{Name: "DNS records", Status: "ready", Summary: "Infrastructure DNS notes with explicit record types and targets.", Href: "/dns", Started: true},
-		{Name: "Labels", Status: "ready", Summary: "Reusable tags now wire into server assignments.", Href: "/labels", Started: true},
-		{Name: "Uptime", Status: "ready", Summary: "HTTP monitors with history and dashboard visibility.", Href: "/uptime", Started: true},
-		{Name: "Domains", Status: "ready", Summary: "Renewal tracking now includes provider selection and billing fields.", Href: "/domains", Started: true},
-		{Name: "Hostings", Status: "ready", Summary: "Hosting plans now connect providers, locations, domains, and billing.", Href: "/hostings", Started: true},
-		{Name: "Servers", Status: "ready", Summary: "Compute inventory now tracks OS, specs, provider, location, cost, IPs, and labels.", Href: "/servers", Started: true},
-		{Name: "Subscriptions", Status: "ready", Summary: "Recurring service subscriptions now have a full CRUD flow.", Href: "/subscriptions", Started: true},
-	}
-
-	startedModules := 0
-	for _, module := range modules {
-		if module.Started {
-			startedModules++
-		}
-	}
-
 	stats := []statCard{
-		{Label: "Providers", Value: providerCount, Hint: "Records available right now.", Tone: "ok"},
-		{Label: "Locations", Value: locationCount, Hint: "Places already tracked in the inventory.", Tone: "info"},
-		{Label: "Started modules", Value: startedModules, Hint: "CRUD or manual areas already wired end-to-end.", Tone: "warn"},
-		{Label: "Pending modules", Value: len(modules) - startedModules, Hint: "Schemas that still need their UI package.", Tone: "bad"},
+		{Label: "Catalog records", Value: catalogCount, Hint: "Providers, locations, and operating systems.", Tone: "ok"},
+		{Label: "Infrastructure assets", Value: serviceAssetCount, Hint: "Domains, hostings, servers, and subscriptions.", Tone: "info"},
+		{Label: "Network records", Value: networkRecordCount, Hint: "IP addresses, DNS records, and labels.", Tone: "warn"},
+		{Label: "Uptime monitors", Value: uptimeMonitorCount, Hint: "Checks currently configured in the app.", Tone: "bad"},
 	}
 
 	data := struct {
 		ui.BaseData
 		Providers        []*provider.Provider
 		Locations        []*location.Location
-		ProviderCount    int
-		LocationCount    int
 		Stats            []statCard
-		Modules          []moduleCard
+		InventoryItems   []inventoryItem
+		InventoryTotal   int
 		AppSettings      *appsetting.AppSettings
 		DueSoon          dueSummary
 		DueBreakdown     []breakdownItem
@@ -297,10 +390,9 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		BaseData:         ui.NewBaseData(r, "Dashboard", start),
 		Providers:        providers,
 		Locations:        locations,
-		ProviderCount:    providerCount,
-		LocationCount:    locationCount,
 		Stats:            stats,
-		Modules:          modules,
+		InventoryItems:   inventoryItems,
+		InventoryTotal:   totalInventoryCount,
 		AppSettings:      settings,
 		DueSoon:          buildDueSummary(dueItems, settings.DashboardCurrency, settings.DefaultCurrency, converter),
 		DueBreakdown:     buildDueBreakdown(dueItems, settings.DashboardCurrency, settings.DefaultCurrency, converter),
@@ -313,7 +405,12 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		Expenses:         expenses,
 	}
 
-	h.logger.Info("Dashboard loaded", "provider_count", providerCount, "location_count", locationCount, "started_modules", startedModules)
+	h.logger.Info("Dashboard loaded",
+		"provider_count", providerCount,
+		"location_count", locationCount,
+		"inventory_total", totalInventoryCount,
+		"service_assets", serviceAssetCount,
+	)
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := h.tmpl.ExecuteTemplate(w, "base", data); err != nil {
@@ -402,6 +499,52 @@ func buildExpenseBreakdown(items []*expenseentry.ExpenseEntry) []breakdownItem {
 	return buildBreakdownItems(buckets, func(bucket dashboardsummary.AmountBucket) string {
 		return fmt.Sprintf("%.2f", bucket.Amount)
 	}, "entry")
+}
+
+func buildInventoryItems(items []inventoryItem) []inventoryItem {
+	if len(items) == 0 {
+		return nil
+	}
+
+	result := append([]inventoryItem(nil), items...)
+	total := 0
+	for _, item := range result {
+		total += item.Count
+	}
+
+	sort.Slice(result, func(i, j int) bool {
+		if result[i].Count == result[j].Count {
+			return result[i].Label < result[j].Label
+		}
+		return result[i].Count > result[j].Count
+	})
+
+	if total <= 0 {
+		return result
+	}
+
+	for i := range result {
+		result[i].Share = float64(result[i].Count) / float64(total) * 100
+	}
+
+	return result
+}
+
+func buildInventoryDistributionChart(items []inventoryItem) struct {
+	Labels []string `json:"labels"`
+	Counts []int    `json:"counts"`
+} {
+	result := struct {
+		Labels []string `json:"labels"`
+		Counts []int    `json:"counts"`
+	}{}
+
+	for _, item := range items {
+		result.Labels = append(result.Labels, item.Label)
+		result.Counts = append(result.Counts, item.Count)
+	}
+
+	return result
 }
 
 func buildBreakdownItems(
@@ -520,9 +663,11 @@ func buildChartsJSON(
 	xmrUSDSeries []*exchangerate.Sample,
 	runtimeSamples []*runtimesample.Sample,
 	uptimeSummary *uptimemonitor.Summary,
+	inventoryItems []inventoryItem,
 ) (string, error) {
 	payload := chartPayload{}
 	payload.ExpenseHistory = buildExpenseHistoryChart(expenses, defaultCurrency, converter, mxnUSDSeries, xmrUSDSeries)
+	payload.InventoryDistribution = buildInventoryDistributionChart(inventoryItems)
 	payload.FXHistory = buildFXHistoryChart(mxnUSDSeries, xmrUSDSeries)
 	payload.RuntimeHistory = buildRuntimeHistoryChart(runtimeSamples)
 	payload.UptimeStatus = buildUptimeStatusChart(uptimeSummary)

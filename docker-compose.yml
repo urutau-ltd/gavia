@@ -12,6 +12,7 @@ services:
                 BUILD_COMMIT: '${BUILD_COMMIT:-local}'
                 BUILD_DATE: '${BUILD_DATE:-unknown}'
                 UPSTREAM_REPO: 'urutau-ltd/gavia'
+                UPSTREAM_VENDOR: 'Urutau Limited'
         restart: unless-stopped
         ports:
             - '9091:9091'
@@ -33,9 +34,8 @@ services:
             target: dev
         working_dir: /workspace
         command:
-            - 'go'
-            - 'run'
-            - './main.go'
+            - 'make'
+            - 'run-local'
         restart: unless-stopped
         ports:
             - '9091:9091'

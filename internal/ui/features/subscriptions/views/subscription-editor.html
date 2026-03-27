@@ -70,7 +70,7 @@
         {{end}}
     </dd>
 
-    <dt>Since date</dt>
+    <dt>Started on</dt>
     <dd>
         {{if .SinceDate}}
         {{.SinceDateValue}}
@@ -79,7 +79,7 @@
         {{end}}
     </dd>
 
-    <dt>Due date</dt>
+    <dt>Next charge date</dt>
     <dd>
         {{if .DueDate}}
         {{.DueDateValue}}
@@ -168,31 +168,42 @@
         value="{{with .Subscription}}{{.Type}}{{end}}"
     >
 
-    <label for="subscription-renewal-period">Renewal period</label>
+    <label for="subscription-renewal-period">Renewal cadence</label>
     <input
         id="subscription-renewal-period"
         name="renewal_period"
         type="text"
+        list="subscription-renewal-options"
         maxlength="60"
         placeholder="monthly, yearly, quarterly..."
         value="{{with .Subscription}}{{.RenewalPeriodValue}}{{end}}"
     >
+    <datalist id="subscription-renewal-options">
+        <option value="weekly">
+        <option value="monthly">
+        <option value="quarterly">
+        <option value="semiannual">
+        <option value="yearly">
+    </datalist>
+    <small class="crud-muted">Use this field for the billing cadence. Keep custom values if the provider uses a different cycle.</small>
 
-    <label for="subscription-since-date">Since date</label>
+    <label for="subscription-since-date">Started on</label>
     <input
         id="subscription-since-date"
         name="since_date"
         type="date"
         value="{{with .Subscription}}{{.SinceDateValue}}{{end}}"
     >
+    <small class="crud-muted">Optional. This is when the subscription started.</small>
 
-    <label for="subscription-due-date">Due date</label>
+    <label for="subscription-due-date">Next charge date</label>
     <input
         id="subscription-due-date"
         name="due_date"
         type="date"
         value="{{with .Subscription}}{{.DueDateValue}}{{end}}"
     >
+    <small class="crud-muted">Optional. This is the next expected renewal or billing date.</small>
 
     <label for="subscription-price">Price</label>
     <input
@@ -205,13 +216,13 @@
     >
 
     <label for="subscription-currency">Currency</label>
-    <input
-        id="subscription-currency"
-        name="currency"
-        type="text"
-        maxlength="8"
-        value="{{if .Subscription}}{{.Subscription.CurrencyValue .DefaultCurrency}}{{else}}{{.DefaultCurrency}}{{end}}"
-    >
+    {{$currency := .DefaultCurrency}}
+    {{with .Subscription}}{{$currency = .CurrencyValue $.DefaultCurrency}}{{end}}
+    <select id="subscription-currency" name="currency">
+        <option value="MXN" {{if eq $currency "MXN"}}selected{{end}}>MXN</option>
+        <option value="USD" {{if eq $currency "USD"}}selected{{end}}>USD</option>
+        <option value="XMR" {{if eq $currency "XMR"}}selected{{end}}>XMR</option>
+    </select>
 
     <label for="subscription-notes">Notes</label>
     <textarea id="subscription-notes" name="notes" rows="6">{{with .Subscription}}{{.NotesValue}}{{end}}</textarea>
