@@ -15,6 +15,10 @@ func TestHashPasswordAndVerify(t *testing.T) {
 	if VerifyPassword(hash, "wrong password") {
 		t.Fatal("expected password verification to fail for the wrong password")
 	}
+
+	if !VerifyPassword(hash, "  correct horse battery staple  ") {
+		t.Fatal("expected password verification to tolerate surrounding whitespace the same way hashing does")
+	}
 }
 
 func TestRecoveryKeyAndEncryptedBackupRoundTrip(t *testing.T) {
@@ -27,12 +31,16 @@ func TestRecoveryKeyAndEncryptedBackupRoundTrip(t *testing.T) {
 		t.Fatal("expected recovery key to match the generated public key")
 	}
 
+	if !RecoverySeedMatchesPublicKey("\n"+recoveryKey+"\n", "  "+publicKey+"  ") {
+		t.Fatal("expected recovery key comparison to tolerate pasted whitespace")
+	}
+
 	bundle, err := EncryptBackup([]byte(`{"format":"gavia.backup.v1"}`), publicKey)
 	if err != nil {
 		t.Fatalf("EncryptBackup returned error: %v", err)
 	}
 
-	plaintext, err := DecryptBackup(*bundle, recoveryKey)
+	plaintext, err := DecryptBackup(*bundle, "\n"+recoveryKey+"\n")
 	if err != nil {
 		t.Fatalf("DecryptBackup returned error: %v", err)
 	}

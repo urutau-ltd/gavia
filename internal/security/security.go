@@ -56,6 +56,8 @@ func HashPassword(password string) (string, error) {
 }
 
 func VerifyPassword(encodedHash, password string) bool {
+	password = strings.TrimSpace(password)
+
 	parts := strings.Split(encodedHash, "$")
 	if len(parts) != 4 || parts[0] != "pbkdf2-sha3-256" {
 		return false
@@ -114,6 +116,9 @@ func GenerateRecoveryKeyPair() (publicKey, seed string, err error) {
 }
 
 func RecoverySeedMatchesPublicKey(seed, publicKey string) bool {
+	seed = strings.TrimSpace(seed)
+	publicKey = strings.TrimSpace(publicKey)
+
 	seedBytes, err := decode(seed)
 	if err != nil {
 		return false
@@ -133,6 +138,8 @@ func RecoverySeedMatchesPublicKey(seed, publicKey string) bool {
 }
 
 func EncryptBackup(plaintext []byte, publicKey string) (*EncryptedBackup, error) {
+	publicKey = strings.TrimSpace(publicKey)
+
 	publicKeyBytes, err := decode(publicKey)
 	if err != nil {
 		return nil, err
@@ -148,6 +155,8 @@ func EncryptBackup(plaintext []byte, publicKey string) (*EncryptedBackup, error)
 }
 
 func DecryptBackup(bundle EncryptedBackup, recoverySeed string) ([]byte, error) {
+	recoverySeed = strings.TrimSpace(recoverySeed)
+
 	seedBytes, err := decode(recoverySeed)
 	if err != nil {
 		return nil, err
