@@ -63,10 +63,13 @@ build:
 	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) build -trimpath -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" -o $(OUTPUT) .
 
 run:
-	@podman compose --profile dev up --build gavia-dev
+	@podman compose --profile dev up --build gavia-dev -d
+
+stop:
+	@podman compose --profile dev down
 
 run-local:
-	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) run -ldflags "$(LDFLAGS) $(BUILD_FLAGS)" .
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) GO=$(GO) LDFLAGS="$(LDFLAGS)" GIT_COMMIT="$(GIT_COMMIT)" GIT_TAG="$(GIT_TAG)" BUILD_VERSION="$(BUILD_VERSION)" BUILD_DATE="$(BUILD_DATE)" UPSTREAM_REPO="$(UPSTREAM_REPO)" UPSTREAM_VENDOR="$(UPSTREAM_VENDOR)" sh ./scripts/run-local.sh
 
 install:
 	install -d "$(INSTALL_ROOT_DIR)"

@@ -3,16 +3,45 @@
     <td data-label="Address"><strong>{{.Address}}</strong></td>
     <td data-label="Type">{{.Type}}</td>
     <td data-label="Origin">
-        {{if .Org}}{{.OrgValue}}{{else if .Country}}{{.CountryValue}}{{else}}<span class="crud-muted">No origin info</span>{{end}}
+        {{if .Org}}{{.OrgValue}}{{else if
+        .Country}}{{.CountryValue}}{{else}}<span class="crud-muted"
+        >No origin info</span>{{end}}
     </td>
     <td data-label="Actions">
         <div class="crud-actions">
-            <a class="plain block crud-action-control" href="/ips/{{.ID}}" hx-get="/ips/{{.ID}}" hx-target="#ip-editor" hx-swap="outerHTML">View</a>
-            <a class="ok crud-action-control" href="/ips/{{.ID}}/edit" hx-get="/ips/{{.ID}}/edit" hx-target="#ip-editor" hx-swap="outerHTML">Edit</a>
-            <button type="button" class="bad crud-action-control" hx-delete="/ips/{{.ID}}" hx-target="#ip-editor" hx-swap="outerHTML" hx-include="#ip-search,#ip-limit" hx-confirm="Are you sure you want to delete this IP address?" _="on click add .is-removing to #ip-row-{{.ID}}">Delete</button>
+            <a
+                class="plain block crud-action-control"
+                href="/ips/{{.ID}}"
+                hx-get="/ips/{{.ID}}"
+                hx-target="#ip-editor"
+                hx-swap="outerHTML"
+            >View</a>
+            <a
+                class="ok crud-action-control"
+                href="/ips/{{.ID}}/edit"
+                hx-get="/ips/{{.ID}}/edit"
+                hx-target="#ip-editor"
+                hx-swap="outerHTML"
+            >Edit</a>
+            <button
+                type="button"
+                class="bad crud-action-control"
+                hx-delete="/ips/{{.ID}}"
+                hx-target="#ip-editor"
+                hx-swap="outerHTML"
+                hx-include="#ip-search,#ip-limit"
+                hx-confirm="Are you sure you want to delete this IP address?"
+                _="on click add .is-removing to #ip-row-{{.ID}}"
+            >
+                Delete
+            </button>
         </div>
     </td>
 </tr>
 {{- else}}
-<tr><td colspan="4"><em>No IP addresses are registered in the database.</em></td></tr>
+<tr>
+    <td colspan="4">
+        <em>No IP addresses are registered in the database.</em>
+    </td>
+</tr>
 {{- end}}{{end}}

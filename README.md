@@ -60,6 +60,20 @@ make env
 make image
 ```
 
+### Guix package
+
+```bash
+make pkg
+```
+
+That target runs:
+
+```bash
+guix build -f ./guix.scm
+```
+
+The resulting output is a store path under `/gnu/store/...`.
+
 ### Compose
 
 ```bash
@@ -86,13 +100,13 @@ That is what drives the version fields shown in logs and footer diagnostics.
 
 ## Environment variables
 
-| Variable | Default | Purpose |
-| --- | --- | --- |
-| `GAVIA_ADDR` | `:9091` | HTTP listen address |
-| `GAVIA_DB_PATH` | `./db/app.sqlite` | SQLite file path |
-| `GAVIA_LOG_FORMAT` | `text` | `text` or `json` |
-| `GAVIA_LOG_COLOR` | `auto` | `auto`, `always`, or `never` |
-| `GAVIA_LOG_LEVEL` | `info` | `debug`, `info`, `warn`, or `error` |
+| Variable           | Default           | Purpose                             |
+| ------------------ | ----------------- | ----------------------------------- |
+| `GAVIA_ADDR`       | `:9091`           | HTTP listen address                 |
+| `GAVIA_DB_PATH`    | `./db/app.sqlite` | SQLite file path                    |
+| `GAVIA_LOG_FORMAT` | `text`            | `text` or `json`                    |
+| `GAVIA_LOG_COLOR`  | `auto`            | `auto`, `always`, or `never`        |
+| `GAVIA_LOG_LEVEL`  | `info`            | `debug`, `info`, `warn`, or `error` |
 
 ## Frontend assets
 
@@ -109,6 +123,7 @@ The asset pipeline is documented in
 - [API reference](./docs/API_REFERENCE.md)
 - [Architecture overview](./docs/ARCHITECTURE.md)
 - [Asset pipeline](./docs/ASSET_PIPELINE.md)
+- [Guix packaging](./docs/GUIX.md)
 
 ### Internal maintenance docs
 
@@ -133,16 +148,18 @@ base template lives at:
 
 Third-party components currently used by the project include:
 
-| Library | License |
-| --- | --- |
-| `aile` | AGPL-3.0+ |
-| `modernc.org/sqlite` | BSD-3-Clause |
-| `htmx` | Zero-Clause BSD |
-| `hyperscript` | Zero-Clause BSD |
-| `missing.css` | BSD-2-Clause |
+| Library              | License         |
+| -------------------- | --------------- |
+| `aile`               | AGPL-3.0+       |
+| `modernc.org/sqlite` | BSD-3-Clause    |
+| `htmx`               | Zero-Clause BSD |
+| `hyperscript`        | Zero-Clause BSD |
+| `missing.css`        | BSD-2-Clause    |
 
 The Go standard library is distributed under the BSD-3-Clause license.
 
 The `avatar-X.svg` files are based on DiceBear Rings avatars:
 
-> [Rings](https://www.dicebear.com/styles/rings/) by [DiceBear](https://www.dicebear.com/), licensed under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+> [Rings](https://www.dicebear.com/styles/rings/) by
+> [DiceBear](https://www.dicebear.com/), licensed under
+> [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)

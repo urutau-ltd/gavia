@@ -49,5 +49,5 @@ When changing vendored libraries:
 ## Chart.js note
 
 The project expects the standalone UMD build for Chart.js because page scripts
-access it through `window.Chart`. Using an ESM-only file in `static/js/chartjs.js`
-would break the current page-level integration.
+access it through `window.Chart`. Using an ESM-only file in
+`static/js/chartjs.js` would break the current page-level integration.

@@ -1,84 +1,192 @@
 {{define "ip-editor-panel"}}
-<section id="ip-editor" class="box crud-editor" _="on htmx:beforeRequest add .is-loading to me end on htmx:afterSwap remove .is-loading from me">
+<section
+    id="ip-editor"
+    class="box crud-editor"
+    _="on htmx:beforeRequest add .is-loading to me end on htmx:afterSwap remove .is-loading from me"
+>
     {{template "ip-editor-content" .}}
 </section>
-{{end}}
-
-{{define "ip-editor-content"}}
-{{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
-{{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
-{{if eq .EditorMode "new"}}{{template "ip-form" .}}{{else if eq .EditorMode "edit"}}{{template "ip-form" .}}{{else if eq .EditorMode "detail"}}{{template "ip-detail" .}}{{else}}{{template "ip-empty" .}}{{end}}
-{{end}}
-
-{{define "ip-editor-response"}}
-{{template "ip-editor-panel" .}}
+{{end}} {{define "ip-editor-content"}} {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+{{if .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if eq .EditorMode "new"}}{{template
+"ip-form" .}}{{else if eq .EditorMode "edit"}}{{template "ip-form" .}}{{else if
+eq .EditorMode "detail"}}{{template "ip-detail" .}}{{else}}{{template "ip-empty"
+.}}{{end}} {{end}} {{define "ip-editor-response"}} {{template "ip-editor-panel"
+.}}
 <tbody id="ips-body" hx-swap-oob="outerHTML">{{template "ip-list" .}}</tbody>
-{{end}}
-
-{{define "ip-empty"}}
+{{end}} {{define "ip-empty"}}
 <div class="crud-empty-state">
     <h3>IP addresses panel</h3>
-    <p class="crud-muted">Select an IP address from the list or create a new one.</p>
+    <p class="crud-muted">
+        Select an IP address from the list or create a new one.
+    </p>
 </div>
-{{end}}
-
-{{define "ip-detail"}}
-{{with .IP}}
+{{end}} {{define "ip-detail"}} {{with .IP}}
 <header class="crud-editor-head">
     <h3>{{.Address}}</h3>
-    <a class="ok crud-action-control" href="/ips/{{.ID}}/edit" hx-get="/ips/{{.ID}}/edit" hx-target="#ip-editor" hx-swap="outerHTML">Edit</a>
+    <a
+        class="ok crud-action-control"
+        href="/ips/{{.ID}}/edit"
+        hx-get="/ips/{{.ID}}/edit"
+        hx-target="#ip-editor"
+        hx-swap="outerHTML"
+    >Edit</a>
 </header>
 
 <dl class="crud-meta">
-    <dt>ID</dt><dd><code>{{.ID}}</code></dd>
-    <dt>Type</dt><dd>{{.Type}}</dd>
-    <dt>City</dt><dd>{{if .City}}{{.CityValue}}{{else}}<span class="crud-muted">No city</span>{{end}}</dd>
-    <dt>Country</dt><dd>{{if .Country}}{{.CountryValue}}{{else}}<span class="crud-muted">No country</span>{{end}}</dd>
-    <dt>Organization</dt><dd>{{if .Org}}{{.OrgValue}}{{else}}<span class="crud-muted">No organization</span>{{end}}</dd>
-    <dt>ASN</dt><dd>{{if .ASN}}{{.ASNValue}}{{else}}<span class="crud-muted">No ASN</span>{{end}}</dd>
-    <dt>ISP</dt><dd>{{if .ISP}}{{.ISPValue}}{{else}}<span class="crud-muted">No ISP</span>{{end}}</dd>
-    <dt>Notes</dt><dd class="crud-note">{{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted">No notes</span>{{end}}</dd>
+    <dt>ID</dt>
+    <dd><code>{{.ID}}</code></dd>
+    <dt>Type</dt>
+    <dd>{{.Type}}</dd>
+    <dt>City</dt>
+    <dd>
+        {{if .City}}{{.CityValue}}{{else}}<span class="crud-muted"
+        >No city</span>{{end}}
+    </dd>
+    <dt>Country</dt>
+    <dd>
+        {{if .Country}}{{.CountryValue}}{{else}}<span class="crud-muted"
+        >No country</span>{{end}}
+    </dd>
+    <dt>Organization</dt>
+    <dd>
+        {{if .Org}}{{.OrgValue}}{{else}}<span class="crud-muted"
+        >No organization</span>{{end}}
+    </dd>
+    <dt>ASN</dt>
+    <dd>
+        {{if .ASN}}{{.ASNValue}}{{else}}<span class="crud-muted"
+        >No ASN</span>{{end}}
+    </dd>
+    <dt>ISP</dt>
+    <dd>
+        {{if .ISP}}{{.ISPValue}}{{else}}<span class="crud-muted"
+        >No ISP</span>{{end}}
+    </dd>
+    <dt>Notes</dt>
+    <dd class="crud-note">
+        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+        >No notes</span>{{end}}
+    </dd>
 </dl>
 
 <div class="crud-editor-actions">
-    <button type="button" class="bad crud-action-control" hx-delete="/ips/{{.ID}}" hx-target="#ip-editor" hx-swap="outerHTML" hx-include="#ip-search,#ip-limit" hx-confirm="Are you sure you want to delete this IP address?">Delete</button>
-    <a class="plain crud-action-control" href="/ips" hx-get="/ips" hx-target="#ip-editor" hx-swap="outerHTML">Close</a>
+    <button
+        type="button"
+        class="bad crud-action-control"
+        hx-delete="/ips/{{.ID}}"
+        hx-target="#ip-editor"
+        hx-swap="outerHTML"
+        hx-include="#ip-search,#ip-limit"
+        hx-confirm="Are you sure you want to delete this IP address?"
+    >
+        Delete
+    </button>
+    <a
+        class="plain crud-action-control"
+        href="/ips"
+        hx-get="/ips"
+        hx-target="#ip-editor"
+        hx-swap="outerHTML"
+    >Close</a>
 </div>
-{{else}}{{template "ip-empty" .}}{{end}}
-{{end}}
+{{else}}{{template "ip-empty" .}}{{end}} {{end}} {{define "ip-form"}}
+<h3>
+    {{if eq .EditorMode "edit"}}Edit IP address{{else}}New IP address{{end}}
+</h3>
 
-{{define "ip-form"}}
-<h3>{{if eq .EditorMode "edit"}}Edit IP address{{else}}New IP address{{end}}</h3>
-
-<form class="crud-form" method="post" action="{{.FormAction}}" hx-post="{{.FormAction}}" hx-target="#ip-editor" hx-swap="outerHTML" hx-include="#ip-search,#ip-limit">
+<form
+    class="crud-form"
+    method="post"
+    action="{{.FormAction}}"
+    hx-post="{{.FormAction}}"
+    hx-target="#ip-editor"
+    hx-swap="outerHTML"
+    hx-include="#ip-search,#ip-limit"
+>
     {{template "csrf_input" .}}
     <label for="ip-address">Address</label>
-    <input id="ip-address" name="address" type="text" required maxlength="120" value="{{with .IP}}{{.Address}}{{end}}">
+    <input
+        id="ip-address"
+        name="address"
+        type="text"
+        required
+        maxlength="120"
+        value="{{with .IP}}{{.Address}}{{end}}"
+    >
 
     <label for="ip-type">Type</label>
     <select id="ip-type" name="type">
-        {{range .TypeOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.IP}}{{if eq .Type $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .TypeOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.IP}}{{if
+            eq
+            .Type
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
 
     <label for="ip-city">City</label>
-    <input id="ip-city" name="city" type="text" maxlength="120" value="{{with .IP}}{{.CityValue}}{{end}}">
+    <input
+        id="ip-city"
+        name="city"
+        type="text"
+        maxlength="120"
+        value="{{with .IP}}{{.CityValue}}{{end}}"
+    >
     <label for="ip-country">Country</label>
-    <input id="ip-country" name="country" type="text" maxlength="120" value="{{with .IP}}{{.CountryValue}}{{end}}">
+    <input
+        id="ip-country"
+        name="country"
+        type="text"
+        maxlength="120"
+        value="{{with .IP}}{{.CountryValue}}{{end}}"
+    >
     <label for="ip-org">Organization</label>
-    <input id="ip-org" name="org" type="text" maxlength="160" value="{{with .IP}}{{.OrgValue}}{{end}}">
+    <input
+        id="ip-org"
+        name="org"
+        type="text"
+        maxlength="160"
+        value="{{with .IP}}{{.OrgValue}}{{end}}"
+    >
     <label for="ip-asn">ASN</label>
-    <input id="ip-asn" name="asn" type="text" maxlength="80" value="{{with .IP}}{{.ASNValue}}{{end}}">
+    <input
+        id="ip-asn"
+        name="asn"
+        type="text"
+        maxlength="80"
+        value="{{with .IP}}{{.ASNValue}}{{end}}"
+    >
     <label for="ip-isp">ISP</label>
-    <input id="ip-isp" name="isp" type="text" maxlength="160" value="{{with .IP}}{{.ISPValue}}{{end}}">
+    <input
+        id="ip-isp"
+        name="isp"
+        type="text"
+        maxlength="160"
+        value="{{with .IP}}{{.ISPValue}}{{end}}"
+    >
     <label for="ip-notes">Notes</label>
-    <textarea id="ip-notes" name="notes" rows="6">{{with .IP}}{{.NotesValue}}{{end}}</textarea>
-    <small class="crud-muted">The list column "Origin" is built from organization or country. "Actions" are the row controls on the right.</small>
+    <textarea id="ip-notes" name="notes" rows="6"
+    >{{with .IP}}{{.NotesValue}}{{end}}</textarea>
+    <small class="crud-muted"
+    >The list column "Origin" is built from organization or country. "Actions"
+        are the row controls on the right.</small>
     <div class="crud-editor-actions">
-        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
-        <a class="plain crud-action-control" href="/ips" hx-get="/ips" hx-target="#ip-editor" hx-swap="outerHTML">Cancel</a>
+        <button type="submit" class="ok crud-action-control">
+            {{.FormSubmit}}
+        </button>
+        <a
+            class="plain crud-action-control"
+            href="/ips"
+            hx-get="/ips"
+            hx-target="#ip-editor"
+            hx-swap="outerHTML"
+        >Cancel</a>
     </div>
 </form>
 {{end}}

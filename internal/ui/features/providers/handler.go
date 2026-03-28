@@ -288,6 +288,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		data.Providers = updatedProviders
 	}
 
+	refreshed, getErr := h.providerRepo.GetByID(r.Context(), data.Provider.Id)
+	if getErr != nil {
+		h.logger.Error("Failed to reload provider after create", "id", data.Provider.Id, "err", getErr)
+	} else if refreshed != nil {
+		data.Provider = refreshed
+	}
+
 	data.EditorMode = "detail"
 	data.NoticeHTML = bannerHTML("ok", "Provider created successfully.")
 

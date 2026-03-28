@@ -7,40 +7,23 @@
 >
     {{template "server-editor-content" .}}
 </section>
-{{end}}
-
-{{define "server-editor-content"}}
-{{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
-{{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
-{{if eq .EditorMode "new"}}
-{{template "server-form" .}}
-{{else if eq .EditorMode "edit"}}
-{{template "server-form" .}}
-{{else if eq .EditorMode "detail"}}
-{{template "server-detail" .}}
-{{else}}
-{{template "server-empty" .}}
-{{end}}
-{{end}}
-
-{{define "server-editor-response"}}
-{{template "server-editor-panel" .}}
+{{end}} {{define "server-editor-content"}} {{if
+.NoticeHTML}}{{.NoticeHTML}}{{end}} {{if .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if
+eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
+"edit"}} {{template "server-form" .}} {{else if eq .EditorMode "detail"}}
+{{template "server-detail" .}} {{else}} {{template "server-empty" .}} {{end}}
+{{end}} {{define "server-editor-response"}} {{template "server-editor-panel" .}}
 <tbody id="servers-body" hx-swap-oob="outerHTML">
     {{template "server-list" .}}
 </tbody>
-{{end}}
-
-{{define "server-empty"}}
+{{end}} {{define "server-empty"}}
 <div class="crud-empty-state">
     <h3>Servers panel</h3>
     <p class="crud-muted">
         Select a server from the list or create a new one.
     </p>
 </div>
-{{end}}
-
-{{define "server-detail"}}
-{{with .Server}}
+{{end}} {{define "server-detail"}} {{with .Server}}
 <header class="crud-editor-head">
     <h3>{{.Hostname}}</h3>
     <a
@@ -62,31 +45,60 @@
     <dd>{{.Type}}</dd>
 
     <dt>Operating system</dt>
-    <dd>{{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted">No OS</span>{{end}}</dd>
+    <dd>
+        {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
+        >No OS</span>{{end}}
+    </dd>
 
     <dt>Provider</dt>
-    <dd>{{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span class="crud-muted">No provider</span>{{end}}</dd>
+    <dd>
+        {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
+            class="crud-muted"
+        >No provider</span>{{end}}
+    </dd>
 
     <dt>Location</dt>
-    <dd>{{if .LocationName}}{{.LocationNameValue}}{{else}}<span class="crud-muted">No location</span>{{end}}</dd>
+    <dd>
+        {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
+            class="crud-muted"
+        >No location</span>{{end}}
+    </dd>
 
     <dt>CPU</dt>
-    <dd>{{if .CPUCores}}{{.CPUCoresValue}} cores{{else}}<span class="crud-muted">No CPU info</span>{{end}}</dd>
+    <dd>
+        {{if .CPUCores}}{{.CPUCoresValue}} cores{{else}}<span class="crud-muted"
+        >No CPU info</span>{{end}}
+    </dd>
 
     <dt>Memory</dt>
-    <dd>{{if .MemoryGB}}{{.MemoryGBValue}} GB{{else}}<span class="crud-muted">No memory info</span>{{end}}</dd>
+    <dd>
+        {{if .MemoryGB}}{{.MemoryGBValue}} GB{{else}}<span class="crud-muted"
+        >No memory info</span>{{end}}
+    </dd>
 
     <dt>Disk</dt>
-    <dd>{{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted">No disk info</span>{{end}}</dd>
+    <dd>
+        {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
+        >No disk info</span>{{end}}
+    </dd>
 
     <dt>Since date</dt>
-    <dd>{{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted">No since date</span>{{end}}</dd>
+    <dd>
+        {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
+        >No since date</span>{{end}}
+    </dd>
 
     <dt>Due date</dt>
-    <dd>{{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted">No due date</span>{{end}}</dd>
+    <dd>
+        {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
+        >No due date</span>{{end}}
+    </dd>
 
     <dt>Price</dt>
-    <dd>{{if .Price}}{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}{{else}}<span class="crud-muted">No price</span>{{end}}</dd>
+    <dd>
+        {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
+        {{.PriceDisplay}}{{else}}<span class="crud-muted">No price</span>{{end}}
+    </dd>
 
     <dt>IP addresses</dt>
     <dd>
@@ -121,7 +133,10 @@
     </dd>
 
     <dt>Notes</dt>
-    <dd class="crud-note">{{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted">No notes</span>{{end}}</dd>
+    <dd class="crud-note">
+        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+        >No notes</span>{{end}}
+    </dd>
 </dl>
 
 <div class="crud-editor-actions">
@@ -147,12 +162,7 @@
         Close
     </a>
 </div>
-{{else}}
-{{template "server-empty" .}}
-{{end}}
-{{end}}
-
-{{define "server-form"}}
+{{else}} {{template "server-empty" .}} {{end}} {{end}} {{define "server-form"}}
 <h3>{{if eq .EditorMode "edit"}}Edit server{{else}}New server{{end}}</h3>
 
 <form
@@ -166,58 +176,137 @@
 >
     {{template "csrf_input" .}}
     <label for="server-hostname">Hostname</label>
-    <input id="server-hostname" name="hostname" type="text" required maxlength="120" value="{{with .Server}}{{.Hostname}}{{end}}">
+    <input
+        id="server-hostname"
+        name="hostname"
+        type="text"
+        required
+        maxlength="120"
+        value="{{with .Server}}{{.Hostname}}{{end}}"
+    >
 
     <label for="server-type">Type</label>
-    <input id="server-type" name="type" type="text" required maxlength="80" value="{{with .Server}}{{.Type}}{{end}}">
+    <input
+        id="server-type"
+        name="type"
+        type="text"
+        required
+        maxlength="80"
+        value="{{with .Server}}{{.Type}}{{end}}"
+    >
 
     <label for="server-os-id">Operating system</label>
     <select id="server-os-id" name="os_id">
         <option value="">No operating system</option>
-        {{range .OSOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .OSIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .OSOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Server}}{{if
+            eq
+            .OSIDValue
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
 
     <label for="server-provider-id">Provider</label>
     <select id="server-provider-id" name="provider_id">
         <option value="">No provider</option>
-        {{range .ProviderOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .ProviderIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .ProviderOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Server}}{{if
+            eq
+            .ProviderIDValue
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
 
     <label for="server-location-id">Location</label>
     <select id="server-location-id" name="location_id">
         <option value="">No location</option>
-        {{range .LocationOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Server}}{{if eq .LocationIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .LocationOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Server}}{{if
+            eq
+            .LocationIDValue
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
 
     <label for="server-cpu-cores">CPU cores</label>
-    <input id="server-cpu-cores" name="cpu_cores" type="number" min="0" value="{{with .Server}}{{.CPUCoresValue}}{{end}}">
+    <input
+        id="server-cpu-cores"
+        name="cpu_cores"
+        type="number"
+        min="0"
+        value="{{with .Server}}{{.CPUCoresValue}}{{end}}"
+    >
 
     <label for="server-memory-gb">Memory in GB</label>
-    <input id="server-memory-gb" name="memory_gb" type="number" min="0" value="{{with .Server}}{{.MemoryGBValue}}{{end}}">
+    <input
+        id="server-memory-gb"
+        name="memory_gb"
+        type="number"
+        min="0"
+        value="{{with .Server}}{{.MemoryGBValue}}{{end}}"
+    >
 
     <label for="server-disk-gb">Disk in GB</label>
-    <input id="server-disk-gb" name="disk_gb" type="number" min="0" value="{{with .Server}}{{.DiskGBValue}}{{end}}">
+    <input
+        id="server-disk-gb"
+        name="disk_gb"
+        type="number"
+        min="0"
+        value="{{with .Server}}{{.DiskGBValue}}{{end}}"
+    >
 
     <label for="server-since-date">Since date</label>
-    <input id="server-since-date" name="since_date" type="date" value="{{with .Server}}{{.SinceDateValue}}{{end}}">
+    <input
+        id="server-since-date"
+        name="since_date"
+        type="date"
+        value="{{with .Server}}{{.SinceDateValue}}{{end}}"
+    >
 
     <label for="server-due-date">Due date</label>
-    <input id="server-due-date" name="due_date" type="date" value="{{with .Server}}{{.DueDateValue}}{{end}}">
+    <input
+        id="server-due-date"
+        name="due_date"
+        type="date"
+        value="{{with .Server}}{{.DueDateValue}}{{end}}"
+    >
 
     <label for="server-price">Price</label>
-    <input id="server-price" name="price" type="number" min="0" step="0.01" value="{{with .Server}}{{.PriceDisplay}}{{end}}">
+    <input
+        id="server-price"
+        name="price"
+        type="number"
+        min="0"
+        step="0.01"
+        value="{{with .Server}}{{.PriceDisplay}}{{end}}"
+    >
 
     <label for="server-currency">Currency</label>
-    <input id="server-currency" name="currency" type="text" maxlength="8" value="{{if .Server}}{{.Server.CurrencyValue .DefaultCurrency}}{{else}}{{.DefaultCurrency}}{{end}}">
+    <input
+        id="server-currency"
+        name="currency"
+        type="text"
+        maxlength="8"
+        value="{{if .Server}}{{.Server.CurrencyValue .DefaultCurrency}}{{else}}{{.DefaultCurrency}}{{end}}"
+    >
 
     <fieldset class="crud-assignment-group">
         <legend>IP addresses</legend>
@@ -225,7 +314,14 @@
         <div class="crud-assignment-grid">
             {{range .IPOptions}}
             <label class="crud-assignment-option" for="server-ip-{{.Value}}">
-                <input id="server-ip-{{.Value}}" name="ip_ids" type="checkbox" value="{{.Value}}" {{if .Selected}}checked{{end}}>
+                <input
+                    id="server-ip-{{.Value}}"
+                    name="ip_ids"
+                    type="checkbox"
+                    value="{{.Value}}"
+                    {{if
+                    .Selected}}checked{{end}}
+                >
                 <span>
                     <strong>{{.Label}}</strong>
                     {{if .Hint}}<small>{{.Hint}}</small>{{end}}
@@ -234,7 +330,9 @@
             {{end}}
         </div>
         {{else}}
-        <p class="crud-muted">Create IP addresses first if you want to assign them here.</p>
+        <p class="crud-muted">
+            Create IP addresses first if you want to assign them here.
+        </p>
         {{end}}
     </fieldset>
 
@@ -244,7 +342,14 @@
         <div class="crud-assignment-grid">
             {{range .LabelOptions}}
             <label class="crud-assignment-option" for="server-label-{{.Value}}">
-                <input id="server-label-{{.Value}}" name="label_ids" type="checkbox" value="{{.Value}}" {{if .Selected}}checked{{end}}>
+                <input
+                    id="server-label-{{.Value}}"
+                    name="label_ids"
+                    type="checkbox"
+                    value="{{.Value}}"
+                    {{if
+                    .Selected}}checked{{end}}
+                >
                 <span>
                     <strong>{{.Label}}</strong>
                     {{if .Hint}}<small>{{.Hint}}</small>{{end}}
@@ -253,16 +358,27 @@
             {{end}}
         </div>
         {{else}}
-        <p class="crud-muted">Create labels first if you want to assign them here.</p>
+        <p class="crud-muted">
+            Create labels first if you want to assign them here.
+        </p>
         {{end}}
     </fieldset>
 
     <label for="server-notes">Notes</label>
-    <textarea id="server-notes" name="notes" rows="6">{{with .Server}}{{.NotesValue}}{{end}}</textarea>
+    <textarea id="server-notes" name="notes" rows="6"
+    >{{with .Server}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="crud-editor-actions">
-        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
-        <a class="plain crud-action-control" href="/servers" hx-get="/servers" hx-target="#server-editor" hx-swap="outerHTML">Cancel</a>
+        <button type="submit" class="ok crud-action-control">
+            {{.FormSubmit}}
+        </button>
+        <a
+            class="plain crud-action-control"
+            href="/servers"
+            hx-get="/servers"
+            hx-target="#server-editor"
+            hx-swap="outerHTML"
+        >Cancel</a>
     </div>
 </form>
 {{end}}

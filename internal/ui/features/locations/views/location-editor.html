@@ -57,7 +57,16 @@
 
     <dt>Notes</dt>
     <dd class="location-note">
-        {{if .Notes}} {{.NotesValue}} {{else}}
+        {{if .Notes}}
+        <div class="warn box">
+            <strong class="titlebar">
+                Notes
+            </strong>
+            <p>
+                {{.NotesValue}}
+            </p>
+        </div>
+        {{else}}
         <span class="location-muted">No notes</span>
         {{end}}
     </dd>

@@ -2,9 +2,7 @@
 <tr id="domain-row-{{.ID}}">
     <td data-label="Domain"><strong>{{.Domain}}</strong></td>
     <td data-label="Provider">
-        {{if .ProviderName}}
-        {{.ProviderNameValue}}
-        {{else}}
+        {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
         <span class="crud-muted">No provider</span>
         {{end}}
     </td>
@@ -13,8 +11,7 @@
         <div>Due {{.DueDateValue}}</div>
         {{else}}
         <div class="crud-muted">No due date</div>
-        {{end}}
-        {{if .Price}}
+        {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
     </td>

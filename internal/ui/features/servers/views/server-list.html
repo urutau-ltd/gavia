@@ -5,24 +5,34 @@
         <div>{{.Type}}</div>
     </td>
     <td data-label="Specs">
-        <div>{{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted">No OS</span>{{end}}</div>
         <div>
-            {{if .CPUCores}}{{.CPUCoresValue}} CPU{{else}}-{{end}} ·
-            {{if .MemoryGB}}{{.MemoryGBValue}} GB RAM{{else}}-{{end}} ·
-            {{if .DiskGB}}{{.DiskGBValue}} GB disk{{else}}-{{end}}
+            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
+            >No OS</span>{{end}}
+        </div>
+        <div>
+            {{if .CPUCores}}{{.CPUCoresValue}} CPU{{else}}-{{end}} · {{if
+            .MemoryGB}}{{.MemoryGBValue}} GB RAM{{else}}-{{end}} · {{if
+            .DiskGB}}{{.DiskGBValue}} GB disk{{else}}-{{end}}
         </div>
     </td>
     <td data-label="Provider / Location">
-        <div>{{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span class="crud-muted">No provider</span>{{end}}</div>
-        <div>{{if .LocationName}}{{.LocationNameValue}}{{else}}<span class="crud-muted">No location</span>{{end}}</div>
+        <div>
+            {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
+                class="crud-muted"
+            >No provider</span>{{end}}
+        </div>
+        <div>
+            {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
+                class="crud-muted"
+            >No location</span>{{end}}
+        </div>
     </td>
     <td data-label="Billing">
         {{if .DueDate}}
         <div>Due {{.DueDateValue}}</div>
         {{else}}
         <div class="crud-muted">No due date</div>
-        {{end}}
-        {{if .Price}}
+        {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
     </td>

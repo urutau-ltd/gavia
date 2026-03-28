@@ -1,5 +1,5 @@
 {{define "content"}}
-<section class="dashboard-view">
+<section class="dashboard-view fullbleed padding-inline">
     <section class="dashboard-hero">
         <article class="box dashboard-intro">
             <h2>{{.Title}}</h2>
@@ -10,9 +10,9 @@
             </p>
 
             <div class="dashboard-actions">
-                <a class="ok &lt;button&gt;" href="/providers">Open providers</a>
-                <a class="plain &lt;button&gt;" href="/app-settings">Open app settings</a>
-                <a class="plain &lt;button&gt;" href="/uptime">Open uptime</a>
+                <a class="ok <button>" href="/providers">Open providers</a>
+                <a class="plain <button>" href="/app-settings">Open app settings</a>
+                <a class="plain <button>" href="/uptime">Open uptime</a>
             </div>
         </article>
     </section>
@@ -62,9 +62,15 @@
                         <strong>{{.Currency}}</strong>
                         <span>Total visible due exposure</span>
                     </div>
-                    <div class="dashboard-breakdown-bar" aria-hidden="true">
-                        <span style="width: {{if .Available}}100%{{else}}0%{{end}};"></span>
-                    </div>
+                    <meter
+                        class="dashboard-breakdown-meter"
+                        min="0"
+                        max="100"
+                        low="33"
+                        high="66"
+                        optimum="100"
+                        value="{{if .Available}}100{{else}}0{{end}}"
+                    ></meter>
                     <strong>{{.Value}}</strong>
                 </li>
                 {{end}}
@@ -124,9 +130,15 @@
                         <strong>{{.Label}}</strong>
                         <span>{{.Hint}}</span>
                     </div>
-                    <div class="dashboard-breakdown-bar" aria-hidden="true">
-                        <span style="width: {{printf "%.2f" .Share}}%;"></span>
-                    </div>
+                    <meter
+                        class="dashboard-breakdown-meter"
+                        min="0"
+                        max="100"
+                        low="25"
+                        high="60"
+                        optimum="100"
+                        value="{{printf "%.2f" .Share}}"
+                    ></meter>
                     <strong>{{.Value}}</strong>
                 </li>
                 {{else}}
@@ -176,9 +188,15 @@
                         <strong>{{.Label}}</strong>
                         <span>{{.Hint}}</span>
                     </div>
-                    <div class="dashboard-breakdown-bar" aria-hidden="true">
-                        <span style="width: {{printf "%.2f" .Share}}%;"></span>
-                    </div>
+                    <meter
+                        class="dashboard-breakdown-meter"
+                        min="0"
+                        max="100"
+                        low="25"
+                        high="60"
+                        optimum="100"
+                        value="{{printf "%.2f" .Share}}"
+                    ></meter>
                     <strong>{{.Value}}</strong>
                 </li>
                 {{else}}
@@ -350,9 +368,15 @@
                         <strong><a href="{{.Href}}">{{.Label}}</a></strong>
                         <span>{{.Hint}}</span>
                     </div>
-                    <div class="dashboard-breakdown-bar" aria-hidden="true">
-                        <span style="width: {{printf "%.2f" .Share}}%;"></span>
-                    </div>
+                    <meter
+                        class="dashboard-breakdown-meter"
+                        min="0"
+                        max="100"
+                        low="25"
+                        high="60"
+                        optimum="100"
+                        value="{{printf "%.2f" .Share}}"
+                    ></meter>
                     <strong>{{.Count}}</strong>
                 </li>
                 {{end}}

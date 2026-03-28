@@ -5,9 +5,7 @@
         <div>{{.Type}}</div>
     </td>
     <td data-label="Renewal">
-        {{if .RenewalPeriod}}
-        {{.RenewalPeriodValue}}
-        {{else}}
+        {{if .RenewalPeriod}} {{.RenewalPeriodValue}} {{else}}
         <span class="crud-muted">No renewal period</span>
         {{end}}
     </td>
@@ -16,8 +14,7 @@
         <div>Due {{.DueDateValue}}</div>
         {{else}}
         <div class="crud-muted">No due date</div>
-        {{end}}
-        {{if .Price}}
+        {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
     </td>
@@ -58,6 +55,8 @@
 </tr>
 {{- else}}
 <tr>
-    <td colspan="4"><em>No subscriptions are registered in the database.</em></td>
+    <td colspan="4">
+        <em>No subscriptions are registered in the database.</em>
+    </td>
 </tr>
 {{- end}} {{end}}

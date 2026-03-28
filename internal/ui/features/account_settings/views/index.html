@@ -4,12 +4,9 @@
         <div>
             <h2>{{.Title}}</h2>
             <p class="settings-subtitle">
-                {{if .SetupMode}}
-                Create the local administrator account used to access the app.
-                {{else}}
-                Update the administrator identity, rotate secrets, and keep the
-                recovery key safe.
-                {{end}}
+                {{if .SetupMode}} Create the local administrator account used to
+                access the app. {{else}} Update the administrator identity,
+                rotate secrets, and keep the recovery key safe. {{end}}
             </p>
         </div>
 
@@ -18,10 +15,8 @@
         {{end}}
     </header>
 
-    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
-    {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
-
-    {{if .GeneratedAPIToken}}
+    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}} {{if
+    .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if .GeneratedAPIToken}}
     <article class="box settings-secret-box">
         <h3>New API token</h3>
         <p class="settings-muted">
@@ -29,9 +24,7 @@
         </p>
         <pre class="settings-code">{{.GeneratedAPIToken}}</pre>
     </article>
-    {{end}}
-
-    {{if .GeneratedRecoveryKey}}
+    {{end}} {{if .GeneratedRecoveryKey}}
     <article class="box settings-secret-box">
         <h3>Recovery key</h3>
         <p class="settings-muted">
@@ -40,11 +33,14 @@
         </p>
         <pre class="settings-code">{{.GeneratedRecoveryKey}}</pre>
     </article>
-    {{end}}
-
-    {{if .Editing}}
+    {{end}} {{if .Editing}}
     <article class="box settings-panel">
-        <form method="post" action="/account-settings/edit" class="settings-form" hx-boost="false">
+        <form
+            method="post"
+            action="/account-settings/edit"
+            class="settings-form"
+            hx-boost="false"
+        >
             {{template "csrf_input" .}}
             <label for="account-username">Username</label>
             <input
@@ -64,7 +60,8 @@
                         type="radio"
                         name="avatar_path"
                         value="{{.Path}}"
-                        {{if .Selected}}checked{{end}}
+                        {{if
+                        .Selected}}checked{{end}}
                     >
                     <img src="{{.Path}}" alt="">
                 </label>
@@ -78,20 +75,23 @@
                 id="account-password"
                 name="password"
                 type="password"
-                {{if .SetupMode}}required{{end}}
+                {{if
+                .SetupMode}}required{{end}}
                 minlength="8"
                 autocomplete="{{if .SetupMode}}new-password{{else}}new-password{{end}}"
             >
             <small class="settings-muted">Use at least 8 characters.</small>
 
             <label for="account-password-confirm">
-                {{if .SetupMode}}Confirm password{{else}}Confirm new password{{end}}
+                {{if .SetupMode}}Confirm password{{else}}Confirm new
+                password{{end}}
             </label>
             <input
                 id="account-password-confirm"
                 name="confirm_password"
                 type="password"
-                {{if .SetupMode}}required{{end}}
+                {{if
+                .SetupMode}}required{{end}}
                 minlength="8"
                 autocomplete="new-password"
             >
@@ -116,8 +116,7 @@
             </div>
         </form>
     </article>
-    {{else}}
-    {{with .Account}}
+    {{else}} {{with .Account}}
     <div class="settings-grid">
         <article class="box settings-panel">
             <h3>Profile</h3>
@@ -129,20 +128,16 @@
 
                     <dt>API token</dt>
                     <dd>
-                        {{if .APITokenHint}}
-                        Configured, ends in <code>{{.APITokenHint}}</code>
-                        {{else}}
-                        Not configured yet
-                        {{end}}
+                        {{if .APITokenHint}} Configured, ends in <code
+                        >{{.APITokenHint}}</code>
+                        {{else}} Not configured yet {{end}}
                     </dd>
 
                     <dt>Recovery key</dt>
                     <dd>
-                        {{if .RecoveryPublicKey}}
-                        Configured for password recovery and encrypted backups
-                        {{else}}
-                        Not configured yet
-                        {{end}}
+                        {{if .RecoveryPublicKey}} Configured for password
+                        recovery and encrypted backups {{else}} Not configured
+                        yet {{end}}
                     </dd>
                 </dl>
             </div>
@@ -170,11 +165,11 @@
 
             <div class="settings-actions">
                 <a class="plain <button>" href="/login">Open login page</a>
-                <a class="plain <button>" href="/app-settings">Open app settings</a>
+                <a class="plain <button>" href="/app-settings"
+                >Open app settings</a>
             </div>
         </article>
     </div>
-    {{end}}
-    {{end}}
+    {{end}} {{end}}
 </section>
 {{end}}

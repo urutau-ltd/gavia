@@ -1,12 +1,38 @@
 {{define "label-list"}}{{- range .Labels}}
 <tr id="label-row-{{.ID}}">
     <td data-label="Label"><strong>{{.Name}}</strong></td>
-    <td data-label="Notes">{{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted">No notes</span>{{end}}</td>
+    <td data-label="Notes">
+        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+        >No notes</span>{{end}}
+    </td>
     <td data-label="Actions">
         <div class="crud-actions">
-            <a class="plain block crud-action-control" href="/labels/{{.ID}}" hx-get="/labels/{{.ID}}" hx-target="#label-editor" hx-swap="outerHTML">View</a>
-            <a class="ok crud-action-control" href="/labels/{{.ID}}/edit" hx-get="/labels/{{.ID}}/edit" hx-target="#label-editor" hx-swap="outerHTML">Edit</a>
-            <button type="button" class="bad crud-action-control" hx-delete="/labels/{{.ID}}" hx-target="#label-editor" hx-swap="outerHTML" hx-include="#label-search,#label-limit" hx-confirm="Are you sure you want to delete this label?" _="on click add .is-removing to #label-row-{{.ID}}">Delete</button>
+            <a
+                class="plain block crud-action-control"
+                href="/labels/{{.ID}}"
+                hx-get="/labels/{{.ID}}"
+                hx-target="#label-editor"
+                hx-swap="outerHTML"
+            >View</a>
+            <a
+                class="ok crud-action-control"
+                href="/labels/{{.ID}}/edit"
+                hx-get="/labels/{{.ID}}/edit"
+                hx-target="#label-editor"
+                hx-swap="outerHTML"
+            >Edit</a>
+            <button
+                type="button"
+                class="bad crud-action-control"
+                hx-delete="/labels/{{.ID}}"
+                hx-target="#label-editor"
+                hx-swap="outerHTML"
+                hx-include="#label-search,#label-limit"
+                hx-confirm="Are you sure you want to delete this label?"
+                _="on click add .is-removing to #label-row-{{.ID}}"
+            >
+                Delete
+            </button>
         </div>
     </td>
 </tr>

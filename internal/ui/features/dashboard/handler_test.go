@@ -2,6 +2,7 @@ package dashboard
 
 import (
 	"database/sql"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	_ "modernc.org/sqlite"
@@ -25,21 +27,25 @@ func TestDashboardShowsDueSoonLimitAndRecentExpenses(t *testing.T) {
 		t.Fatalf("SeedReferenceData returned error: %v", err)
 	}
 
-	if _, err := db.Exec(`
+	domainDueOne := sqlDateFromNow(1)
+	domainDueTwo := sqlDateFromNow(2)
+	subscriptionDue := sqlDateFromNow(3)
+
+	if _, err := db.Exec(fmt.Sprintf(`
 		UPDATE app_settings
 		SET dashboard_due_soon_amount = 2, dashboard_currency = 'MXN'
 		WHERE id = 'app'
-	`); err != nil {
+	`)); err != nil {
 		t.Fatalf("could not update app settings fixture: %v", err)
 	}
 
-	if _, err := db.Exec(`
+	if _, err := db.Exec(fmt.Sprintf(`
 		INSERT INTO domains (id, domain, due_date, price) VALUES
-			('domain-1', 'example.com', '2026-03-26', 10.00),
-			('domain-2', 'example.net', '2026-03-27', 20.00);
+			('domain-1', 'example.com', '%s', 10.00),
+			('domain-2', 'example.net', '%s', 20.00);
 
 		INSERT INTO subscriptions (id, name, type, due_date, price) VALUES
-			('subscription-1', 'Email SaaS', 'saas', '2026-03-28', 30.00);
+			('subscription-1', 'Email SaaS', 'saas', '%s', 30.00);
 
 		INSERT INTO expense_entries (
 			id,
@@ -106,7 +112,7 @@ func TestDashboardShowsDueSoonLimitAndRecentExpenses(t *testing.T) {
 			latency_ms
 		) VALUES
 			('result-1', 'monitor-1', '2026-03-10T12:00:00Z', 1, 200, 123);
-	`); err != nil {
+	`, domainDueOne, domainDueTwo, subscriptionDue)); err != nil {
 		t.Fatalf("could not prepare dashboard fixtures: %v", err)
 	}
 
@@ -165,4 +171,8 @@ func openDashboardTestDB(t *testing.T) *sql.DB {
 	})
 
 	return db
+}
+
+func sqlDateFromNow(days int) string {
+	return time.Now().UTC().AddDate(0, 0, days).Format("2006-01-02")
 }

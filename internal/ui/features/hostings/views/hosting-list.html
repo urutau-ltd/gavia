@@ -5,23 +5,28 @@
         <div>{{.Type}}</div>
     </td>
     <td data-label="Provider">
-        {{if .ProviderName}}
-        {{.ProviderNameValue}}
-        {{else}}
+        {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
         <span class="crud-muted">No provider</span>
         {{end}}
     </td>
     <td data-label="Location / Domain">
-        <div>{{if .LocationName}}{{.LocationNameValue}}{{else}}<span class="crud-muted">No location</span>{{end}}</div>
-        <div>{{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted">No domain</span>{{end}}</div>
+        <div>
+            {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
+                class="crud-muted"
+            >No location</span>{{end}}
+        </div>
+        <div>
+            {{if .DomainName}}{{.DomainNameValue}}{{else}}<span
+                class="crud-muted"
+            >No domain</span>{{end}}
+        </div>
     </td>
     <td data-label="Billing">
         {{if .DueDate}}
         <div>Due {{.DueDateValue}}</div>
         {{else}}
         <div class="crud-muted">No due date</div>
-        {{end}}
-        {{if .Price}}
+        {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
     </td>

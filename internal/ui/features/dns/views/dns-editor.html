@@ -1,72 +1,151 @@
 {{define "dns-editor-panel"}}
-<section id="dns-editor" class="box crud-editor" _="on htmx:beforeRequest add .is-loading to me end on htmx:afterSwap remove .is-loading from me">
+<section
+    id="dns-editor"
+    class="box crud-editor"
+    _="on htmx:beforeRequest add .is-loading to me end on htmx:afterSwap remove .is-loading from me"
+>
     {{template "dns-editor-content" .}}
 </section>
-{{end}}
-
-{{define "dns-editor-content"}}
-{{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
-{{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
-{{if eq .EditorMode "new"}}{{template "dns-form" .}}{{else if eq .EditorMode "edit"}}{{template "dns-form" .}}{{else if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template "dns-empty" .}}{{end}}
-{{end}}
-
-{{define "dns-editor-response"}}
-{{template "dns-editor-panel" .}}
+{{end}} {{define "dns-editor-content"}} {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+{{if .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if eq .EditorMode "new"}}{{template
+"dns-form" .}}{{else if eq .EditorMode "edit"}}{{template "dns-form" .}}{{else
+if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
+"dns-empty" .}}{{end}} {{end}} {{define "dns-editor-response"}} {{template
+"dns-editor-panel" .}}
 <tbody id="dns-body" hx-swap-oob="outerHTML">{{template "dns-list" .}}</tbody>
-{{end}}
-
-{{define "dns-empty"}}
-<div class="crud-empty-state"><h3>DNS records panel</h3><p class="crud-muted">Select a DNS record from the list or create a new one.</p></div>
-{{end}}
-
-{{define "dns-detail"}}
-{{with .Record}}
+{{end}} {{define "dns-empty"}}
+<div class="crud-empty-state">
+    <h3>DNS records panel</h3>
+    <p class="crud-muted">
+        Select a DNS record from the list or create a new one.
+    </p>
+</div>
+{{end}} {{define "dns-detail"}} {{with .Record}}
 <header class="crud-editor-head">
     <h3>{{.Hostname}}</h3>
-    <a class="ok crud-action-control" href="/dns/{{.ID}}/edit" hx-get="/dns/{{.ID}}/edit" hx-target="#dns-editor" hx-swap="outerHTML">Edit</a>
+    <a
+        class="ok crud-action-control"
+        href="/dns/{{.ID}}/edit"
+        hx-get="/dns/{{.ID}}/edit"
+        hx-target="#dns-editor"
+        hx-swap="outerHTML"
+    >Edit</a>
 </header>
 <dl class="crud-meta">
-    <dt>ID</dt><dd><code>{{.ID}}</code></dd>
-    <dt>Type</dt><dd>{{.Type}}</dd>
-    <dt>Domain</dt><dd>{{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted">No linked domain</span>{{end}}</dd>
-    <dt>Address</dt><dd>{{.Address}}</dd>
-    <dt>Notes</dt><dd class="crud-note">{{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted">No notes</span>{{end}}</dd>
+    <dt>ID</dt>
+    <dd><code>{{.ID}}</code></dd>
+    <dt>Type</dt>
+    <dd>{{.Type}}</dd>
+    <dt>Domain</dt>
+    <dd>
+        {{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted"
+        >No linked domain</span>{{end}}
+    </dd>
+    <dt>Address</dt>
+    <dd>{{.Address}}</dd>
+    <dt>Notes</dt>
+    <dd class="crud-note">
+        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+        >No notes</span>{{end}}
+    </dd>
 </dl>
 <div class="crud-editor-actions">
-    <button type="button" class="bad crud-action-control" hx-delete="/dns/{{.ID}}" hx-target="#dns-editor" hx-swap="outerHTML" hx-include="#dns-search,#dns-limit" hx-confirm="Are you sure you want to delete this DNS record?">Delete</button>
-    <a class="plain crud-action-control" href="/dns" hx-get="/dns" hx-target="#dns-editor" hx-swap="outerHTML">Close</a>
+    <button
+        type="button"
+        class="bad crud-action-control"
+        hx-delete="/dns/{{.ID}}"
+        hx-target="#dns-editor"
+        hx-swap="outerHTML"
+        hx-include="#dns-search,#dns-limit"
+        hx-confirm="Are you sure you want to delete this DNS record?"
+    >
+        Delete
+    </button>
+    <a
+        class="plain crud-action-control"
+        href="/dns"
+        hx-get="/dns"
+        hx-target="#dns-editor"
+        hx-swap="outerHTML"
+    >Close</a>
 </div>
-{{else}}{{template "dns-empty" .}}{{end}}
-{{end}}
-
-{{define "dns-form"}}
-<h3>{{if eq .EditorMode "edit"}}Edit DNS record{{else}}New DNS record{{end}}</h3>
-<form class="crud-form" method="post" action="{{.FormAction}}" hx-post="{{.FormAction}}" hx-target="#dns-editor" hx-swap="outerHTML" hx-include="#dns-search,#dns-limit">
+{{else}}{{template "dns-empty" .}}{{end}} {{end}} {{define "dns-form"}}
+<h3>
+    {{if eq .EditorMode "edit"}}Edit DNS record{{else}}New DNS record{{end}}
+</h3>
+<form
+    class="crud-form"
+    method="post"
+    action="{{.FormAction}}"
+    hx-post="{{.FormAction}}"
+    hx-target="#dns-editor"
+    hx-swap="outerHTML"
+    hx-include="#dns-search,#dns-limit"
+>
     {{template "csrf_input" .}}
     <label for="dns-type">Type</label>
     <select id="dns-type" name="type">
-        {{range .TypeOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Record}}{{if eq .Type $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .TypeOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Record}}{{if
+            eq
+            .Type
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
     <label for="dns-hostname">Hostname</label>
-    <input id="dns-hostname" name="hostname" type="text" required maxlength="255" value="{{with .Record}}{{.Hostname}}{{end}}">
+    <input
+        id="dns-hostname"
+        name="hostname"
+        type="text"
+        required
+        maxlength="255"
+        value="{{with .Record}}{{.Hostname}}{{end}}"
+    >
     <label for="dns-domain-id">Domain</label>
     <select id="dns-domain-id" name="domain_id">
         <option value="">No linked domain</option>
-        {{range .DomainOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Record}}{{if eq .DomainIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .DomainOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Record}}{{if
+            eq
+            .DomainIDValue
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
     <label for="dns-address">Address / target</label>
-    <input id="dns-address" name="address" type="text" required maxlength="255" value="{{with .Record}}{{.Address}}{{end}}">
+    <input
+        id="dns-address"
+        name="address"
+        type="text"
+        required
+        maxlength="255"
+        value="{{with .Record}}{{.Address}}{{end}}"
+    >
     <label for="dns-notes">Notes</label>
-    <textarea id="dns-notes" name="notes" rows="6">{{with .Record}}{{.NotesValue}}{{end}}</textarea>
+    <textarea id="dns-notes" name="notes" rows="6"
+    >{{with .Record}}{{.NotesValue}}{{end}}</textarea>
     <div class="crud-editor-actions">
-        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
-        <a class="plain crud-action-control" href="/dns" hx-get="/dns" hx-target="#dns-editor" hx-swap="outerHTML">Cancel</a>
+        <button type="submit" class="ok crud-action-control">
+            {{.FormSubmit}}
+        </button>
+        <a
+            class="plain crud-action-control"
+            href="/dns"
+            hx-get="/dns"
+            hx-target="#dns-editor"
+            hx-swap="outerHTML"
+        >Cancel</a>
     </div>
 </form>
 {{end}}

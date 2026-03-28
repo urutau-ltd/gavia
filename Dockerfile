@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
 FROM deps AS dev
 COPY . .
 ENV GOCACHE=/tmp/go-build
-CMD ["make", "run-local"]
+CMD ["sh", "./scripts/run-local.sh"]
 
 FROM deps AS builder
 ARG TARGETOS=linux

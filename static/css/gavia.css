@@ -26,6 +26,14 @@ body.sidebar-layout > div {
     height: 96px;
 }
 
+.htmx-logo {
+    height: 90px;
+}
+
+.hs-logo {
+    height: 90px;
+}
+
 .gavia-sidebar {
     display: grid;
     gap: var(--gavia-sidebar-gap);
@@ -386,19 +394,11 @@ body.sidebar-layout > div {
     color: inherit;
 }
 
-.dashboard-breakdown-bar {
-    position: relative;
-    height: 0.55rem;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--muted-fg) 15%, transparent);
-    overflow: hidden;
-}
-
-.dashboard-breakdown-bar > span {
+.dashboard-breakdown-meter {
     display: block;
-    height: 100%;
-    border-radius: inherit;
-    background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 55%, var(--ok-fg)));
+    inline-size: 100%;
+    block-size: 1rem;
+    margin: 0;
 }
 
 .dashboard-diagnostics-grid {

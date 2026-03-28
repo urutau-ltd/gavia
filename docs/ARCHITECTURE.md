@@ -45,8 +45,10 @@ Examples:
 
 - providers: [`internal/models/provider/`](../internal/models/provider/)
 - locations: [`internal/models/location/`](../internal/models/location/)
-- account settings: [`internal/models/account_setting/`](../internal/models/account_setting/)
-- uptime monitors: [`internal/models/uptime_monitor/`](../internal/models/uptime_monitor/)
+- account settings:
+  [`internal/models/account_setting/`](../internal/models/account_setting/)
+- uptime monitors:
+  [`internal/models/uptime_monitor/`](../internal/models/uptime_monitor/)
 
 Repositories are intentionally explicit and SQL-centric. The app does not use an
 ORM.
@@ -93,13 +95,13 @@ Routes are mounted in [`routing.go`](../routing.go).
 
 The app currently uses three route styles:
 
-- Manual pages:
-  `dashboard`, `login`, `logout`, `licenses`, `uptime`, and API endpoints
-- Collection resources mounted with Aile `x/resource`:
-  `providers`, `locations`, `os`, `ips`, `dns`, `labels`, `domains`,
-  `hostings`, `servers`, and `subscriptions`
-- Singleton resources mounted with Aile `x/resource`:
-  `account-settings`, `app-settings`
+- Manual pages: `dashboard`, `login`, `logout`, `licenses`, `uptime`, and API
+  endpoints
+- Collection resources mounted with Aile `x/resource`: `providers`, `locations`,
+  `os`, `ips`, `dns`, `labels`, `domains`, `hostings`, `servers`, and
+  `subscriptions`
+- Singleton resources mounted with Aile `x/resource`: `account-settings`,
+  `app-settings`
 
 This split is intentional:
 
@@ -150,8 +152,8 @@ Current primitives:
 - recovery key pair: ML-KEM-768
 - encrypted backups: ML-KEM-768 + HKDF(SHA3-256) + AES-GCM
 - browser CSRF protection: `http.NewCrossOriginProtection()` plus a
-  double-submit token for compatibility with older browsers and requests that
-  do not send modern fetch metadata headers
+  double-submit token for compatibility with older browsers and requests that do
+  not send modern fetch metadata headers
 
 Implementation:
 
@@ -168,13 +170,29 @@ The project ships:
 The asset pipeline is documented in
 [`docs/ASSET_PIPELINE.md`](./ASSET_PIPELINE.md).
 
+## Packaging
+
+The repository includes a local Guix package definition in
+[`guix.scm`](../guix.scm).
+
+Important constraints:
+
+- the package import path must stay aligned with [`go.mod`](../go.mod), which
+  currently declares `codeberg.org/urutau-ltd/gavia`
+- the Guix package builds in GOPATH mode through `go-build-system`
+- because of that GOPATH-mode runtime mismatch, the Guix package currently
+  disables its `check` phase tests and relies on the repository's normal
+  module-aware `go test ./...` run for behavioral verification
+
+Operational details live in [`docs/GUIX.md`](./GUIX.md).
+
 ## Generics in the codebase
 
 Generics are used sparingly and only where they reduce real repetition without
 hiding behavior:
 
-- [`internal/database/seed.go`](../internal/database/seed.go):
-  `seedMany[T]` reduces repeated seed loops
+- [`internal/database/seed.go`](../internal/database/seed.go): `seedMany[T]`
+  reduces repeated seed loops
 - [`internal/models/dashboard_summary/overview.go`](../internal/models/dashboard_summary/overview.go):
   `AggregateByLabel[T]` groups due and expense data without duplicating logic
 

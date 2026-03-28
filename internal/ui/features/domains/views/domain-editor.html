@@ -7,40 +7,23 @@
 >
     {{template "domain-editor-content" .}}
 </section>
-{{end}}
-
-{{define "domain-editor-content"}}
-{{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
-{{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
-{{if eq .EditorMode "new"}}
-{{template "domain-form" .}}
-{{else if eq .EditorMode "edit"}}
-{{template "domain-form" .}}
-{{else if eq .EditorMode "detail"}}
-{{template "domain-detail" .}}
-{{else}}
-{{template "domain-empty" .}}
-{{end}}
-{{end}}
-
-{{define "domain-editor-response"}}
-{{template "domain-editor-panel" .}}
+{{end}} {{define "domain-editor-content"}} {{if
+.NoticeHTML}}{{.NoticeHTML}}{{end}} {{if .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if
+eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
+"edit"}} {{template "domain-form" .}} {{else if eq .EditorMode "detail"}}
+{{template "domain-detail" .}} {{else}} {{template "domain-empty" .}} {{end}}
+{{end}} {{define "domain-editor-response"}} {{template "domain-editor-panel" .}}
 <tbody id="domains-body" hx-swap-oob="outerHTML">
     {{template "domain-list" .}}
 </tbody>
-{{end}}
-
-{{define "domain-empty"}}
+{{end}} {{define "domain-empty"}}
 <div class="crud-empty-state">
     <h3>Domains panel</h3>
     <p class="crud-muted">
         Select a domain from the list or create a new one.
     </p>
 </div>
-{{end}}
-
-{{define "domain-detail"}}
-{{with .Domain}}
+{{end}} {{define "domain-detail"}} {{with .Domain}}
 <header class="crud-editor-head">
     <h3>{{.Domain}}</h3>
     <a
@@ -60,26 +43,21 @@
 
     <dt>Provider</dt>
     <dd>
-        {{if .ProviderName}}
-        {{.ProviderNameValue}}
-        {{else}}
+        {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
         <span class="crud-muted">No provider</span>
         {{end}}
     </dd>
 
     <dt>Due date</dt>
     <dd>
-        {{if .DueDate}}
-        {{.DueDateValue}}
-        {{else}}
+        {{if .DueDate}} {{.DueDateValue}} {{else}}
         <span class="crud-muted">No due date</span>
         {{end}}
     </dd>
 
     <dt>Price</dt>
     <dd>
-        {{if .Price}}
-        {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
+        {{if .Price}} {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
         {{else}}
         <span class="crud-muted">No price</span>
         {{end}}
@@ -87,9 +65,7 @@
 
     <dt>Notes</dt>
     <dd class="crud-note">
-        {{if .Notes}}
-        {{.NotesValue}}
-        {{else}}
+        {{if .Notes}} {{.NotesValue}} {{else}}
         <span class="crud-muted">No notes</span>
         {{end}}
     </dd>
@@ -118,12 +94,7 @@
         Close
     </a>
 </div>
-{{else}}
-{{template "domain-empty" .}}
-{{end}}
-{{end}}
-
-{{define "domain-form"}}
+{{else}} {{template "domain-empty" .}} {{end}} {{end}} {{define "domain-form"}}
 <h3>{{if eq .EditorMode "edit"}}Edit domain{{else}}New domain{{end}}</h3>
 
 <form
@@ -150,9 +121,17 @@
     <label for="domain-provider-id">Provider</label>
     <select id="domain-provider-id" name="provider_id">
         <option value="">No provider</option>
-        {{range .ProviderOptions}}
-        {{$option := .}}
-        <option value="{{$option.Value}}" {{with $.Domain}}{{if eq .ProviderIDValue $option.Value}}selected{{end}}{{end}}>{{$option.Label}}</option>
+        {{range .ProviderOptions}} {{$option := .}}
+        <option
+            value="{{$option.Value}}"
+            {{with
+            $.Domain}}{{if
+            eq
+            .ProviderIDValue
+            $option.Value}}selected{{end}}{{end}}
+        >
+            {{$option.Label}}
+        </option>
         {{end}}
     </select>
 
@@ -184,10 +163,13 @@
     >
 
     <label for="domain-notes">Notes</label>
-    <textarea id="domain-notes" name="notes" rows="6">{{with .Domain}}{{.NotesValue}}{{end}}</textarea>
+    <textarea id="domain-notes" name="notes" rows="6"
+    >{{with .Domain}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="crud-editor-actions">
-        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
+        <button type="submit" class="ok crud-action-control">
+            {{.FormSubmit}}
+        </button>
         <a
             class="plain crud-action-control"
             href="/domains"

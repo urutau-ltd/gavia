@@ -1,5 +1,5 @@
 {{define "content"}}
-<section class="locations-view">
+<section class="locations-view fullbleed">
     <header class="locations-head">
         <div>
             <h2>{{.Title}}</h2>
@@ -10,7 +10,7 @@
 
         <a
             href="/locations/new"
-            class="ok &lt;button&gt; locations-create-action"
+            class="ok <button> <big> locations-create-action"
             hx-get="/locations/new"
             hx-target="#location-editor"
             hx-swap="outerHTML"

@@ -276,6 +276,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		data.Locations = updatedLocations
 	}
 
+	refreshed, getErr := h.locationRepo.GetByID(r.Context(), data.Location.Id)
+	if getErr != nil {
+		h.logger.Error("Failed to reload location after create", "id", data.Location.Id, "err", getErr)
+	} else if refreshed != nil {
+		data.Location = refreshed
+	}
+
 	data.EditorMode = "detail"
 	data.NoticeHTML = bannerHTML("ok", "Location created successfully.")
 

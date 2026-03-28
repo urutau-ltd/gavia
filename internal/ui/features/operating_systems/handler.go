@@ -276,6 +276,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 		data.OperatingSystems = updatedOperatingSystems
 	}
 
+	refreshed, getErr := h.osRepo.GetByID(r.Context(), data.OperatingSystem.Id)
+	if getErr != nil {
+		h.logger.Error("Failed to reload operating system after create", "id", data.OperatingSystem.Id, "err", getErr)
+	} else if refreshed != nil {
+		data.OperatingSystem = refreshed
+	}
+
 	data.EditorMode = "detail"
 	data.NoticeHTML = bannerHTML("ok", "Operating system created successfully.")
 
