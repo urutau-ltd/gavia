@@ -3,12 +3,14 @@ package dashboardapi
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	_ "modernc.org/sqlite"
@@ -24,7 +26,10 @@ func TestSummaryReturnsDashboardPayload(t *testing.T) {
 		t.Fatalf("SeedReferenceData returned error: %v", err)
 	}
 
-	if _, err := db.Exec(`
+	domainDueOne := sqlDateFromNow(1)
+	domainDueTwo := sqlDateFromNow(2)
+
+	if _, err := db.Exec(fmt.Sprintf(`
 		UPDATE app_settings
 		SET dashboard_due_soon_amount = 2, dashboard_currency = 'MXN'
 		WHERE id = 'app';
@@ -32,8 +37,8 @@ func TestSummaryReturnsDashboardPayload(t *testing.T) {
 		INSERT INTO providers (id, name) VALUES ('provider-api-1', 'Extra provider');
 		INSERT INTO locations (id, name) VALUES ('location-api-1', 'Extra location');
 		INSERT INTO domains (id, domain, due_date, price) VALUES
-			('domain-api-1', 'example.com', '2026-03-26', 10.00),
-			('domain-api-2', 'example.net', '2026-03-27', 20.00);
+			('domain-api-1', 'example.com', '%s', 10.00),
+			('domain-api-2', 'example.net', '%s', 20.00);
 		INSERT INTO expense_entries (
 			id,
 			title,
@@ -98,7 +103,7 @@ func TestSummaryReturnsDashboardPayload(t *testing.T) {
 			latency_ms
 		) VALUES
 			('result-api-1', 'monitor-api-1', '2026-03-10T12:00:00Z', 1, 200, 123);
-	`); err != nil {
+	`, domainDueOne, domainDueTwo)); err != nil {
 		t.Fatalf("could not prepare dashboard API fixtures: %v", err)
 	}
 
@@ -215,4 +220,8 @@ func openDashboardAPITestDB(t *testing.T) *sql.DB {
 	})
 
 	return db
+}
+
+func sqlDateFromNow(days int) string {
+	return time.Now().UTC().AddDate(0, 0, days).Format("2006-01-02")
 }
