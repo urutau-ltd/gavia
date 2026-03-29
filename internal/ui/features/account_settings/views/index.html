@@ -96,17 +96,39 @@
                 autocomplete="new-password"
             >
 
-            <label class="settings-check">
-                <input type="checkbox" name="regenerate_api_token" value="1">
+            <label class="crowded flex-row align-items:center">
+                <input
+                    type="checkbox"
+                    name="regenerate_api_token"
+                    value="1"
+                    _="on change if me.checked remove @hidden from #api-token-warning else add @hidden to #api-token-warning end"
+                >
                 <span>Generate a new API token</span>
             </label>
+            <p id="api-token-warning" class="settings-inline-note warn" hidden>
+                Generating a new token invalidates the previous one. The new
+                value is shown only once after saving.
+            </p>
 
-            <label class="settings-check">
-                <input type="checkbox" name="rotate_recovery_key" value="1">
+            <label class="crowded flex-row align-items:center">
+                <input
+                    type="checkbox"
+                    name="rotate_recovery_key"
+                    value="1"
+                    _="on change if me.checked remove @hidden from #recovery-key-warning else add @hidden to #recovery-key-warning end"
+                >
                 <span>Rotate the recovery key</span>
             </label>
+            <p
+                id="recovery-key-warning"
+                class="settings-inline-note warn"
+                hidden
+            >
+                Rotating the recovery key invalidates the previous recovery
+                material. Save the new key outside the app immediately.
+            </p>
 
-            <div class="settings-actions">
+            <div class="crowded flex-row flex-wrap:wrap align-items:center">
                 <button type="submit" class="ok <button>">
                     {{if .SetupMode}}Create account{{else}}Save changes{{end}}
                 </button>
@@ -122,23 +144,29 @@
             <h3>Profile</h3>
             <div class="settings-profile">
                 <img class="settings-avatar" src="{{.AvatarPath}}" alt="">
-                <dl class="settings-summary">
-                    <dt>Username</dt>
-                    <dd>{{.Username}}</dd>
+                <dl class="settings-summary table rows">
+                    <div>
+                        <dt>Username</dt>
+                        <dd>{{.Username}}</dd>
+                    </div>
 
-                    <dt>API token</dt>
-                    <dd>
-                        {{if .APITokenHint}} Configured, ends in <code
-                        >{{.APITokenHint}}</code>
-                        {{else}} Not configured yet {{end}}
-                    </dd>
+                    <div>
+                        <dt>API token</dt>
+                        <dd>
+                            {{if .APITokenHint}} Configured, ends in <code
+                            >{{.APITokenHint}}</code>
+                            {{else}} Not configured yet {{end}}
+                        </dd>
+                    </div>
 
-                    <dt>Recovery key</dt>
-                    <dd>
-                        {{if .RecoveryPublicKey}} Configured for password
-                        recovery and encrypted backups {{else}} Not configured
-                        yet {{end}}
-                    </dd>
+                    <div>
+                        <dt>Recovery key</dt>
+                        <dd>
+                            {{if .RecoveryPublicKey}} Configured for password
+                            recovery and encrypted backups {{else}} Not
+                            configured yet {{end}}
+                        </dd>
+                    </div>
                 </dl>
             </div>
         </article>
@@ -163,7 +191,7 @@
                 Summary: <code>GET /api/v1/dashboard/summary</code>
             </p>
 
-            <div class="settings-actions">
+            <div class="crowded flex-row flex-wrap:wrap align-items:center">
                 <a class="plain <button>" href="/login">Open login page</a>
                 <a class="plain <button>" href="/app-settings"
                 >Open app settings</a>

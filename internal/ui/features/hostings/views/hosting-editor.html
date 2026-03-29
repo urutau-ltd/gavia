@@ -18,14 +18,16 @@ eq .EditorMode "new"}} {{template "hosting-form" .}} {{else if eq .EditorMode
     {{template "hosting-list" .}}
 </tbody>
 {{end}} {{define "hosting-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>Hostings panel</h3>
     <p class="crud-muted">
         Select a hosting record from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "hosting-detail"}} {{with .Hosting}}
-<header class="crud-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Name}}</h3>
     <a
         class="ok crud-action-control"
@@ -38,65 +40,89 @@ eq .EditorMode "new"}} {{template "hosting-form" .}} {{else if eq .EditorMode
     </a>
 </header>
 
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
 
-    <dt>Type</dt>
-    <dd>{{.Type}}</dd>
+    <div>
+        <dt>Type</dt>
+        <dd>{{.Type}}</dd>
+    </div>
 
-    <dt>Provider</dt>
-    <dd>
-        {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
-            class="crud-muted"
-        >No provider</span>{{end}}
-    </dd>
+    <div>
+        <dt>Provider</dt>
+        <dd>
+            {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
+                class="crud-muted"
+            >No provider</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Location</dt>
-    <dd>
-        {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
-            class="crud-muted"
-        >No location</span>{{end}}
-    </dd>
+    <div>
+        <dt>Location</dt>
+        <dd>
+            {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
+                class="crud-muted"
+            >No location</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Domain</dt>
-    <dd>
-        {{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted"
-        >No domain</span>{{end}}
-    </dd>
+    <div>
+        <dt>Domain</dt>
+        <dd>
+            {{if .DomainName}}{{.DomainNameValue}}{{else}}<span
+                class="crud-muted"
+            >No domain</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Disk</dt>
-    <dd>
-        {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
-        >No disk size</span>{{end}}
-    </dd>
+    <div>
+        <dt>Disk</dt>
+        <dd>
+            {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
+            >No disk size</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Since date</dt>
-    <dd>
-        {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
-        >No since date</span>{{end}}
-    </dd>
+    <div>
+        <dt>Since date</dt>
+        <dd>
+            {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
+            >No since date</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Due date</dt>
-    <dd>
-        {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
-        >No due date</span>{{end}}
-    </dd>
+    <div>
+        <dt>Due date</dt>
+        <dd>
+            {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
+            >No due date</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Price</dt>
-    <dd>
-        {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
-        {{.PriceDisplay}}{{else}}<span class="crud-muted">No price</span>{{end}}
-    </dd>
+    <div>
+        <dt>Price</dt>
+        <dd>
+            {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
+            {{.PriceDisplay}}{{else}}<span class="crud-muted"
+            >No price</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
-        >No notes</span>{{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            >No notes</span>{{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="crud-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad crud-action-control"
@@ -252,7 +278,9 @@ eq .EditorMode "new"}} {{template "hosting-form" .}} {{else if eq .EditorMode
     <textarea id="hosting-notes" name="notes" rows="6"
     >{{with .Hosting}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="crud-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok crud-action-control">
             {{.FormSubmit}}
         </button>

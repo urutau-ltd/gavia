@@ -17,14 +17,16 @@
     {{template "provider-list" .}}
 </tbody>
 {{end}} {{define "provider-empty"}}
-<div class="provider-empty-state">
+<div class="provider-empty-state flow-gap">
     <h3>Providers panel</h3>
     <p class="provider-muted">
         Select a provider from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "provider-detail"}} {{with .Provider}}
-<header class="provider-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Name}}</h3>
     <a
         class="ok provider-action-control"
@@ -37,29 +39,37 @@
     </a>
 </header>
 
-<dl class="provider-meta">
-    <dt>ID</dt>
-    <dd><code>{{.Id}}</code></dd>
+<dl class="provider-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.Id}}</code></dd>
+    </div>
 
-    <dt>Website</dt>
-    <dd>
-        {{if .Website}}
-        <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
-        >{{.WebsiteValue}}</a>
-        {{else}}
-        <span class="provider-muted">No website</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Website</dt>
+        <dd>
+            {{if .Website}}
+            <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
+            >{{.WebsiteValue}}</a>
+            {{else}}
+            <span class="provider-muted">No website</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="provider-note">
-        {{if .Notes}} {{.NotesValue}} {{else}}
-        <span class="provider-muted">No notes</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="provider-note">
+            {{if .Notes}} {{.NotesValue}} {{else}}
+            <span class="provider-muted">No notes</span>
+            {{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="provider-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad provider-action-control"
@@ -121,7 +131,9 @@
     <textarea id="provider-notes" name="notes" rows="6"
     >{{with .Provider}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="provider-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok provider-action-control">
             {{.FormSubmit}}
         </button>

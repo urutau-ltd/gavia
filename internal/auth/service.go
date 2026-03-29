@@ -242,7 +242,7 @@ func (s *Service) loadViewer(r *http.Request) (Viewer, bool, error) {
 func redirectTarget(path string, viewer Viewer) string {
 	if viewer.SetupRequired {
 		switch path {
-		case "/account-settings", SetupPath, "/logout":
+		case "/account-settings", SetupPath, "/logout", "/javascript-license-info":
 			return ""
 		default:
 			return SetupPath
@@ -257,7 +257,7 @@ func redirectTarget(path string, viewer Viewer) string {
 	}
 
 	switch path {
-	case LoginPath, "/logout":
+	case LoginPath, "/logout", "/javascript-license-info":
 		return ""
 	default:
 		return LoginPath

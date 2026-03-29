@@ -22,7 +22,7 @@
             {{if .Editing}}
             <form method="post" action="/app-settings/edit" class="settings-form">
                 {{template "csrf_input" .}}
-                <label class="settings-check">
+                <label class="crowded flex-row align-items:center">
                     <input
                         type="checkbox"
                         name="show_version_footer"
@@ -77,28 +77,38 @@
                     value="{{.Settings.DashboardDueSoonAmount}}"
                 >
 
-                <div class="settings-actions">
+                <div class="crowded flex-row flex-wrap:wrap align-items:center">
                     <button type="submit" class="ok <button>">Save changes</button>
                     <a class="plain <button>" href="/app-settings">Cancel</a>
                 </div>
             </form>
             {{else}}
             <h3>Summary</h3>
-            <dl class="settings-summary">
-                <dt>Version footer</dt>
-                <dd>{{if .Settings.ShowVersionFooter}}Visible{{else}}Hidden{{end}}</dd>
+            <dl class="settings-summary table rows">
+                <div>
+                    <dt>Version footer</dt>
+                    <dd>{{if .Settings.ShowVersionFooter}}Visible{{else}}Hidden{{end}}</dd>
+                </div>
 
-                <dt>Default server OS</dt>
-                <dd>{{.Settings.DefaultServerOS}}</dd>
+                <div>
+                    <dt>Default server OS</dt>
+                    <dd>{{.Settings.DefaultServerOS}}</dd>
+                </div>
 
-                <dt>Default currency</dt>
-                <dd>{{.Settings.DefaultCurrency}}</dd>
+                <div>
+                    <dt>Default currency</dt>
+                    <dd>{{.Settings.DefaultCurrency}}</dd>
+                </div>
 
-                <dt>Dashboard currency</dt>
-                <dd>{{.Settings.DashboardCurrency}}</dd>
+                <div>
+                    <dt>Dashboard currency</dt>
+                    <dd>{{.Settings.DashboardCurrency}}</dd>
+                </div>
 
-                <dt>Dashboard due-soon amount</dt>
-                <dd>{{.Settings.DashboardDueSoonAmount}}</dd>
+                <div>
+                    <dt>Dashboard due-soon amount</dt>
+                    <dd>{{.Settings.DashboardDueSoonAmount}}</dd>
+                </div>
             </dl>
 
             <h3>Recent expenses</h3>
@@ -128,7 +138,7 @@
                 encrypted variant uses the configured ML-KEM recovery key.
             </p>
 
-            <div class="settings-actions settings-export-actions">
+            <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-end">
                 <a
                     class="plain <button>"
                     href="/app-settings/export"
@@ -158,6 +168,24 @@
                 Import replaces the current supported data snapshot and signs
                 out every active session.
             </p>
+            <button
+                type="button"
+                class="plain <button>"
+                _="on click toggle @hidden on #import-precautions"
+            >
+                Show or hide import precautions
+            </button>
+            <article id="import-precautions" class="box settings-inline-panel" hidden>
+                <h4>Import precautions</h4>
+                <ul>
+                    <li>Imports replace the currently supported snapshot.</li>
+                    <li>All active browser sessions are invalidated after import.</li>
+                    <li>
+                        Encrypted backups require the recovery key generated in
+                        account settings.
+                    </li>
+                </ul>
+            </article>
 
             <form method="post" action="/app-settings/import" class="settings-form">
                 {{template "csrf_input" .}}

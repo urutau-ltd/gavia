@@ -36,6 +36,7 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/domains"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/hostings"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/ips"
+	jslicenseinfo "codeberg.org/urutau-ltd/gavia/internal/ui/features/javascript_license_info"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/labels"
 	licensespage "codeberg.org/urutau-ltd/gavia/internal/ui/features/licenses"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
@@ -181,6 +182,22 @@ func TestUnsafeSetupPostWithoutCSRFTokenRejected(t *testing.T) {
 	}
 }
 
+func TestJavaScriptLicenseInfoPageIsPublic(t *testing.T) {
+	handler := buildAppHandler(t)
+
+	req := httptest.NewRequest(http.MethodGet, "/javascript-license-info", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected JavaScript license information page status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	if !strings.Contains(rec.Body.String(), `id="jslicense-labels1"`) {
+		t.Fatalf("expected JavaScript license information table, got %q", rec.Body.String())
+	}
+}
+
 func buildAppHandler(t *testing.T) http.Handler {
 	t.Helper()
 
@@ -236,6 +253,7 @@ func buildAppHandler(t *testing.T) http.Handler {
 	backupAPIHandler := backupapi.NewHandler(logger, backupService, accountRepo)
 	dashboardAPIHandler := dashboardapi.NewHandler(logger, db)
 	licensesHandler := licensespage.NewHandler(logger, uiRoot)
+	jsLicenseInfoHandler := jslicenseinfo.NewHandler(logger, uiRoot)
 	uptimeHandler := uptimepage.NewHandler(logger, uiRoot, uptimeRepo)
 
 	if err := mountRoutes(app, appHandlers{
@@ -257,6 +275,7 @@ func buildAppHandler(t *testing.T) http.Handler {
 		backupAPI:       backupAPIHandler,
 		dashboardAPI:    dashboardAPIHandler,
 		licenses:        licensesHandler,
+		jsLicenseInfo:   jsLicenseInfoHandler,
 		uptime:          uptimeHandler,
 	}); err != nil {
 		t.Fatalf("mountRoutes returned error: %v", err)

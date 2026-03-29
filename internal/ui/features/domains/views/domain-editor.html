@@ -17,14 +17,16 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
     {{template "domain-list" .}}
 </tbody>
 {{end}} {{define "domain-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>Domains panel</h3>
     <p class="crud-muted">
         Select a domain from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "domain-detail"}} {{with .Domain}}
-<header class="crud-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Domain}}</h3>
     <a
         class="ok crud-action-control"
@@ -37,41 +39,53 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
     </a>
 </header>
 
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
 
-    <dt>Provider</dt>
-    <dd>
-        {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
-        <span class="crud-muted">No provider</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Provider</dt>
+        <dd>
+            {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
+            <span class="crud-muted">No provider</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Due date</dt>
-    <dd>
-        {{if .DueDate}} {{.DueDateValue}} {{else}}
-        <span class="crud-muted">No due date</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Due date</dt>
+        <dd>
+            {{if .DueDate}} {{.DueDateValue}} {{else}}
+            <span class="crud-muted">No due date</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Price</dt>
-    <dd>
-        {{if .Price}} {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
-        {{else}}
-        <span class="crud-muted">No price</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Price</dt>
+        <dd>
+            {{if .Price}} {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
+            {{else}}
+            <span class="crud-muted">No price</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}} {{.NotesValue}} {{else}}
-        <span class="crud-muted">No notes</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}} {{.NotesValue}} {{else}}
+            <span class="crud-muted">No notes</span>
+            {{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="crud-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad crud-action-control"
@@ -166,7 +180,9 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
     <textarea id="domain-notes" name="notes" rows="6"
     >{{with .Domain}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="crud-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok crud-action-control">
             {{.FormSubmit}}
         </button>

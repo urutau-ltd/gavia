@@ -31,7 +31,7 @@
 {{end}}
 
 {{define "subscription-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>Subscriptions panel</h3>
     <p class="crud-muted">
         Select a subscription from the list or create a new one.
@@ -41,7 +41,7 @@
 
 {{define "subscription-detail"}}
 {{with .Subscription}}
-<header class="crud-editor-head">
+<header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center">
     <h3>{{.Name}}</h3>
     <a
         class="ok crud-action-control"
@@ -54,60 +54,74 @@
     </a>
 </header>
 
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
 
-    <dt>Type</dt>
-    <dd>{{.Type}}</dd>
+    <div>
+        <dt>Type</dt>
+        <dd>{{.Type}}</dd>
+    </div>
 
-    <dt>Renewal period</dt>
-    <dd>
-        {{if .RenewalPeriod}}
-        {{.RenewalPeriodValue}}
-        {{else}}
-        <span class="crud-muted">No renewal period</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Renewal period</dt>
+        <dd>
+            {{if .RenewalPeriod}}
+            {{.RenewalPeriodValue}}
+            {{else}}
+            <span class="crud-muted">No renewal period</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Started on</dt>
-    <dd>
-        {{if .SinceDate}}
-        {{.SinceDateValue}}
-        {{else}}
-        <span class="crud-muted">No since date</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Started on</dt>
+        <dd>
+            {{if .SinceDate}}
+            {{.SinceDateValue}}
+            {{else}}
+            <span class="crud-muted">No since date</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Next charge date</dt>
-    <dd>
-        {{if .DueDate}}
-        {{.DueDateValue}}
-        {{else}}
-        <span class="crud-muted">No due date</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Next charge date</dt>
+        <dd>
+            {{if .DueDate}}
+            {{.DueDateValue}}
+            {{else}}
+            <span class="crud-muted">No due date</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Price</dt>
-    <dd>
-        {{if .Price}}
-        {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
-        {{else}}
-        <span class="crud-muted">No price</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Price</dt>
+        <dd>
+            {{if .Price}}
+            {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
+            {{else}}
+            <span class="crud-muted">No price</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}}
-        {{.NotesValue}}
-        {{else}}
-        <span class="crud-muted">No notes</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}}
+            {{.NotesValue}}
+            {{else}}
+            <span class="crud-muted">No notes</span>
+            {{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="crud-editor-actions">
+<div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start">
     <button
         type="button"
         class="bad crud-action-control"
@@ -227,7 +241,7 @@
     <label for="subscription-notes">Notes</label>
     <textarea id="subscription-notes" name="notes" rows="6">{{with .Subscription}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="crud-editor-actions">
+    <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start">
         <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
         <a
             class="plain crud-action-control"

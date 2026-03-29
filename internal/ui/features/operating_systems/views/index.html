@@ -1,6 +1,8 @@
 {{define "content"}}
-<section class="os-view fullbleed">
-    <header class="os-head">
+<section class="os-view fullbleed padding-inline">
+    <header
+        class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
+    >
         <div>
             <h2>{{.Title}}</h2>
             <p class="os-subtitle">Manage your operating systems here.</p>
@@ -38,7 +40,6 @@
                         hx-include="#os-search,#os-limit"
                         hx-indicator="#os-loading"
                         hx-trigger="change"
-                        onchange="if (!window.htmx) this.form.submit();"
                     >
                         <option value="5" {{if eq .Limit 5}}selected{{end}}>
                             5
@@ -77,7 +78,7 @@
 
                 <button
                     type="submit"
-                    class="info <button> <big> os-filter-apply"
+                    class="info <button> <big> margin-inline-start:auto"
                 >
                     Apply
                 </button>

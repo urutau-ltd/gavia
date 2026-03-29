@@ -17,14 +17,16 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     {{template "server-list" .}}
 </tbody>
 {{end}} {{define "server-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>Servers panel</h3>
     <p class="crud-muted">
         Select a server from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "server-detail"}} {{with .Server}}
-<header class="crud-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Hostname}}</h3>
     <a
         class="ok crud-action-control"
@@ -37,109 +39,142 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     </a>
 </header>
 
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
 
-    <dt>Type</dt>
-    <dd>{{.Type}}</dd>
+    <div>
+        <dt>Type</dt>
+        <dd>{{.Type}}</dd>
+    </div>
 
-    <dt>Operating system</dt>
-    <dd>
-        {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
-        >No OS</span>{{end}}
-    </dd>
+    <div>
+        <dt>Operating system</dt>
+        <dd>
+            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
+            >No OS</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Provider</dt>
-    <dd>
-        {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
-            class="crud-muted"
-        >No provider</span>{{end}}
-    </dd>
+    <div>
+        <dt>Provider</dt>
+        <dd>
+            {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
+                class="crud-muted"
+            >No provider</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Location</dt>
-    <dd>
-        {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
-            class="crud-muted"
-        >No location</span>{{end}}
-    </dd>
+    <div>
+        <dt>Location</dt>
+        <dd>
+            {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
+                class="crud-muted"
+            >No location</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>CPU</dt>
-    <dd>
-        {{if .CPUCores}}{{.CPUCoresValue}} cores{{else}}<span class="crud-muted"
-        >No CPU info</span>{{end}}
-    </dd>
+    <div>
+        <dt>CPU</dt>
+        <dd>
+            {{if .CPUCores}}{{.CPUCoresValue}} cores{{else}}<span
+                class="crud-muted"
+            >No CPU info</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Memory</dt>
-    <dd>
-        {{if .MemoryGB}}{{.MemoryGBValue}} GB{{else}}<span class="crud-muted"
-        >No memory info</span>{{end}}
-    </dd>
+    <div>
+        <dt>Memory</dt>
+        <dd>
+            {{if .MemoryGB}}{{.MemoryGBValue}} GB{{else}}<span
+                class="crud-muted"
+            >No memory info</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Disk</dt>
-    <dd>
-        {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
-        >No disk info</span>{{end}}
-    </dd>
+    <div>
+        <dt>Disk</dt>
+        <dd>
+            {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
+            >No disk info</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Since date</dt>
-    <dd>
-        {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
-        >No since date</span>{{end}}
-    </dd>
+    <div>
+        <dt>Since date</dt>
+        <dd>
+            {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
+            >No since date</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Due date</dt>
-    <dd>
-        {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
-        >No due date</span>{{end}}
-    </dd>
+    <div>
+        <dt>Due date</dt>
+        <dd>
+            {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
+            >No due date</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>Price</dt>
-    <dd>
-        {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
-        {{.PriceDisplay}}{{else}}<span class="crud-muted">No price</span>{{end}}
-    </dd>
+    <div>
+        <dt>Price</dt>
+        <dd>
+            {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
+            {{.PriceDisplay}}{{else}}<span class="crud-muted"
+            >No price</span>{{end}}
+        </dd>
+    </div>
 
-    <dt>IP addresses</dt>
-    <dd>
-        {{if $.AssignedIPs}}
-        <ul class="crud-assignment-list" role="list">
-            {{range $.AssignedIPs}}
-            <li>
-                <strong>{{.Address}}</strong>
-                <span>{{.Type}}</span>
-            </li>
+    <div>
+        <dt>IP addresses</dt>
+        <dd>
+            {{if $.AssignedIPs}}
+            <ul class="crud-assignment-list" role="list">
+                {{range $.AssignedIPs}}
+                <li>
+                    <strong>{{.Address}}</strong>
+                    <span>{{.Type}}</span>
+                </li>
+                {{end}}
+            </ul>
+            {{else}}
+            <span class="crud-muted">No IP addresses assigned</span>
             {{end}}
-        </ul>
-        {{else}}
-        <span class="crud-muted">No IP addresses assigned</span>
-        {{end}}
-    </dd>
+        </dd>
+    </div>
 
-    <dt>Labels</dt>
-    <dd>
-        {{if $.AssignedLabels}}
-        <ul class="crud-assignment-list" role="list">
-            {{range $.AssignedLabels}}
-            <li>
-                <strong>{{.Name}}</strong>
-                {{if .Notes}}<span>{{.NotesValue}}</span>{{end}}
-            </li>
+    <div>
+        <dt>Labels</dt>
+        <dd>
+            {{if $.AssignedLabels}}
+            <ul class="crud-assignment-list" role="list">
+                {{range $.AssignedLabels}}
+                <li>
+                    <strong>{{.Name}}</strong>
+                    {{if .Notes}}<span>{{.NotesValue}}</span>{{end}}
+                </li>
+                {{end}}
+            </ul>
+            {{else}}
+            <span class="crud-muted">No labels assigned</span>
             {{end}}
-        </ul>
-        {{else}}
-        <span class="crud-muted">No labels assigned</span>
-        {{end}}
-    </dd>
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
-        >No notes</span>{{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            >No notes</span>{{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="crud-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad crud-action-control"
@@ -368,7 +403,9 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <textarea id="server-notes" name="notes" rows="6"
     >{{with .Server}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="crud-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok crud-action-control">
             {{.FormSubmit}}
         </button>

@@ -148,6 +148,7 @@ body.sidebar-layout > div {
     justify-content: space-between;
     gap: var(--gap);
     flex-wrap: wrap;
+    margin-bottom: 0;
 }
 
 .auth-subtitle,
@@ -182,6 +183,27 @@ body.sidebar-layout > div {
     margin: 0;
 }
 
+.gavia-banner {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.85rem;
+    transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.gavia-banner.is-dismissing {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+}
+
+.gavia-banner-copy {
+    min-width: 0;
+}
+
+.gavia-banner-dismiss {
+    flex: none;
+}
+
 .settings-profile {
     display: flex;
     align-items: flex-start;
@@ -198,10 +220,8 @@ body.sidebar-layout > div {
 }
 
 .settings-summary {
-    display: grid;
-    gap: 0.4rem 0.9rem;
-    grid-template-columns: max-content 1fr;
     margin: 0;
+    width: auto;
 }
 
 .settings-summary dt {
@@ -212,21 +232,28 @@ body.sidebar-layout > div {
     margin: 0;
 }
 
-.settings-actions {
-    display: flex;
+.settings-inline-note,
+.settings-inline-panel {
+    margin: 0;
+}
+
+.settings-inline-note {
+    padding: 0.75rem 0.85rem;
+    border-radius: var(--interactive-border-radius);
+    background: var(--box-bg);
+}
+
+.settings-inline-panel {
     gap: 0.75rem;
-    flex-wrap: wrap;
-    align-items: center;
 }
 
-.settings-export-actions {
-    margin-block-end: var(--gap);
+.settings-inline-panel h4 {
+    margin: 0;
 }
 
-.settings-check {
-    display: flex;
-    align-items: center;
-    gap: 0.65rem;
+.settings-inline-panel ul {
+    margin: 0;
+    padding-inline-start: 1.2rem;
 }
 
 .settings-code {
@@ -476,24 +503,6 @@ body.sidebar-layout > div {
     max-inline-size: min(var(--gavia-content-width), 100%);
 }
 
-.providers-view.fullbleed,
-.locations-view.fullbleed,
-.os-view.fullbleed,
-.crud-view.fullbleed {
-    padding-inline: var(--gap);
-}
-
-.providers-head,
-.locations-head,
-.os-head,
-.crud-head {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: var(--gap);
-    flex-wrap: wrap;
-}
-
 .provider-subtitle,
 .location-subtitle,
 .os-subtitle,
@@ -547,13 +556,6 @@ body.sidebar-layout > div {
 .os-search-field,
 .crud-search-field {
     flex: 1 1 20rem;
-}
-
-.provider-filter-apply,
-.location-filter-apply,
-.os-filter-apply,
-.crud-filter-apply {
-    margin-inline-start: auto;
 }
 
 .providers-table,
@@ -709,25 +711,12 @@ body.sidebar-layout > div {
     opacity: 0.7;
 }
 
-.provider-editor-head,
-.location-editor-head,
-.os-editor-head,
-.crud-editor-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--gap);
-    flex-wrap: wrap;
-}
-
 .provider-meta,
 .location-meta,
 .os-meta,
 .crud-meta {
-    display: grid;
-    gap: 0.35rem 0.8rem;
-    grid-template-columns: max-content 1fr;
     margin-block: var(--gap);
+    width: auto;
 }
 
 .provider-note,
@@ -797,17 +786,6 @@ body.sidebar-layout > div {
     align-items: baseline;
 }
 
-.provider-editor-actions,
-.location-editor-actions,
-.os-editor-actions,
-.crud-editor-actions {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    align-items: center;
-    margin-top: var(--gap);
-}
-
 .provider-alert,
 .location-alert,
 .os-alert,
@@ -820,14 +798,6 @@ body.sidebar-layout > div {
 .os-muted,
 .crud-muted {
     color: var(--muted-fg);
-}
-
-.provider-empty-state,
-.location-empty-state,
-.os-empty-state,
-.crud-empty-state {
-    display: grid;
-    gap: 0.35rem;
 }
 
 #provider-editor.htmx-request,
@@ -885,13 +855,6 @@ body.sidebar-layout > div {
     height: 100%;
 }
 
-.dashboard-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: var(--gap);
-}
-
 .dashboard-stats {
     grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
 }
@@ -923,14 +886,6 @@ body.sidebar-layout > div {
 
 .dashboard-panels {
     grid-template-columns: repeat(auto-fit, minmax(20rem, 1fr));
-}
-
-.dashboard-panel-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.75rem;
-    flex-wrap: wrap;
 }
 
 .dashboard-list {

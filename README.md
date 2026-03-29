@@ -15,7 +15,108 @@ The project is intentionally explicit:
 - HTMX is used for partial updates, not as a second frontend.
 - SQLite is the default storage backend.
 
-## Current scope
+## What Gavia covers
+
+Gavia is built for operators who want one small application to track:
+
+- infrastructure inventory
+- vendor and location catalogs
+- recurring billing and expense notes
+- operational defaults and application settings
+- small observability dashboards
+- encrypted JSON backups
+- lightweight uptime checks
+
+The current codebase already includes the following runtime features.
+
+## Features
+
+### Inventory and reference data
+
+- Providers with names, websites, notes, and billing references
+- Locations for regions, cities, or infrastructure placement metadata
+- Operating systems as reusable catalog entries for server records
+- Labels for grouping infrastructure and assigning lightweight tags
+- IP addresses with explicit types and inventory metadata
+- DNS records with domain linkage
+- Domains with provider, renewal, billing, and notes fields
+- Hostings with provider and domain relationships
+- Servers with operating system, provider, billing data, IP assignments, and
+  label assignments
+- Subscriptions for recurring third-party services or SaaS costs
+
+### Settings and identity
+
+- Local administrator bootstrap flow
+- Login and logout with server-side sessions
+- Single-account settings page with username, avatar, API token, and recovery
+  key management
+- App settings page with default server OS, default currency, dashboard
+  currency, due-soon limits, and footer visibility
+- Recovery-key based password reset without email
+
+### Financial tracking
+
+- Due-soon dashboard list across supported billable resources
+- Manual expense entry management
+- Currency-aware totals and summaries
+- Dashboard summaries in MXN, USD, and XMR using sampled exchange rates
+- JSON summary endpoint for dashboard consumers and automation
+
+### Dashboard and observability
+
+- Inventory overview with module-level counts
+- Due-soon breakdowns by type
+- Expense category summaries
+- FX history charting
+- Runtime diagnostics such as goroutines, heap allocation, and DB connection
+  visibility
+- Uptime snapshot widgets on the main dashboard
+
+### Uptime monitoring
+
+- HTTP monitor definitions with interval, timeout, and expected status
+- Recent result history per monitor
+- Availability and status distribution charts
+- TLS verification disabled by default for operational flexibility
+
+### Security and data portability
+
+- CSRF protection for unsafe browser requests
+- Same-origin request enforcement with server-issued CSRF tokens
+- API token support for backup and dashboard API access
+- JSON export and import for the supported data model
+- Encrypted JSON backups using ML-KEM plus AES-GCM
+- Password hashing and recovery flows handled in the Go backend
+
+### Frontend interaction model
+
+- Server-rendered HTML templates with explicit handlers
+- HTMX partial swaps for list/editor flows instead of a client SPA
+- Hyperscript microinteractions for editor loading states, row removal states,
+  dismissible banners, and operator warnings
+- Missing.css components and plain CSS without a JS build pipeline
+- Page-local scripts loaded only on the screens that need them
+
+### Packaging and runtime
+
+- Native Go runtime with build metadata injected through `-ldflags -X`
+- Container-based development and runtime through Compose
+- Guix package definition in-tree
+- SQLite as the default storage backend with migration support
+
+## Screenshot plan
+
+This README is intentionally structured so screenshots can be dropped into it
+later without rewriting the text. Good places to add images are:
+
+- dashboard overview and charts
+- inventory CRUD pages
+- account and app settings
+- uptime monitor detail page
+- backup export or import flow
+
+## Current scope summary
 
 The current codebase includes:
 
@@ -145,6 +246,10 @@ The in-app `/licenses` page is intentionally editable as project content. Its
 base template lives at:
 
 - [`internal/ui/features/licenses/views/index.html`](./internal/ui/features/licenses/views/index.html)
+
+Machine-readable JavaScript licensing for LibreJS is exposed publicly at:
+
+- `/javascript-license-info`
 
 Third-party components currently used by the project include:
 

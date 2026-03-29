@@ -7,14 +7,15 @@ internal interfaces used to compose the app.
 
 ### Public page shell
 
-| Route        | Method        | Purpose                                      |
-| ------------ | ------------- | -------------------------------------------- |
-| `/`          | `GET`         | Redirect to `/dashboard`                     |
-| `/dashboard` | `GET`         | Main dashboard page                          |
-| `/login`     | `GET`         | Login and recovery page                      |
-| `/login`     | `POST`        | Login submit or password recovery submit     |
-| `/logout`    | `GET`, `POST` | End the current session                      |
-| `/licenses`  | `GET`         | Static project licenses and attribution page |
+| Route                      | Method        | Purpose                                           |
+| -------------------------- | ------------- | ------------------------------------------------- |
+| `/`                        | `GET`         | Redirect to `/dashboard`                          |
+| `/dashboard`               | `GET`         | Main dashboard page                               |
+| `/login`                   | `GET`         | Login and recovery page                           |
+| `/login`                   | `POST`        | Login submit or password recovery submit          |
+| `/logout`                  | `GET`, `POST` | End the current session                           |
+| `/licenses`                | `GET`         | Static project licenses and attribution page      |
+| `/javascript-license-info` | `GET`         | Public JavaScript license labels page for LibreJS |
 
 ### Collection routes
 

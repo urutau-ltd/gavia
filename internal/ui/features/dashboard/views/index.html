@@ -9,7 +9,7 @@
                 FX data currently stored by the app.
             </p>
 
-            <div class="dashboard-actions">
+            <div class="crowded flex-row flex-wrap:wrap margin-block-start">
                 <a class="ok <button>" href="/providers">Open providers</a>
                 <a class="plain <button>" href="/app-settings">Open app settings</a>
                 <a class="plain <button>" href="/uptime">Open uptime</a>
@@ -29,28 +29,36 @@
 
     <section class="dashboard-panels">
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>App defaults</h3>
                 <a href="/app-settings">Open settings</a>
             </div>
 
-            <dl class="settings-summary">
-                <dt>Default server OS</dt>
-                <dd>{{.AppSettings.DefaultServerOS}}</dd>
+            <dl class="settings-summary table rows">
+                <div>
+                    <dt>Default server OS</dt>
+                    <dd>{{.AppSettings.DefaultServerOS}}</dd>
+                </div>
 
-                <dt>Default currency</dt>
-                <dd>{{.AppSettings.DefaultCurrency}}</dd>
+                <div>
+                    <dt>Default currency</dt>
+                    <dd>{{.AppSettings.DefaultCurrency}}</dd>
+                </div>
 
-                <dt>Dashboard currency</dt>
-                <dd>{{.AppSettings.DashboardCurrency}}</dd>
+                <div>
+                    <dt>Dashboard currency</dt>
+                    <dd>{{.AppSettings.DashboardCurrency}}</dd>
+                </div>
 
-                <dt>Due-soon amount</dt>
-                <dd>{{.AppSettings.DashboardDueSoonAmount}}</dd>
+                <div>
+                    <dt>Due-soon amount</dt>
+                    <dd>{{.AppSettings.DashboardDueSoonAmount}}</dd>
+                </div>
             </dl>
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Currency snapshot</h3>
                 <a href="/app-settings/edit">FX settings</a>
             </div>
@@ -82,7 +90,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Due soon</h3>
                 <a href="/app-settings/edit">Adjust limit</a>
             </div>
@@ -118,7 +126,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Due by type</h3>
                 <a href="/app-settings">Settings</a>
             </div>
@@ -148,7 +156,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Recent expenses</h3>
                 <a href="/app-settings">Manage</a>
             </div>
@@ -176,7 +184,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Expense categories</h3>
                 <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
             </div>
@@ -206,7 +214,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Runtime diagnostics</h3>
                 <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
             </div>
@@ -225,24 +233,32 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Uptime snapshot</h3>
                 <a href="/uptime">Open module</a>
             </div>
 
             {{with .UptimeSummary}}
-            <dl class="settings-summary">
-                <dt>Total monitors</dt>
-                <dd>{{.Total}}</dd>
+            <dl class="settings-summary table rows">
+                <div>
+                    <dt>Total monitors</dt>
+                    <dd>{{.Total}}</dd>
+                </div>
 
-                <dt>Up</dt>
-                <dd>{{.Up}}</dd>
+                <div>
+                    <dt>Up</dt>
+                    <dd>{{.Up}}</dd>
+                </div>
 
-                <dt>Down</dt>
-                <dd>{{.Down}}</dd>
+                <div>
+                    <dt>Down</dt>
+                    <dd>{{.Down}}</dd>
+                </div>
 
-                <dt>Unknown</dt>
-                <dd>{{.Unknown}}</dd>
+                <div>
+                    <dt>Unknown</dt>
+                    <dd>{{.Unknown}}</dd>
+                </div>
             </dl>
             {{end}}
 
@@ -262,7 +278,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Providers preview</h3>
                 <a href="/providers">Open module</a>
             </div>
@@ -286,7 +302,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Locations preview</h3>
                 <a href="/locations">Open module</a>
             </div>
@@ -312,7 +328,7 @@
 
     <section class="dashboard-charts" aria-label="Dashboard charts">
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Expense history</h3>
                 <span class="settings-muted">Historical FX conversion when available</span>
             </div>
@@ -322,7 +338,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>FX history</h3>
                 <span class="settings-muted">1 MXN in USD and XMR</span>
             </div>
@@ -332,7 +348,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Runtime history</h3>
                 <span class="settings-muted">Heap, goroutines, DB usage</span>
             </div>
@@ -342,7 +358,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Uptime status</h3>
                 <span class="settings-muted">Latest monitor states</span>
             </div>
@@ -356,7 +372,7 @@
 
     <section class="dashboard-panels" aria-label="Inventory summary">
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Inventory overview</h3>
                 <span class="settings-muted">{{.InventoryTotal}} tracked records across active modules</span>
             </div>
@@ -384,7 +400,7 @@
         </article>
 
         <article class="box dashboard-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Inventory distribution</h3>
                 <span class="settings-muted">How the current records are spread across modules</span>
             </div>

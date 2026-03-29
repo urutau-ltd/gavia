@@ -14,14 +14,16 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
 "dns-editor-panel" .}}
 <tbody id="dns-body" hx-swap-oob="outerHTML">{{template "dns-list" .}}</tbody>
 {{end}} {{define "dns-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>DNS records panel</h3>
     <p class="crud-muted">
         Select a DNS record from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "dns-detail"}} {{with .Record}}
-<header class="crud-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Hostname}}</h3>
     <a
         class="ok crud-action-control"
@@ -31,25 +33,38 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
         hx-swap="outerHTML"
     >Edit</a>
 </header>
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
-    <dt>Type</dt>
-    <dd>{{.Type}}</dd>
-    <dt>Domain</dt>
-    <dd>
-        {{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted"
-        >No linked domain</span>{{end}}
-    </dd>
-    <dt>Address</dt>
-    <dd>{{.Address}}</dd>
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
-        >No notes</span>{{end}}
-    </dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
+    <div>
+        <dt>Type</dt>
+        <dd>{{.Type}}</dd>
+    </div>
+    <div>
+        <dt>Domain</dt>
+        <dd>
+            {{if .DomainName}}{{.DomainNameValue}}{{else}}<span
+                class="crud-muted"
+            >No linked domain</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>Address</dt>
+        <dd>{{.Address}}</dd>
+    </div>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            >No notes</span>{{end}}
+        </dd>
+    </div>
 </dl>
-<div class="crud-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad crud-action-control"
@@ -135,7 +150,9 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
     <label for="dns-notes">Notes</label>
     <textarea id="dns-notes" name="notes" rows="6"
     >{{with .Record}}{{.NotesValue}}{{end}}</textarea>
-    <div class="crud-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok crud-action-control">
             {{.FormSubmit}}
         </button>

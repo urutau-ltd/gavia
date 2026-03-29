@@ -110,7 +110,7 @@
                     value="{{.Selected.TimeoutMS}}"
                 >
 
-                <label class="settings-check">
+                <label class="crowded flex-row align-items:center">
                     <input type="checkbox" name="enabled" value="1" {{if .Selected.Enabled}}checked{{end}}>
                     <span>Enabled</span>
                 </label>
@@ -118,7 +118,7 @@
                 <label for="uptime-notes">Notes</label>
                 <textarea id="uptime-notes" name="notes" rows="4">{{with .Selected.Notes}}{{.}}{{end}}</textarea>
 
-                <div class="settings-actions">
+                <div class="crowded flex-row flex-wrap:wrap align-items:center">
                     <button type="submit" class="ok <button>">
                         {{if .EditingExisting}}Save changes{{else}}Create monitor{{end}}
                     </button>
@@ -174,7 +174,7 @@
     {{if .EditingExisting}}
     <section class="dashboard-charts" aria-label="Uptime charts">
         <article class="box settings-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Recent availability</h3>
                 <span class="settings-muted">Latest checks for this monitor</span>
             </div>
@@ -184,7 +184,7 @@
         </article>
 
         <article class="box settings-panel">
-            <div class="dashboard-panel-head">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Status split</h3>
                 <span class="settings-muted">Up versus down in the recent sample window</span>
             </div>

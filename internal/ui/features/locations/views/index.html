@@ -1,6 +1,8 @@
 {{define "content"}}
-<section class="locations-view fullbleed">
-    <header class="locations-head">
+<section class="locations-view fullbleed padding-inline">
+    <header
+        class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
+    >
         <div>
             <h2>{{.Title}}</h2>
             <p class="location-subtitle">
@@ -40,7 +42,6 @@
                         hx-include="#location-search,#location-limit"
                         hx-indicator="#locations-loading"
                         hx-trigger="change"
-                        onchange="if (!window.htmx) this.form.submit();"
                     >
                         <option value="5" {{if eq .Limit 5}}selected{{end}}>
                             5
@@ -74,11 +75,10 @@
                         hx-include="#location-search,#location-limit"
                         hx-indicator="#locations-loading"
                         hx-trigger="keyup changed delay:300ms, search"
-                        onchange="if (!window.htmx) this.form.submit();"
                     >
                 </div>
 
-                <button type="submit" class="plain location-filter-apply">
+                <button type="submit" class="plain margin-inline-start:auto">
                     Apply
                 </button>
             </form>

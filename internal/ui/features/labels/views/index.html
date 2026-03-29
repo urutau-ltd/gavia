@@ -1,6 +1,8 @@
 {{define "content"}}
-<section class="crud-view fullbleed">
-    <header class="crud-head">
+<section class="crud-view fullbleed padding-inline">
+    <header
+        class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
+    >
         <div>
             <h2>{{.Title}}</h2>
             <p class="crud-subtitle">
@@ -38,7 +40,6 @@
                         hx-include="#label-search,#label-limit"
                         hx-indicator="#labels-loading"
                         hx-trigger="change"
-                        onchange="if (!window.htmx) this.form.submit();"
                     >
                         <option value="5" {{if eq .Limit 5}}selected{{end}}>
                             5
@@ -75,7 +76,7 @@
                 </div>
                 <button
                     type="submit"
-                    class="info <button> <big> crud-filter-apply"
+                    class="info <button> <big> margin-inline-start:auto"
                 >
                     Apply
                 </button>

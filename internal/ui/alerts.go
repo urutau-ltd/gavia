@@ -13,5 +13,16 @@ func BannerHTML(baseClass, kind, msg string) template.HTML {
 	}
 
 	escaped := html.EscapeString(msg)
-	return template.HTML(`<p class="` + html.EscapeString(baseClass) + ` ` + className + `">` + escaped + `</p>`)
+	role := "status"
+	if className == "bad" {
+		role = "alert"
+	}
+
+	return template.HTML(
+		`<aside class="` + html.EscapeString(baseClass) + ` gavia-banner ` + className + `" role="` + role + `">` +
+			`<div class="gavia-banner-copy">` + escaped + `</div>` +
+			`<button type="button" class="plain gavia-banner-dismiss" aria-label="Dismiss message"` +
+			` _="on click add .is-dismissing to closest .gavia-banner then wait 160ms then remove closest .gavia-banner">Dismiss</button>` +
+			`</aside>`,
+	)
 }

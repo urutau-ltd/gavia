@@ -1,6 +1,8 @@
 {{define "content"}}
-<section class="providers-view fullbleed">
-    <header class="providers-head">
+<section class="providers-view fullbleed padding-inline">
+    <header
+        class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
+    >
         <div>
             <h2>{{.Title}}</h2>
             <p class="provider-subtitle">Manage your service providers here.</p>
@@ -38,7 +40,6 @@
                         hx-include="#provider-search,#provider-limit"
                         hx-indicator="#providers-loading"
                         hx-trigger="change"
-                        onchange="if (!window.htmx) this.form.submit();"
                     >
                         <option value="5" {{if eq .Limit 5}}selected{{end}}>
                             5
@@ -77,7 +78,7 @@
 
                 <button
                     type="submit"
-                    class="info <button> <big> provider-filter-apply"
+                    class="info <button> <big> margin-inline-start:auto"
                 >
                     Apply
                 </button>

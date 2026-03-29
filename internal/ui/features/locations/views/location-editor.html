@@ -17,14 +17,16 @@
     {{template "location-list" .}}
 </tbody>
 {{end}} {{define "location-empty"}}
-<div class="location-empty-state">
+<div class="location-empty-state flow-gap">
     <h3>Locations panel</h3>
     <p class="location-muted">
         Select a location from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "location-detail"}} {{with .Location}}
-<header class="location-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Name}}</h3>
     <a
         class="ok location-action-control"
@@ -37,42 +39,52 @@
     </a>
 </header>
 
-<dl class="location-meta">
-    <dt>ID</dt>
-    <dd><code>{{.Id}}</code></dd>
+<dl class="location-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.Id}}</code></dd>
+    </div>
 
-    <dt>City</dt>
-    <dd>
-        {{if .City}} {{.CityValue}} {{else}}
-        <span class="location-muted">No city</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>City</dt>
+        <dd>
+            {{if .City}} {{.CityValue}} {{else}}
+            <span class="location-muted">No city</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Country</dt>
-    <dd>
-        {{if .Country}} {{.CountryValue}} {{else}}
-        <span class="location-muted">No country</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Country</dt>
+        <dd>
+            {{if .Country}} {{.CountryValue}} {{else}}
+            <span class="location-muted">No country</span>
+            {{end}}
+        </dd>
+    </div>
 
-    <dt>Notes</dt>
-    <dd class="location-note">
-        {{if .Notes}}
-        <div class="warn box">
-            <strong class="titlebar">
-                Notes
-            </strong>
-            <p>
-                {{.NotesValue}}
-            </p>
-        </div>
-        {{else}}
-        <span class="location-muted">No notes</span>
-        {{end}}
-    </dd>
+    <div>
+        <dt>Notes</dt>
+        <dd class="location-note">
+            {{if .Notes}}
+            <div class="warn box">
+                <strong class="titlebar">
+                    Notes
+                </strong>
+                <p>
+                    {{.NotesValue}}
+                </p>
+            </div>
+            {{else}}
+            <span class="location-muted">No notes</span>
+            {{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="location-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad location-action-control"
@@ -143,7 +155,9 @@
     <textarea id="location-notes" name="notes" rows="6"
     >{{with .Location}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="location-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok location-action-control">
             {{.FormSubmit}}
         </button>

@@ -14,14 +14,16 @@ eq .EditorMode "detail"}}{{template "ip-detail" .}}{{else}}{{template "ip-empty"
 .}}
 <tbody id="ips-body" hx-swap-oob="outerHTML">{{template "ip-list" .}}</tbody>
 {{end}} {{define "ip-empty"}}
-<div class="crud-empty-state">
+<div class="crud-empty-state flow-gap">
     <h3>IP addresses panel</h3>
     <p class="crud-muted">
         Select an IP address from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "ip-detail"}} {{with .IP}}
-<header class="crud-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Address}}</h3>
     <a
         class="ok crud-action-control"
@@ -32,44 +34,62 @@ eq .EditorMode "detail"}}{{template "ip-detail" .}}{{else}}{{template "ip-empty"
     >Edit</a>
 </header>
 
-<dl class="crud-meta">
-    <dt>ID</dt>
-    <dd><code>{{.ID}}</code></dd>
-    <dt>Type</dt>
-    <dd>{{.Type}}</dd>
-    <dt>City</dt>
-    <dd>
-        {{if .City}}{{.CityValue}}{{else}}<span class="crud-muted"
-        >No city</span>{{end}}
-    </dd>
-    <dt>Country</dt>
-    <dd>
-        {{if .Country}}{{.CountryValue}}{{else}}<span class="crud-muted"
-        >No country</span>{{end}}
-    </dd>
-    <dt>Organization</dt>
-    <dd>
-        {{if .Org}}{{.OrgValue}}{{else}}<span class="crud-muted"
-        >No organization</span>{{end}}
-    </dd>
-    <dt>ASN</dt>
-    <dd>
-        {{if .ASN}}{{.ASNValue}}{{else}}<span class="crud-muted"
-        >No ASN</span>{{end}}
-    </dd>
-    <dt>ISP</dt>
-    <dd>
-        {{if .ISP}}{{.ISPValue}}{{else}}<span class="crud-muted"
-        >No ISP</span>{{end}}
-    </dd>
-    <dt>Notes</dt>
-    <dd class="crud-note">
-        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
-        >No notes</span>{{end}}
-    </dd>
+<dl class="crud-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.ID}}</code></dd>
+    </div>
+    <div>
+        <dt>Type</dt>
+        <dd>{{.Type}}</dd>
+    </div>
+    <div>
+        <dt>City</dt>
+        <dd>
+            {{if .City}}{{.CityValue}}{{else}}<span class="crud-muted"
+            >No city</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>Country</dt>
+        <dd>
+            {{if .Country}}{{.CountryValue}}{{else}}<span class="crud-muted"
+            >No country</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>Organization</dt>
+        <dd>
+            {{if .Org}}{{.OrgValue}}{{else}}<span class="crud-muted"
+            >No organization</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>ASN</dt>
+        <dd>
+            {{if .ASN}}{{.ASNValue}}{{else}}<span class="crud-muted"
+            >No ASN</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>ISP</dt>
+        <dd>
+            {{if .ISP}}{{.ISPValue}}{{else}}<span class="crud-muted"
+            >No ISP</span>{{end}}
+        </dd>
+    </div>
+    <div>
+        <dt>Notes</dt>
+        <dd class="crud-note">
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            >No notes</span>{{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="crud-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad crud-action-control"
@@ -176,7 +196,9 @@ eq .EditorMode "detail"}}{{template "ip-detail" .}}{{else}}{{template "ip-empty"
     <small class="crud-muted"
     >The list column "Origin" is built from organization or country. "Actions"
         are the row controls on the right.</small>
-    <div class="crud-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok crud-action-control">
             {{.FormSubmit}}
         </button>

@@ -55,6 +55,10 @@ type licensesRoutes interface {
 	Index(http.ResponseWriter, *http.Request)
 }
 
+type javascriptLicenseInfoRoutes interface {
+	Index(http.ResponseWriter, *http.Request)
+}
+
 func mountRoutes(app *aile.App, handlers appHandlers) error {
 	app.GET("/", func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
@@ -122,6 +126,7 @@ func mountRoutes(app *aile.App, handlers appHandlers) error {
 	app.POST("/api/v1/backup/import", handlers.backupAPI.Import)
 	app.GET("/api/v1/dashboard/summary", handlers.dashboardAPI.Summary)
 	app.GET("/licenses", handlers.licenses.Index)
+	app.GET("/javascript-license-info", handlers.jsLicenseInfo.Index)
 
 	app.GET("/uptime", handlers.uptime.Index)
 	app.GET("/uptime/{id}", handlers.uptime.Show)

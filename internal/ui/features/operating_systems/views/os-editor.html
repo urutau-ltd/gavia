@@ -17,14 +17,16 @@
     {{template "os-list" .}}
 </tbody>
 {{end}} {{define "os-empty"}}
-<div class="os-empty-state">
+<div class="os-empty-state flow-gap">
     <h3>Operating systems panel</h3>
     <p class="os-muted">
         Select an operating system from the list or create a new one.
     </p>
 </div>
 {{end}} {{define "os-detail"}} {{with .OperatingSystem}}
-<header class="os-editor-head">
+<header
+    class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center"
+>
     <h3>{{.Name}}</h3>
     <a
         class="ok os-action-control"
@@ -37,18 +39,24 @@
     </a>
 </header>
 
-<dl class="os-meta">
-    <dt>ID</dt>
-    <dd><code>{{.Id}}</code></dd>
-    <dt>Notes</dt>
-    <dd class="os-note">
-        {{if .Notes}} {{.NotesValue}} {{else}}
-        <span class="os-muted">No notes</span>
-        {{end}}
-    </dd>
+<dl class="os-meta table rows">
+    <div>
+        <dt>ID</dt>
+        <dd><code>{{.Id}}</code></dd>
+    </div>
+    <div>
+        <dt>Notes</dt>
+        <dd class="os-note">
+            {{if .Notes}} {{.NotesValue}} {{else}}
+            <span class="os-muted">No notes</span>
+            {{end}}
+        </dd>
+    </div>
 </dl>
 
-<div class="os-editor-actions">
+<div
+    class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+>
     <button
         type="button"
         class="bad os-action-control"
@@ -101,7 +109,9 @@
     <textarea id="os-notes" name="notes" rows="6"
     >{{with .OperatingSystem}}{{.NotesValue}}{{end}}</textarea>
 
-    <div class="os-editor-actions">
+    <div
+        class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
+    >
         <button type="submit" class="ok os-action-control">
             {{.FormSubmit}}
         </button>

@@ -133,6 +133,12 @@ func (stubLicensesHandler) Index(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("licenses"))
 }
 
+type stubJSLicenseInfoHandler struct{}
+
+func (stubJSLicenseInfoHandler) Index(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("javascript license information"))
+}
+
 type stubUptimeHandler struct{}
 
 func (stubUptimeHandler) Index(w http.ResponseWriter, r *http.Request) {
@@ -176,6 +182,7 @@ func TestMountRoutes(t *testing.T) {
 		backupAPI:       stubBackupAPIHandler{},
 		dashboardAPI:    stubDashboardAPIHandler{},
 		licenses:        stubLicensesHandler{},
+		jsLicenseInfo:   stubJSLicenseInfoHandler{},
 		uptime:          stubUptimeHandler{},
 	})
 	if err != nil {
@@ -345,6 +352,13 @@ func TestMountRoutes(t *testing.T) {
 			path:       "/licenses",
 			statusCode: http.StatusOK,
 			body:       "licenses",
+		},
+		{
+			name:       "javascript license info route",
+			method:     http.MethodGet,
+			path:       "/javascript-license-info",
+			statusCode: http.StatusOK,
+			body:       "javascript license information",
 		},
 		{
 			name:       "uptime index route",

@@ -35,6 +35,7 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/domains"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/hostings"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/ips"
+	jslicenseinfo "codeberg.org/urutau-ltd/gavia/internal/ui/features/javascript_license_info"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/labels"
 	licensespage "codeberg.org/urutau-ltd/gavia/internal/ui/features/licenses"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
@@ -87,6 +88,7 @@ type appHandlers struct {
 	backupAPI       backupAPIRoutes
 	dashboardAPI    dashboardAPIRoutes
 	licenses        licensesRoutes
+	jsLicenseInfo   javascriptLicenseInfoRoutes
 	uptime          uptimeRoutes
 }
 
@@ -158,7 +160,11 @@ func newHandlers(
 		backupAPI:    backupapi.NewHandler(logger, services.backup, repos.account),
 		dashboardAPI: dashboardapi.NewHandler(logger, db),
 		licenses:     licensespage.NewHandler(logger, uiRoot),
-		uptime:       uptimepage.NewHandler(logger, uiRoot, repos.uptimeMonitor),
+		jsLicenseInfo: jslicenseinfo.NewHandler(
+			logger,
+			uiRoot,
+		),
+		uptime: uptimepage.NewHandler(logger, uiRoot, repos.uptimeMonitor),
 	}
 }
 
