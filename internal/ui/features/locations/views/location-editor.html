@@ -12,13 +12,7 @@
 {{template "location-form" .}} {{else if eq .EditorMode "edit"}} {{template
 "location-form" .}} {{else if eq .EditorMode "detail"}} {{template
 "location-detail" .}} {{else}} {{template "location-empty" .}} {{end}} {{end}}
-{{define "location-editor-response"}} {{template "location-editor-panel" .}}
-<table hidden aria-hidden="true">
-    <tbody id="locations-body" hx-swap-oob="outerHTML">
-        {{template "location-list" .}}
-    </tbody>
-</table>
-{{end}} {{define "location-empty"}}
+{{define "location-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Locations panel</h3>
     <p class="gavia-muted">

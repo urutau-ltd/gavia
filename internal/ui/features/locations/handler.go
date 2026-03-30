@@ -1,6 +1,7 @@
 package locations
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"html"
@@ -14,6 +15,7 @@ import (
 
 	"codeberg.org/urutau-ltd/gavia/internal/models/location"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
+	vexpanelcrud "codeberg.org/urutau-ltd/vexilo/panelcrud"
 )
 
 // Handler coordinates HTTP endpoints, HTML templates and repository calls for the locations feature.
@@ -22,6 +24,13 @@ type Handler struct {
 	logger       *slog.Logger
 	tmpl         *template.Template
 	locationRepo *location.LocationRepository
+}
+
+var locationTargets = vexpanelcrud.Targets{
+	ListBody:         "locations-body",
+	Editor:           "location-editor",
+	ListTriggerIDs:   []string{"location-limit", "location-search"},
+	ListTriggerNames: []string{"limit", "q"},
 }
 
 // pageData is the template contract for locations screens.
@@ -306,7 +315,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "location-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -441,7 +450,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "location-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -471,7 +480,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "location-editor-response", data)
+			h.writeEditorResponse(w, data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -490,7 +499,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "location-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -523,19 +532,43 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 	}
 }
 
+func (h *Handler) renderTemplateBytes(tmpl string, data any) ([]byte, error) {
+	var buf bytes.Buffer
+	if err := h.tmpl.ExecuteTemplate(&buf, tmpl, data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (h *Handler) writeEditorResponse(w http.ResponseWriter, data any) {
+	mainHTML, err := h.renderTemplateBytes("location-editor-panel", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "location-editor-panel", "err", err)
+		return
+	}
+
+	listHTML, err := h.renderTemplateBytes("location-list", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "location-list", "err", err)
+		return
+	}
+
+	if err := locationTargets.WriteEditorWithList(w, vexpanelcrud.Update{
+		Editor: mainHTML,
+		List:   listHTML,
+	}); err != nil {
+		h.logger.Error("Error writing location fragment response", "err", err)
+	}
+}
+
 // isListRequest detects HTMX calls meant to replace only the locations table body.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	return ui.IsHTMXListRequest(
-		r,
-		"locations-body",
-		[]string{"location-limit", "location-search"},
-		[]string{"limit", "q"},
-	)
+	return locationTargets.IsListRequest(r)
 }
 
 // isEditorRequest detects HTMX calls that target the location editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	return ui.IsHTMXEditorRequest(r, "location-editor")
+	return locationTargets.IsEditorRequest(r)
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css status classes.

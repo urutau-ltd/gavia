@@ -19,6 +19,8 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/domains"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/hostings"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/ips"
+	locationsui "codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
+	operatingsystemsui "codeberg.org/urutau-ltd/gavia/internal/ui/features/operating_systems"
 	providersui "codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/servers"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/subscriptions"
@@ -194,7 +196,85 @@ func TestProvidersCreateHTMXResponseWrapsListBodyInHiddenTable(t *testing.T) {
 	for _, want := range []string{
 		"Provider created successfully.",
 		`<table hidden aria-hidden="true">`,
-		`<tbody id="providers-body" hx-swap-oob="outerHTML">`,
+		`<tbody id="providers-body" hx-swap-oob="innerHTML">`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("expected HTMX create response to include %q, got %q", want, body)
+		}
+	}
+}
+
+func TestLocationsCreateHTMXResponseWrapsListBodyInHiddenTable(t *testing.T) {
+	db := openFlowTestDB(t)
+	runFlowMigrations(t, db)
+
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	uiRoot, err := fs.Sub(UIFS, "internal/ui")
+	if err != nil {
+		t.Fatalf("fs.Sub returned error: %v", err)
+	}
+
+	form := url.Values{
+		"name":    {"Puebla"},
+		"city":    {"Puebla"},
+		"country": {"Mexico"},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/locations", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
+	req.Header.Set("HX-Target", "location-editor")
+	rec := httptest.NewRecorder()
+
+	locationsui.NewHandler(logger, uiRoot, db).Create(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	body := rec.Body.String()
+	for _, want := range []string{
+		"Location created successfully.",
+		`<table hidden aria-hidden="true">`,
+		`<tbody id="locations-body" hx-swap-oob="innerHTML">`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("expected HTMX create response to include %q, got %q", want, body)
+		}
+	}
+}
+
+func TestOperatingSystemsCreateHTMXResponseWrapsListBodyInHiddenTable(t *testing.T) {
+	db := openFlowTestDB(t)
+	runFlowMigrations(t, db)
+
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	uiRoot, err := fs.Sub(UIFS, "internal/ui")
+	if err != nil {
+		t.Fatalf("fs.Sub returned error: %v", err)
+	}
+
+	form := url.Values{
+		"name": {"Fedora 42"},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/os", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
+	req.Header.Set("HX-Target", "os-editor")
+	rec := httptest.NewRecorder()
+
+	operatingsystemsui.NewHandler(logger, uiRoot, db).Create(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	body := rec.Body.String()
+	for _, want := range []string{
+		"Operating system created successfully.",
+		`<table hidden aria-hidden="true">`,
+		`<tbody id="os-body" hx-swap-oob="innerHTML">`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Fatalf("expected HTMX create response to include %q, got %q", want, body)

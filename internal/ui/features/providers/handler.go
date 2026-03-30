@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"html"
@@ -13,6 +14,7 @@ import (
 
 	"codeberg.org/urutau-ltd/gavia/internal/models/provider"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
+	vexpanelcrud "codeberg.org/urutau-ltd/vexilo/panelcrud"
 )
 
 // Handler coordinates HTTP endpoints, HTML templates and repository calls for the providers feature.
@@ -21,6 +23,13 @@ type Handler struct {
 	logger       *slog.Logger
 	tmpl         *template.Template
 	providerRepo *provider.ProviderRepository
+}
+
+var providerTargets = vexpanelcrud.Targets{
+	ListBody:         "providers-body",
+	Editor:           "provider-editor",
+	ListTriggerIDs:   []string{"provider-limit", "provider-search"},
+	ListTriggerNames: []string{"limit", "q"},
 }
 
 // pageData is the template contract for providers screens.
@@ -300,7 +309,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -416,7 +425,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -447,7 +456,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "provider-editor-response", data)
+			h.writeEditorResponse(w, data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -466,7 +475,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "provider-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -501,20 +510,44 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 	}
 }
 
+func (h *Handler) renderTemplateBytes(tmpl string, data any) ([]byte, error) {
+	var buf bytes.Buffer
+	if err := h.tmpl.ExecuteTemplate(&buf, tmpl, data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (h *Handler) writeEditorResponse(w http.ResponseWriter, data any) {
+	mainHTML, err := h.renderTemplateBytes("provider-editor-panel", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "provider-editor-panel", "err", err)
+		return
+	}
+
+	listHTML, err := h.renderTemplateBytes("provider-list", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "provider-list", "err", err)
+		return
+	}
+
+	if err := providerTargets.WriteEditorWithList(w, vexpanelcrud.Update{
+		Editor: mainHTML,
+		List:   listHTML,
+	}); err != nil {
+		h.logger.Error("Error writing provider fragment response", "err", err)
+	}
+}
+
 // isListRequest detects HTMX calls that target only the providers table body.
 // This allows one route to serve both full and partial responses safely.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	return ui.IsHTMXListRequest(
-		r,
-		"providers-body",
-		[]string{"provider-limit", "provider-search"},
-		[]string{"limit", "q"},
-	)
+	return providerTargets.IsListRequest(r)
 }
 
 // isEditorRequest detects HTMX calls that target the right-side provider editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	return ui.IsHTMXEditorRequest(r, "provider-editor")
+	return providerTargets.IsEditorRequest(r)
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css semantic classes.

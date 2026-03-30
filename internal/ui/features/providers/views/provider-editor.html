@@ -12,13 +12,7 @@
 {{template "provider-form" .}} {{else if eq .EditorMode "edit"}} {{template
 "provider-form" .}} {{else if eq .EditorMode "detail"}} {{template
 "provider-detail" .}} {{else}} {{template "provider-empty" .}} {{end}} {{end}}
-{{define "provider-editor-response"}} {{template "provider-editor-panel" .}}
-<table hidden aria-hidden="true">
-    <tbody id="providers-body" hx-swap-oob="outerHTML">
-        {{template "provider-list" .}}
-    </tbody>
-</table>
-{{end}} {{define "provider-empty"}}
+{{define "provider-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Providers panel</h3>
     <p class="gavia-muted">

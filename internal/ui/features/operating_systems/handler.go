@@ -1,6 +1,7 @@
 package operatingsystems
 
 import (
+	"bytes"
 	"database/sql"
 	"fmt"
 	"html"
@@ -13,12 +14,20 @@ import (
 
 	operatingsystem "codeberg.org/urutau-ltd/gavia/internal/models/operating_system"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
+	vexpanelcrud "codeberg.org/urutau-ltd/vexilo/panelcrud"
 )
 
 type Handler struct {
 	logger *slog.Logger
 	tmpl   *template.Template
 	osRepo *operatingsystem.OperatingSystemRepository
+}
+
+var osTargets = vexpanelcrud.Targets{
+	ListBody:         "os-body",
+	Editor:           "os-editor",
+	ListTriggerIDs:   []string{"os-limit", "os-search"},
+	ListTriggerNames: []string{"limit", "q"},
 }
 
 // pageData is the template contract for operating systems screens.
@@ -288,7 +297,7 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "os-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -402,7 +411,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "os-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -433,7 +442,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
-			h.renderTemplate(w, "os-editor-response", data)
+			h.writeEditorResponse(w, data)
 			return
 		}
 		h.renderTemplate(w, "base", data)
@@ -452,7 +461,7 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	ui.WriteHTMLHeader(w)
 	if h.isEditorRequest(r) {
-		h.renderTemplate(w, "os-editor-response", data)
+		h.writeEditorResponse(w, data)
 		return
 	}
 
@@ -487,20 +496,44 @@ func (h *Handler) renderTemplate(w http.ResponseWriter, tmpl string, data any) {
 	}
 }
 
+func (h *Handler) renderTemplateBytes(tmpl string, data any) ([]byte, error) {
+	var buf bytes.Buffer
+	if err := h.tmpl.ExecuteTemplate(&buf, tmpl, data); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func (h *Handler) writeEditorResponse(w http.ResponseWriter, data any) {
+	mainHTML, err := h.renderTemplateBytes("os-editor-panel", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "os-editor-panel", "err", err)
+		return
+	}
+
+	listHTML, err := h.renderTemplateBytes("os-list", data)
+	if err != nil {
+		h.logger.Error("Error rendering template", "template", "os-list", "err", err)
+		return
+	}
+
+	if err := osTargets.WriteEditorWithList(w, vexpanelcrud.Update{
+		Editor: mainHTML,
+		List:   listHTML,
+	}); err != nil {
+		h.logger.Error("Error writing operating system fragment response", "err", err)
+	}
+}
+
 // isListRequest detects HTMX calls that target only the operatingsystems table body.
 // This allows one route to serve both full and partial responses safely.
 func (h *Handler) isListRequest(r *http.Request) bool {
-	return ui.IsHTMXListRequest(
-		r,
-		"os-body",
-		[]string{"os-limit", "os-search"},
-		[]string{"limit", "q"},
-	)
+	return osTargets.IsListRequest(r)
 }
 
 // isEditorRequest detects HTMX calls that target the right-side operatingsystem editor panel.
 func (h *Handler) isEditorRequest(r *http.Request) bool {
-	return ui.IsHTMXEditorRequest(r, "os-editor")
+	return osTargets.IsEditorRequest(r)
 }
 
 // bannerHTML builds a sanitized alert block compatible with Missing.css semantic classes.

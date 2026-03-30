@@ -3,6 +3,8 @@ SHELL := /bin/sh
 GO ?= go
 CGO_ENABLED ?= 0
 RACE_CGO_ENABLED ?= 1
+RACE_REQUIRED ?= $(if $(CI),1,0)
+RACE_CC ?= $(shell command -v gcc 2>/dev/null || $(GO) env CC 2>/dev/null || printf cc)
 GOCACHE := /tmp/go-build
 
 BINARY ?= gavia
@@ -49,13 +51,20 @@ fmt-check:
 	fi
 
 vet:
-	GOCACHE=$(GOCACHE) $(GO) vet ./...
+	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) vet ./...
 
 test:
 	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -v ./...
 
 test-race:
-	CGO_ENABLED=$(RACE_CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -race ./...
+	@if [ ! -x "$(RACE_CC)" ] && ! command -v "$(RACE_CC)" >/dev/null 2>&1; then \
+		echo "Skipping race tests: C compiler '$(RACE_CC)' not found."; \
+		if [ "$(RACE_REQUIRED)" = "1" ]; then \
+			exit 1; \
+		fi; \
+	else \
+		CC="$(RACE_CC)" CGO_ENABLED=$(RACE_CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -race ./...; \
+	fi
 
 ci: fmt-check vet test test-race
 

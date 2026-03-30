@@ -11,14 +11,7 @@
 {{end}} {{if .ErrorHTML}} {{.ErrorHTML}} {{end}} {{if eq .EditorMode "new"}}
 {{template "os-form" .}} {{else if eq .EditorMode "edit"}} {{template "os-form"
 .}} {{else if eq .EditorMode "detail"}} {{template "os-detail" .}} {{else}}
-{{template "os-empty" .}} {{end}} {{end}} {{define "os-editor-response"}}
-{{template "os-editor-panel" .}}
-<table hidden aria-hidden="true">
-    <tbody id="os-body" hx-swap-oob="outerHTML">
-        {{template "os-list" .}}
-    </tbody>
-</table>
-{{end}} {{define "os-empty"}}
+{{template "os-empty" .}} {{end}} {{end}} {{define "os-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Operating systems panel</h3>
     <p class="gavia-muted">
