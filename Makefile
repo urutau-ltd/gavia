@@ -2,6 +2,7 @@ SHELL := /bin/sh
 
 GO ?= go
 CGO_ENABLED ?= 0
+RACE_CGO_ENABLED ?= 1
 GOCACHE := /tmp/go-build
 
 BINARY ?= gavia
@@ -54,7 +55,7 @@ test:
 	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -v ./...
 
 test-race:
-	CGO_ENABLED=$(CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -race ./...
+	CGO_ENABLED=$(RACE_CGO_ENABLED) GOCACHE=$(GOCACHE) $(GO) test -race ./...
 
 ci: fmt-check vet test test-race
 
