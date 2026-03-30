@@ -10,14 +10,14 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain <button> iconbutton"
+                class="plain <button>"
                 href="/ips/{{.ID}}"
                 hx-get="/ips/{{.ID}}"
                 hx-target="#ip-editor"
                 hx-swap="outerHTML"
             >View</a>
             <a
-                class="ok <button> iconbutton"
+                class="ok <button>"
                 href="/ips/{{.ID}}/edit"
                 hx-get="/ips/{{.ID}}/edit"
                 hx-target="#ip-editor"
@@ -25,7 +25,7 @@
             >Edit</a>
             <button
                 type="button"
-                class="bad <button> iconbutton"
+                class="bad <button>"
                 hx-delete="/ips/{{.ID}}"
                 hx-target="#ip-editor"
                 hx-swap="outerHTML"

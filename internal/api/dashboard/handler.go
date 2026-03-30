@@ -131,12 +131,14 @@ func (h *Handler) Summary(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unable to load expense entries.", http.StatusInternalServerError)
 		return
 	}
+	expenses = filterSpendEntries(expenses)
 
 	allExpenses, err := h.expenseRepo.GetAll(r.Context())
 	if err != nil {
 		http.Error(w, "Unable to load expense totals.", http.StatusInternalServerError)
 		return
 	}
+	allExpenses = filterSpendEntries(allExpenses)
 
 	runtimeSamples, err := h.runtimeRepo.GetRecent(r.Context(), 1)
 	if err != nil {
@@ -236,6 +238,17 @@ func sumDueItems(items []*dashboardsummary.DueItem) float64 {
 		total += *item.Price
 	}
 	return total
+}
+
+func filterSpendEntries(items []*expenseentry.ExpenseEntry) []*expenseentry.ExpenseEntry {
+	filtered := make([]*expenseentry.ExpenseEntry, 0, len(items))
+	for _, item := range items {
+		if item == nil || !item.IsSpendLike() {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return filtered
 }
 
 func dueLabel(item *dashboardsummary.DueItem) string {

@@ -66,6 +66,17 @@
     </div>
 
     <div>
+        <dt>Coordinates</dt>
+        <dd>
+            {{if .HasCoordinates}}
+            <code>{{.LatitudeValue}}, {{.LongitudeValue}}</code>
+            {{else}}
+            <span class="gavia-muted">No coordinates</span>
+            {{end}}
+        </dd>
+    </div>
+
+    <div>
         <dt>Notes</dt>
         <dd class="crud-note">
             {{if .Notes}}
@@ -83,6 +94,22 @@
         </dd>
     </div>
 </dl>
+
+{{if .HasCoordinates}}
+<div class="flow-gap margin-block-start">
+    <div class="crud-map-frame">
+        <iframe
+            title="Map preview for {{.Name}}"
+            src="{{.MapEmbedURL}}"
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
+    </div>
+    <a class="plain <button>" href="{{.MapLinkURL}}" target="_blank" rel="noreferrer">
+        Open in OpenStreetMap
+    </a>
+</div>
+{{end}}
 
 <div
     class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
@@ -152,6 +179,39 @@
         maxlength="120"
         value="{{with .Location}}{{.CountryValue}}{{end}}"
     >
+
+    <label for="location-latitude">Latitude</label>
+    <input
+        id="location-latitude"
+        name="latitude"
+        type="number"
+        min="-90"
+        max="90"
+        step="0.000001"
+        placeholder="19.432608"
+        inputmode="decimal"
+        aria-describedby="location-coordinates-help"
+        value="{{with .Location}}{{.LatitudeValue}}{{end}}"
+    >
+
+    <label for="location-longitude">Longitude</label>
+    <input
+        id="location-longitude"
+        name="longitude"
+        type="number"
+        min="-180"
+        max="180"
+        step="0.000001"
+        placeholder="-99.133209"
+        inputmode="decimal"
+        aria-describedby="location-coordinates-help"
+        value="{{with .Location}}{{.LongitudeValue}}{{end}}"
+    >
+
+    <small id="location-coordinates-help" class="gavia-muted">
+        Enter latitude first and longitude second. Example: Mexico City is
+        <code>19.432608</code>, <code>-99.133209</code>.
+    </small>
 
     <label for="location-notes">Notes</label>
     <textarea id="location-notes" name="notes" rows="6"

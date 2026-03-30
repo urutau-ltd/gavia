@@ -10,9 +10,11 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"codeberg.org/urutau-ltd/gavia/internal/database"
 	uptimemonitor "codeberg.org/urutau-ltd/gavia/internal/models/uptime_monitor"
+	uptimeservice "codeberg.org/urutau-ltd/gavia/internal/uptime"
 	_ "modernc.org/sqlite"
 )
 
@@ -28,6 +30,10 @@ func TestShowRendersMonitorCharts(t *testing.T) {
 		TargetURL:            "https://example.com/health",
 		Kind:                 "http",
 		ExpectedStatus:       200,
+		ExpectedStatusMin:    200,
+		ExpectedStatusMax:    299,
+		HTTPMethod:           "GET",
+		TLSMode:              "skip",
 		CheckIntervalSeconds: 300,
 		TimeoutMS:            5000,
 		Enabled:              true,
@@ -48,7 +54,8 @@ func TestShowRendersMonitorCharts(t *testing.T) {
 	}
 
 	uiRoot := os.DirFS(filepath.Join("..", ".."))
-	handler := NewHandler(slog.New(slog.NewTextHandler(io.Discard, nil)), uiRoot, repo)
+	service := uptimeservice.NewService(slog.New(slog.NewTextHandler(io.Discard, nil)), repo, nil, time.Second)
+	handler := NewHandler(slog.New(slog.NewTextHandler(io.Discard, nil)), uiRoot, repo, service)
 
 	req := httptest.NewRequest(http.MethodGet, "/uptime/"+monitor.ID, nil)
 	req.SetPathValue("id", monitor.ID)
@@ -60,12 +67,23 @@ func TestShowRendersMonitorCharts(t *testing.T) {
 	}
 
 	body := rec.Body.String()
-	if !strings.Contains(body, "uptime-results-chart") || !strings.Contains(body, "uptime-distribution-chart") {
+	if !strings.Contains(body, "uptime-results-chart") ||
+		!strings.Contains(body, "uptime-latency-chart") ||
+		!strings.Contains(body, "uptime-distribution-chart") ||
+		!strings.Contains(body, "uptime-status-code-chart") {
 		t.Fatalf("expected uptime page to render charts, got %q", body)
 	}
 
-	if !strings.Contains(body, "Availability") || !strings.Contains(body, "Example API") {
+	if !strings.Contains(body, "Availability") || !strings.Contains(body, "Example API") || !strings.Contains(body, "Accepted status range") {
 		t.Fatalf("expected uptime page to render summary cards, got %q", body)
+	}
+
+	if !strings.Contains(body, `aria-label="Uptime sections"`) ||
+		!strings.Contains(body, "uptime-panel-monitors") ||
+		!strings.Contains(body, "uptime-panel-results") ||
+		!strings.Contains(body, "uptime-panel-charts") ||
+		!strings.Contains(body, "Selected monitor") {
+		t.Fatalf("expected uptime page to render tabbed sections and selected monitor details, got %q", body)
 	}
 }
 

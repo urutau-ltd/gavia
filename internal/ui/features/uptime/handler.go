@@ -9,24 +9,30 @@ import (
 	"log/slog"
 	"net/http"
 	neturl "net/url"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	uptimemonitor "codeberg.org/urutau-ltd/gavia/internal/models/uptime_monitor"
 	"codeberg.org/urutau-ltd/gavia/internal/ui"
+	uptimeservice "codeberg.org/urutau-ltd/gavia/internal/uptime"
 )
 
 type Handler struct {
 	logger *slog.Logger
 	tmpl   *template.Template
 	repo   *uptimemonitor.Repository
+	svc    *uptimeservice.Service
 }
 
 type monitorRow struct {
 	ID         string
 	Name       string
 	TargetURL  string
+	Method     string
+	StatusRule string
+	TLSMode    string
 	StatusTone string
 	StatusText string
 	StatusMeta string
@@ -48,11 +54,13 @@ type summaryStat struct {
 }
 
 type resultChartPayload struct {
-	Labels  []string `json:"labels"`
-	Status  []int    `json:"status"`
-	Latency []*int   `json:"latency"`
-	Up      int      `json:"up"`
-	Down    int      `json:"down"`
+	Labels           []string `json:"labels"`
+	Availability     []int    `json:"availability"`
+	Latency          []*int   `json:"latency"`
+	StatusCodeLabels []string `json:"status_code_labels"`
+	StatusCodeCounts []int    `json:"status_code_counts"`
+	Up               int      `json:"up"`
+	Down             int      `json:"down"`
 }
 
 type pageData struct {
@@ -68,7 +76,7 @@ type pageData struct {
 	EditingExisting bool
 }
 
-func NewHandler(logger *slog.Logger, uiFS fs.FS, repo *uptimemonitor.Repository) *Handler {
+func NewHandler(logger *slog.Logger, uiFS fs.FS, repo *uptimemonitor.Repository, svc *uptimeservice.Service) *Handler {
 	t := template.Must(template.ParseFS(uiFS,
 		"layout/base.html",
 		"features/uptime/views/*.html",
@@ -79,6 +87,7 @@ func NewHandler(logger *slog.Logger, uiFS fs.FS, repo *uptimemonitor.Repository)
 		logger: logger,
 		tmpl:   t,
 		repo:   repo,
+		svc:    svc,
 	}
 }
 
@@ -157,6 +166,27 @@ func (h *Handler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/uptime?notice=deleted", http.StatusSeeOther)
+}
+
+func (h *Handler) RunNow(w http.ResponseWriter, r *http.Request) {
+	id := strings.TrimSpace(r.PathValue("id"))
+	if id == "" {
+		http.Error(w, "Monitor id is required.", http.StatusBadRequest)
+		return
+	}
+
+	if h.svc == nil {
+		http.Error(w, "Immediate checks are unavailable.", http.StatusServiceUnavailable)
+		return
+	}
+
+	if err := h.svc.RunMonitorNow(r.Context(), id); err != nil {
+		h.logger.Error("Failed to run uptime monitor immediately", "id", id, "err", err)
+		http.Error(w, "Unable to run the uptime monitor right now.", http.StatusInternalServerError)
+		return
+	}
+
+	http.Redirect(w, r, "/uptime/"+id+"?notice=ran", http.StatusSeeOther)
 }
 
 func (h *Handler) renderPage(w http.ResponseWriter, r *http.Request, selectedID string) {
@@ -247,7 +277,7 @@ func (h *Handler) loadSelected(r *http.Request, selectedID string) (*uptimemonit
 		return selected, nil, err
 	}
 
-	results, err := h.repo.GetRecentResults(r.Context(), selectedID, 20)
+	results, err := h.repo.GetRecentResults(r.Context(), selectedID, 120)
 	return selected, results, err
 }
 
@@ -259,10 +289,22 @@ func parseMonitorForm(current *uptimemonitor.Monitor, r *http.Request) (*uptimem
 
 	monitor.Name = strings.TrimSpace(r.Form.Get("name"))
 	monitor.TargetURL = strings.TrimSpace(r.Form.Get("target_url"))
+	monitor.HTTPMethod = strings.TrimSpace(r.Form.Get("http_method"))
+	monitor.TLSMode = strings.TrimSpace(r.Form.Get("tls_mode"))
+	monitor.RequestHeaders = optionalString(r.Form.Get("request_headers"))
+	monitor.ExpectedBodySubstring = optionalString(r.Form.Get("expected_body_substring"))
 	monitor.Enabled = r.Form.Get("enabled") == "1"
 	monitor.Notes = optionalString(r.Form.Get("notes"))
 
 	expectedStatus, err := parsePositiveInt(r.Form.Get("expected_status"), 200)
+	if err != nil {
+		return monitor, err
+	}
+	expectedStatusMin, err := parsePositiveInt(r.Form.Get("expected_status_min"), expectedStatus)
+	if err != nil {
+		return monitor, err
+	}
+	expectedStatusMax, err := parsePositiveInt(r.Form.Get("expected_status_max"), expectedStatus)
 	if err != nil {
 		return monitor, err
 	}
@@ -276,6 +318,8 @@ func parseMonitorForm(current *uptimemonitor.Monitor, r *http.Request) (*uptimem
 	}
 
 	monitor.ExpectedStatus = expectedStatus
+	monitor.ExpectedStatusMin = expectedStatusMin
+	monitor.ExpectedStatusMax = expectedStatusMax
 	monitor.CheckIntervalSeconds = intervalSeconds
 	monitor.TimeoutMS = timeoutMS
 
@@ -286,6 +330,14 @@ func parseMonitorForm(current *uptimemonitor.Monitor, r *http.Request) (*uptimem
 	parsedURL, err := neturl.ParseRequestURI(monitor.TargetURL)
 	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
 		return monitor, errors.New("A valid target URL is required.")
+	}
+
+	if monitor.ExpectedStatusMax < monitor.ExpectedStatusMin {
+		return monitor, errors.New("Maximum accepted status must be greater than or equal to the minimum.")
+	}
+
+	if err := validateHeaderLines(monitor.RequestHeadersValue()); err != nil {
+		return monitor, err
 	}
 
 	return monitor, nil
@@ -299,10 +351,13 @@ func buildMonitorRows(items []*uptimemonitor.MonitorStatus) []monitorRow {
 		}
 
 		row := monitorRow{
-			ID:        item.ID,
-			Name:      item.Name,
-			TargetURL: item.TargetURL,
-			Enabled:   item.Enabled,
+			ID:         item.ID,
+			Name:       item.Name,
+			TargetURL:  item.TargetURL,
+			Method:     item.HTTPMethodValue(),
+			StatusRule: item.StatusRangeDisplay(),
+			TLSMode:    item.TLSModeValue(),
+			Enabled:    item.Enabled,
 		}
 
 		switch {
@@ -371,6 +426,8 @@ func uptimeNotice(r *http.Request) template.HTML {
 		return ui.BannerHTML("uptime-alert", "ok", "Uptime monitor created successfully.")
 	case "updated":
 		return ui.BannerHTML("uptime-alert", "ok", "Uptime monitor updated successfully.")
+	case "ran":
+		return ui.BannerHTML("uptime-alert", "ok", "Uptime monitor checked immediately.")
 	case "deleted":
 		return ui.BannerHTML("uptime-alert", "ok", "Uptime monitor deleted successfully.")
 	default:
@@ -382,6 +439,10 @@ func defaultMonitor() *uptimemonitor.Monitor {
 	return &uptimemonitor.Monitor{
 		Kind:                 "http",
 		ExpectedStatus:       200,
+		ExpectedStatusMin:    200,
+		ExpectedStatusMax:    299,
+		HTTPMethod:           "GET",
+		TLSMode:              "skip",
 		CheckIntervalSeconds: 300,
 		TimeoutMS:            5000,
 		Enabled:              true,
@@ -452,24 +513,42 @@ func buildSelectedStats(items []*uptimemonitor.Result) []summaryStat {
 	}
 
 	lastStatus := "Pending"
+	lastCode := "Unavailable"
+	consecutiveFailures := 0
 	if latest := items[0]; latest != nil {
 		if latest.OK {
 			lastStatus = "Up"
 		} else {
 			lastStatus = "Down"
 		}
+		if latest.StatusCode != nil {
+			lastCode = strconv.Itoa(*latest.StatusCode)
+		}
+	}
+
+	for _, item := range items {
+		if item == nil {
+			continue
+		}
+		if item.OK {
+			break
+		}
+		consecutiveFailures++
 	}
 
 	return []summaryStat{
 		{Label: "Availability", Value: fmt.Sprintf("%.1f%%", availability), Hint: "Recent checks marked as up."},
 		{Label: "Average latency", Value: averageLatency, Hint: "Mean latency across recent successful checks."},
 		{Label: "Last status", Value: lastStatus, Hint: "Most recent monitor result."},
-		{Label: "Recent checks", Value: fmt.Sprintf("%d", upCount+downCount), Hint: "Samples used in the chart below."},
+		{Label: "Last HTTP code", Value: lastCode, Hint: "Latest returned HTTP status code when available."},
+		{Label: "Consecutive failures", Value: fmt.Sprintf("%d", consecutiveFailures), Hint: "Current failure streak from the latest sample backwards."},
+		{Label: "Recent checks", Value: fmt.Sprintf("%d", upCount+downCount), Hint: "Samples used in the charts below."},
 	}
 }
 
 func buildChartsJSON(items []*uptimemonitor.Result) (string, error) {
 	payload := resultChartPayload{}
+	statusCodeBuckets := map[string]int{}
 	for i := len(items) - 1; i >= 0; i-- {
 		item := items[i]
 		if item == nil {
@@ -478,13 +557,27 @@ func buildChartsJSON(items []*uptimemonitor.Result) (string, error) {
 
 		payload.Labels = append(payload.Labels, item.CheckedAt.Format("01-02 15:04"))
 		if item.OK {
-			payload.Status = append(payload.Status, 1)
+			payload.Availability = append(payload.Availability, 1)
 			payload.Up++
 		} else {
-			payload.Status = append(payload.Status, 0)
+			payload.Availability = append(payload.Availability, 0)
 			payload.Down++
 		}
 		payload.Latency = append(payload.Latency, item.LatencyMS)
+		if item.StatusCode != nil {
+			code := strconv.Itoa(*item.StatusCode)
+			statusCodeBuckets[code]++
+		}
+	}
+
+	statusCodes := make([]string, 0, len(statusCodeBuckets))
+	for code := range statusCodeBuckets {
+		statusCodes = append(statusCodes, code)
+	}
+	sort.Strings(statusCodes)
+	for _, code := range statusCodes {
+		payload.StatusCodeLabels = append(payload.StatusCodeLabels, code)
+		payload.StatusCodeCounts = append(payload.StatusCodeCounts, statusCodeBuckets[code])
 	}
 
 	raw, err := json.Marshal(payload)
@@ -492,4 +585,19 @@ func buildChartsJSON(items []*uptimemonitor.Result) (string, error) {
 		return "", err
 	}
 	return string(raw), nil
+}
+
+func validateHeaderLines(raw string) error {
+	for _, line := range strings.Split(raw, "\n") {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+		key, value, ok := strings.Cut(line, ":")
+		if !ok || strings.TrimSpace(key) == "" || strings.TrimSpace(value) == "" {
+			return errors.New("Each request header must use the format Header-Name: value.")
+		}
+	}
+
+	return nil
 }

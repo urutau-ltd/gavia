@@ -2,6 +2,30 @@
 const uptimeChartDataElement = document.getElementById("uptime-chart-data");
 const UptimeChartConstructor = window.Chart;
 
+const resizeUptimeCharts = () => {
+  if (!Array.isArray(window.__gaviaUptimeCharts)) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    for (const chart of window.__gaviaUptimeCharts) {
+      chart.resize();
+    }
+  });
+};
+
+if (!window.__gaviaUptimeTabsBound) {
+  document.addEventListener("missing-change", (event) => {
+    const tablist = event.target;
+    if (!(tablist instanceof Element) || tablist.getAttribute("aria-label") !== "Uptime sections") {
+      return;
+    }
+
+    resizeUptimeCharts();
+  });
+  window.__gaviaUptimeTabsBound = true;
+}
+
 if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
   if (Array.isArray(window.__gaviaUptimeCharts)) {
     for (const chart of window.__gaviaUptimeCharts) {
@@ -42,10 +66,9 @@ if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
     const resultsCanvas = document.getElementById("uptime-results-chart");
     if (resultsCanvas) {
       const labels = chartData.labels || [];
-      const status = chartData.status || [];
-      const latency = chartData.latency || [];
+      const availability = chartData.availability || [];
 
-      if (!labels.length || (!hasValues(status) && !hasValues(latency))) {
+      if (!labels.length || !hasValues(availability)) {
         showEmptyState(resultsCanvas, "No recent uptime samples are available for this monitor.");
       } else {
         const chart = new UptimeChartConstructor(resultsCanvas, {
@@ -54,23 +77,10 @@ if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
             labels,
             datasets: [
               {
-                type: "bar",
                 label: "Availability",
-                data: status,
-                yAxisID: "y1",
-                backgroundColor: status.map((value) => (Number(value) === 1 ? "#15803d" : "#b91c1c")),
+                data: availability,
+                backgroundColor: availability.map((value) => (Number(value) === 1 ? "#15803d" : "#b91c1c")),
                 borderColor: "transparent",
-              },
-              {
-                type: "line",
-                label: "Latency ms",
-                data: latency,
-                yAxisID: "y",
-                borderColor: "#1d4ed8",
-                backgroundColor: "rgba(29, 78, 216, 0.18)",
-                tension: 0.25,
-                fill: false,
-                spanGaps: true,
               },
             ],
           },
@@ -91,12 +101,60 @@ if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
               tooltip: {
                 callbacks: {
                   label(context) {
-                    if (context.dataset.label === "Availability") {
-                      return `Availability: ${Number(context.parsed.y) === 1 ? "Up" : "Down"}`;
-                    }
-                    return `Latency ms: ${Number(context.parsed.y || 0).toFixed(0)}`;
+                    return `Availability: ${Number(context.parsed.y) === 1 ? "Up" : "Down"}`;
                   },
                 },
+              },
+            },
+            scales: {
+              y: {
+                min: 0,
+                max: 1,
+                ticks: {
+                  callback(value) {
+                    return Number(value) === 1 ? "Up" : "Down";
+                  },
+                },
+              },
+            },
+          },
+        });
+        window.__gaviaUptimeCharts.push(chart);
+      }
+    }
+
+    const latencyCanvas = document.getElementById("uptime-latency-chart");
+    if (latencyCanvas) {
+      const labels = chartData.labels || [];
+      const latency = chartData.latency || [];
+      if (!labels.length || !hasValues(latency)) {
+        showEmptyState(latencyCanvas, "No latency samples are available for this monitor yet.");
+      } else {
+        const chart = new UptimeChartConstructor(latencyCanvas, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Latency ms",
+                data: latency,
+                borderColor: "#1d4ed8",
+                backgroundColor: "rgba(29, 78, 216, 0.18)",
+                tension: 0.25,
+                fill: false,
+                spanGaps: true,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            normalized: true,
+            resizeDelay: 150,
+            plugins: {
+              legend: {
+                position: "bottom",
               },
             },
             scales: {
@@ -104,19 +162,6 @@ if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
                 title: {
                   display: true,
                   text: "Latency ms",
-                },
-              },
-              y1: {
-                min: 0,
-                max: 1,
-                position: "right",
-                grid: {
-                  drawOnChartArea: false,
-                },
-                ticks: {
-                  callback(value) {
-                    return Number(value) === 1 ? "Up" : "Down";
-                  },
                 },
               },
             },
@@ -158,7 +203,54 @@ if (uptimeChartDataElement && typeof UptimeChartConstructor === "function") {
         window.__gaviaUptimeCharts.push(chart);
       }
     }
+
+    const statusCodeCanvas = document.getElementById("uptime-status-code-chart");
+    if (statusCodeCanvas) {
+      const labels = chartData.status_code_labels || [];
+      const counts = chartData.status_code_counts || [];
+      if (!labels.length || !hasValues(counts)) {
+        showEmptyState(statusCodeCanvas, "No HTTP status codes have been recorded yet.");
+      } else {
+        const chart = new UptimeChartConstructor(statusCodeCanvas, {
+          type: "bar",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "Observed responses",
+                data: counts,
+                backgroundColor: "#0369a1",
+                borderColor: "transparent",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            animation: false,
+            normalized: true,
+            resizeDelay: 150,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0,
+                },
+              },
+            },
+          },
+        });
+        window.__gaviaUptimeCharts.push(chart);
+      }
+    }
   }
 }
+
+resizeUptimeCharts();
 
 // @license-end

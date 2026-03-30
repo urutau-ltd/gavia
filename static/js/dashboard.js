@@ -47,6 +47,30 @@ for (const element of document.querySelectorAll("[data-dashboard-relative-date]"
 const chartDataElement = document.getElementById("dashboard-chart-data");
 const ChartConstructor = window.Chart;
 
+const resizeDashboardCharts = () => {
+  if (!Array.isArray(window.__gaviaDashboardCharts)) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    for (const chart of window.__gaviaDashboardCharts) {
+      chart.resize();
+    }
+  });
+};
+
+if (!window.__gaviaDashboardTabsBound) {
+  document.addEventListener("missing-change", (event) => {
+    const tablist = event.target;
+    if (!(tablist instanceof Element) || tablist.getAttribute("aria-label") !== "Dashboard sections") {
+      return;
+    }
+
+    resizeDashboardCharts();
+  });
+  window.__gaviaDashboardTabsBound = true;
+}
+
 if (chartDataElement && typeof ChartConstructor === "function") {
   if (Array.isArray(window.__gaviaDashboardCharts)) {
     for (const chart of window.__gaviaDashboardCharts) {
@@ -379,5 +403,7 @@ if (chartDataElement && typeof ChartConstructor === "function") {
     }
   }
 }
+
+resizeDashboardCharts();
 
 // @license-end

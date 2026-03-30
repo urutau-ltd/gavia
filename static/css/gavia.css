@@ -245,6 +245,20 @@ body.sidebar-layout {
     margin-top: var(--gap);
 }
 
+.crud-map-frame {
+    overflow: hidden;
+    border: var(--interactive-border-width) var(--interactive-border-style) var(--graphical-fg);
+    border-radius: var(--interactive-border-radius);
+    background: var(--box-bg);
+}
+
+.crud-map-frame iframe {
+    display: block;
+    inline-size: 100%;
+    min-block-size: 18rem;
+    border: 0;
+}
+
 .dashboard-chart-canvas {
     display: block;
     width: 100% !important;

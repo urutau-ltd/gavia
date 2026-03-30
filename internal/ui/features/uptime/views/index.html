@@ -4,8 +4,8 @@
         <div>
             <h2>{{.Title}}</h2>
             <p class="gavia-subtitle">
-                Lightweight uptime checks for HTTP hosts with explicit monitor
-                settings and recent result history.
+                HTTP checks with explicit request method, TLS mode, headers,
+                body matching, and recent result history.
             </p>
         </div>
     </header>
@@ -13,122 +13,275 @@
     {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
     {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
 
-    {{with .Summary}}
-    <section class="dashboard-diagnostics-grid" aria-label="Uptime overview">
-        <article class="gavia-mini-stat">
-            <strong>Total monitors</strong>
-            <span>{{.Total}}</span>
-            <small>Configured checks in this module.</small>
-        </article>
-        <article class="gavia-mini-stat">
-            <strong>Up</strong>
-            <span>{{.Up}}</span>
-            <small>Latest known healthy state.</small>
-        </article>
-        <article class="gavia-mini-stat">
-            <strong>Down</strong>
-            <span>{{.Down}}</span>
-            <small>Latest known failing state.</small>
-        </article>
-        <article class="gavia-mini-stat">
-            <strong>Unknown</strong>
-            <span>{{.Unknown}}</span>
-            <small>Monitors without a recent sample yet.</small>
-        </article>
-    </section>
-    {{end}}
+    <div
+        class="tool-bar flex-row flex-wrap:wrap"
+        role="tablist"
+        aria-label="Uptime sections"
+    >
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="uptime-tab-monitors"
+            aria-controls="uptime-panel-monitors"
+            aria-selected="true"
+        >
+            Monitors
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="uptime-tab-results"
+            aria-controls="uptime-panel-results"
+            aria-selected="false"
+        >
+            Results
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="uptime-tab-charts"
+            aria-controls="uptime-panel-charts"
+            aria-selected="false"
+        >
+            Charts
+        </button>
+    </div>
 
-    <div class="gavia-grid">
-        <article class="box flow-gap">
-            <h3>Monitors</h3>
-            <ul role="list" class="crowded flow-gap padding:0 margin:0">
-                {{range .Monitors}}
-                <li class="gavia-row">
-                    <div>
-                        <strong><a href="/uptime/{{.ID}}">{{.Name}}</a></strong>
-                        <div class="gavia-muted">{{.TargetURL}}</div>
-                        {{if .StatusMeta}}
-                        <div class="gavia-muted">Last check: {{.StatusMeta}}</div>
+    <section id="uptime-panel-monitors" role="tabpanel" class="flow-gap">
+        {{with .Summary}}
+        <section class="dashboard-diagnostics-grid" aria-label="Uptime overview">
+            <article class="gavia-mini-stat">
+                <strong>Total monitors</strong>
+                <span>{{.Total}}</span>
+                <small>Configured checks in this module.</small>
+            </article>
+            <article class="gavia-mini-stat">
+                <strong>Up</strong>
+                <span>{{.Up}}</span>
+                <small>Latest known healthy state.</small>
+            </article>
+            <article class="gavia-mini-stat">
+                <strong>Down</strong>
+                <span>{{.Down}}</span>
+                <small>Latest known failing state.</small>
+            </article>
+            <article class="gavia-mini-stat">
+                <strong>Unknown</strong>
+                <span>{{.Unknown}}</span>
+                <small>Monitors without a recent sample yet.</small>
+            </article>
+        </section>
+        {{end}}
+
+        <div class="gavia-grid">
+            <article class="box flow-gap">
+                <h3>Monitors</h3>
+                <ul role="list" class="crowded flow-gap padding:0 margin:0">
+                    {{range .Monitors}}
+                    <li class="gavia-row">
+                        <div>
+                            <strong><a href="/uptime/{{.ID}}">{{.Name}}</a></strong>
+                            <div class="gavia-muted">{{.TargetURL}}</div>
+                            <div class="gavia-muted">{{.Method}} · HTTP {{.StatusRule}} · TLS {{.TLSMode}}</div>
+                            {{if .StatusMeta}}
+                            <div class="gavia-muted">Last check: {{.StatusMeta}}</div>
+                            {{end}}
+                        </div>
+                        <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
+                    </li>
+                    {{else}}
+                    <li class="gavia-muted">No uptime monitors have been created yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box flow-gap">
+                <h3>{{if .EditingExisting}}Edit monitor{{else}}New monitor{{end}}</h3>
+                <form
+                    method="post"
+                    action="{{if .EditingExisting}}/uptime/{{.Selected.ID}}/edit{{else}}/uptime{{end}}"
+                    class="flow-gap"
+                >
+                    {{template "csrf_input" .}}
+                    <label for="uptime-name">Name</label>
+                    <input id="uptime-name" name="name" type="text" required value="{{.Selected.Name}}">
+
+                    <label for="uptime-target-url">Target URL</label>
+                    <input
+                        id="uptime-target-url"
+                        name="target_url"
+                        type="url"
+                        required
+                        value="{{.Selected.TargetURL}}"
+                    >
+
+                    <label for="uptime-http-method">HTTP method</label>
+                    <select id="uptime-http-method" name="http_method">
+                        <option value="GET" {{if eq .Selected.HTTPMethodValue "GET"}}selected{{end}}>GET</option>
+                        <option value="HEAD" {{if eq .Selected.HTTPMethodValue "HEAD"}}selected{{end}}>HEAD</option>
+                        <option value="POST" {{if eq .Selected.HTTPMethodValue "POST"}}selected{{end}}>POST</option>
+                        <option value="PUT" {{if eq .Selected.HTTPMethodValue "PUT"}}selected{{end}}>PUT</option>
+                        <option value="PATCH" {{if eq .Selected.HTTPMethodValue "PATCH"}}selected{{end}}>PATCH</option>
+                        <option value="DELETE" {{if eq .Selected.HTTPMethodValue "DELETE"}}selected{{end}}>DELETE</option>
+                        <option value="OPTIONS" {{if eq .Selected.HTTPMethodValue "OPTIONS"}}selected{{end}}>OPTIONS</option>
+                    </select>
+
+                    <label for="uptime-expected-status-min">Accepted HTTP status minimum</label>
+                    <input
+                        id="uptime-expected-status-min"
+                        name="expected_status_min"
+                        type="number"
+                        min="100"
+                        max="599"
+                        required
+                        value="{{.Selected.ExpectedStatusMin}}"
+                    >
+
+                    <label for="uptime-expected-status-max">Accepted HTTP status maximum</label>
+                    <input
+                        id="uptime-expected-status-max"
+                        name="expected_status_max"
+                        type="number"
+                        min="100"
+                        max="599"
+                        required
+                        value="{{.Selected.ExpectedStatusMax}}"
+                    >
+
+                    <label for="uptime-check-interval">Check interval in seconds</label>
+                    <input
+                        id="uptime-check-interval"
+                        name="check_interval_seconds"
+                        type="number"
+                        min="30"
+                        required
+                        value="{{.Selected.CheckIntervalSeconds}}"
+                    >
+
+                    <label for="uptime-timeout-ms">Timeout in milliseconds</label>
+                    <input
+                        id="uptime-timeout-ms"
+                        name="timeout_ms"
+                        type="number"
+                        min="250"
+                        required
+                        value="{{.Selected.TimeoutMS}}"
+                    >
+
+                    <label for="uptime-tls-mode">TLS mode</label>
+                    <select id="uptime-tls-mode" name="tls_mode">
+                        <option value="skip" {{if eq .Selected.TLSModeValue "skip"}}selected{{end}}>Ignore certificate problems</option>
+                        <option value="verify" {{if eq .Selected.TLSModeValue "verify"}}selected{{end}}>Verify certificates normally</option>
+                    </select>
+
+                    <label for="uptime-request-headers">Request headers</label>
+                    <textarea
+                        id="uptime-request-headers"
+                        name="request_headers"
+                        rows="4"
+                        placeholder="Authorization: Bearer ...&#10;X-Env: prod"
+                    >{{.Selected.RequestHeadersValue}}</textarea>
+
+                    <label for="uptime-expected-body-substring">Expected response body text</label>
+                    <input
+                        id="uptime-expected-body-substring"
+                        name="expected_body_substring"
+                        type="text"
+                        value="{{.Selected.ExpectedBodySubstringValue}}"
+                    >
+
+                    <label class="crowded flex-row align-items:center">
+                        <input type="checkbox" name="enabled" value="1" {{if .Selected.Enabled}}checked{{end}}>
+                        <span>Enabled</span>
+                    </label>
+
+                    <label for="uptime-notes">Notes</label>
+                    <textarea id="uptime-notes" name="notes" rows="4">{{with .Selected.Notes}}{{.}}{{end}}</textarea>
+
+                    <div class="crowded flex-row flex-wrap:wrap align-items:center">
+                        <button type="submit" class="ok <button>">
+                            {{if .EditingExisting}}Save changes{{else}}Create monitor{{end}}
+                        </button>
+                        {{if .EditingExisting}}
+                        <a class="plain <button>" href="/uptime">New monitor</a>
                         {{end}}
                     </div>
-                    <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
-                </li>
-                {{else}}
-                <li class="gavia-muted">No uptime monitors have been created yet.</li>
-                {{end}}
-            </ul>
-        </article>
+                </form>
+            </article>
+        </div>
+    </section>
 
+    <section id="uptime-panel-results" role="tabpanel" class="flow-gap" hidden>
         <article class="box flow-gap">
-            <h3>{{if .EditingExisting}}Edit monitor{{else}}New monitor{{end}}</h3>
-            <form
-                method="post"
-                action="{{if .EditingExisting}}/uptime/{{.Selected.ID}}/edit{{else}}/uptime{{end}}"
-                class="flow-gap"
-            >
-                {{template "csrf_input" .}}
-                <label for="uptime-name">Name</label>
-                <input id="uptime-name" name="name" type="text" required value="{{.Selected.Name}}">
-
-                <label for="uptime-target-url">Target URL</label>
-                <input
-                    id="uptime-target-url"
-                    name="target_url"
-                    type="url"
-                    required
-                    value="{{.Selected.TargetURL}}"
-                >
-
-                <label for="uptime-expected-status">Expected HTTP status</label>
-                <input
-                    id="uptime-expected-status"
-                    name="expected_status"
-                    type="number"
-                    min="100"
-                    max="599"
-                    required
-                    value="{{.Selected.ExpectedStatus}}"
-                >
-
-                <label for="uptime-check-interval">Check interval in seconds</label>
-                <input
-                    id="uptime-check-interval"
-                    name="check_interval_seconds"
-                    type="number"
-                    min="30"
-                    required
-                    value="{{.Selected.CheckIntervalSeconds}}"
-                >
-
-                <label for="uptime-timeout-ms">Timeout in milliseconds</label>
-                <input
-                    id="uptime-timeout-ms"
-                    name="timeout_ms"
-                    type="number"
-                    min="250"
-                    required
-                    value="{{.Selected.TimeoutMS}}"
-                >
-
-                <label class="crowded flex-row align-items:center">
-                    <input type="checkbox" name="enabled" value="1" {{if .Selected.Enabled}}checked{{end}}>
-                    <span>Enabled</span>
-                </label>
-
-                <label for="uptime-notes">Notes</label>
-                <textarea id="uptime-notes" name="notes" rows="4">{{with .Selected.Notes}}{{.}}{{end}}</textarea>
-
-                <div class="crowded flex-row flex-wrap:wrap align-items:center">
-                    <button type="submit" class="ok <button>">
-                        {{if .EditingExisting}}Save changes{{else}}Create monitor{{end}}
-                    </button>
-                    {{if .EditingExisting}}
-                    <a class="plain <button>" href="/uptime">New monitor</a>
-                    {{end}}
-                </div>
-            </form>
-
             {{if .EditingExisting}}
+            <h3>Selected monitor</h3>
+            <dl class="settings-summary table rows">
+                <div>
+                    <dt>Name</dt>
+                    <dd>{{.Selected.Name}}</dd>
+                </div>
+
+                <div>
+                    <dt>Target URL</dt>
+                    <dd>{{.Selected.TargetURL}}</dd>
+                </div>
+
+                <div>
+                    <dt>Method</dt>
+                    <dd>{{.Selected.HTTPMethodValue}}</dd>
+                </div>
+
+                <div>
+                    <dt>Accepted status range</dt>
+                    <dd>{{.Selected.StatusRangeDisplay}}</dd>
+                </div>
+
+                <div>
+                    <dt>Interval</dt>
+                    <dd>{{.Selected.CheckIntervalSeconds}}s</dd>
+                </div>
+
+                <div>
+                    <dt>Timeout</dt>
+                    <dd>{{.Selected.TimeoutMS}}ms</dd>
+                </div>
+
+                <div>
+                    <dt>TLS mode</dt>
+                    <dd>{{.Selected.TLSModeValue}}</dd>
+                </div>
+
+                <div>
+                    <dt>Expected body text</dt>
+                    <dd>
+                        {{if .Selected.ExpectedBodySubstring}}
+                        <code>{{.Selected.ExpectedBodySubstringValue}}</code>
+                        {{else}}
+                        <span class="gavia-muted">No body text required</span>
+                        {{end}}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Headers</dt>
+                    <dd>
+                        {{if .Selected.RequestHeaders}}
+                        <pre>{{.Selected.RequestHeadersValue}}</pre>
+                        {{else}}
+                        <span class="gavia-muted">No custom headers</span>
+                        {{end}}
+                    </dd>
+                </div>
+
+                <div>
+                    <dt>Enabled</dt>
+                    <dd>{{if .Selected.Enabled}}Yes{{else}}No{{end}}</dd>
+                </div>
+            </dl>
+
             {{if .SelectedStats}}
             <div class="dashboard-diagnostics-grid">
                 {{range .SelectedStats}}
@@ -140,11 +293,6 @@
                 {{end}}
             </div>
             {{end}}
-
-            <form method="post" action="/uptime/{{.Selected.ID}}/delete">
-                {{template "csrf_input" .}}
-                <button type="submit" class="bad <button>">Delete</button>
-            </form>
 
             <h3>Recent results</h3>
             <ul role="list" class="crowded flow-gap padding:0 margin:0">
@@ -167,35 +315,78 @@
                 <li class="gavia-muted">No results have been recorded for this monitor yet.</li>
                 {{end}}
             </ul>
+
+            <form method="post" action="/uptime/{{.Selected.ID}}/delete">
+                {{template "csrf_input" .}}
+                <div class="crowded flex-row flex-wrap:wrap align-items:center">
+                    <button type="submit" formaction="/uptime/{{.Selected.ID}}/run" class="ok <button>">
+                        Run now
+                    </button>
+                    <a class="plain <button>" href="/uptime/{{.Selected.ID}}">Edit</a>
+                    <button type="submit" class="bad <button>">Delete</button>
+                </div>
+            </form>
+            {{else}}
+            <p class="gavia-muted">
+                Open an existing monitor to review recent results and delete it.
+            </p>
             {{end}}
-        </article>
-    </div>
-
-    {{if .EditingExisting}}
-    <section class="dashboard-charts" aria-label="Uptime charts">
-        <article class="box flow-gap">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Recent availability</h3>
-                <span class="gavia-muted">Latest checks for this monitor</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="uptime-results-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
-
-        <article class="box flow-gap">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Status split</h3>
-                <span class="gavia-muted">Up versus down in the recent sample window</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="uptime-distribution-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
         </article>
     </section>
 
-    <script id="uptime-chart-data" type="application/json">{{.ChartsJSON}}</script>
-    {{end}}
+    <section id="uptime-panel-charts" role="tabpanel" class="flow-gap" hidden>
+        {{if .EditingExisting}}
+        <section class="dashboard-charts" aria-label="Uptime charts">
+            <article class="box flow-gap">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Recent availability</h3>
+                    <span class="gavia-muted">Latest checks for this monitor</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="uptime-results-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box flow-gap">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Latency trend</h3>
+                    <span class="gavia-muted">Response time for the same sample window</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="uptime-latency-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box flow-gap">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Status split</h3>
+                    <span class="gavia-muted">Up versus down in the recent sample window</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="uptime-distribution-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box flow-gap">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Status code distribution</h3>
+                    <span class="gavia-muted">Which HTTP codes were observed recently</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="uptime-status-code-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+        </section>
+
+        <script id="uptime-chart-data" type="application/json">{{.ChartsJSON}}</script>
+        {{else}}
+        <article class="box flow-gap">
+            <p class="gavia-muted">
+                Create or open a monitor to see availability and status charts.
+            </p>
+        </article>
+        {{end}}
+    </section>
 </section>
 {{end}}
 

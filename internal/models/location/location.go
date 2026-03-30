@@ -17,6 +17,8 @@ type Location struct {
 	Name      string    `db:"name" json:"name"`
 	City      *string   `db:"city" json:"city"`
 	Country   *string   `db:"country" json:"country"`
+	Latitude  *float64  `db:"latitude" json:"latitude"`
+	Longitude *float64  `db:"longitude" json:"longitude"`
 	Notes     *string   `db:"notes" json:"notes"`
 	CreatedAt time.Time `db:"created_at" json:"created_at"`
 	UpdatedAt time.Time `db:"updated_at" json:"updated_at"`
@@ -32,6 +34,57 @@ func (l *Location) CountryValue() string {
 
 func (l *Location) NotesValue() string {
 	return stringValue(l.Notes)
+}
+
+func (l *Location) LatitudeValue() string {
+	if l == nil || l.Latitude == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%.6f", *l.Latitude)
+}
+
+func (l *Location) LongitudeValue() string {
+	if l == nil || l.Longitude == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%.6f", *l.Longitude)
+}
+
+func (l *Location) HasCoordinates() bool {
+	return l != nil && l.Latitude != nil && l.Longitude != nil
+}
+
+func (l *Location) MapLinkURL() string {
+	if !l.HasCoordinates() {
+		return ""
+	}
+
+	return fmt.Sprintf(
+		"https://www.openstreetmap.org/?mlat=%.6f&mlon=%.6f#map=13/%.6f/%.6f",
+		*l.Latitude,
+		*l.Longitude,
+		*l.Latitude,
+		*l.Longitude,
+	)
+}
+
+func (l *Location) MapEmbedURL() string {
+	if !l.HasCoordinates() {
+		return ""
+	}
+
+	const delta = 0.02
+	return fmt.Sprintf(
+		"https://www.openstreetmap.org/export/embed.html?bbox=%.6f,%.6f,%.6f,%.6f&layer=mapnik&marker=%.6f,%.6f",
+		*l.Longitude-delta,
+		*l.Latitude-delta,
+		*l.Longitude+delta,
+		*l.Latitude+delta,
+		*l.Latitude,
+		*l.Longitude,
+	)
 }
 
 // LocationRepository centralizes SQL access for location CRUD operations.
@@ -57,11 +110,13 @@ func (r *LocationRepository) Create(ctx context.Context, l *Location) error {
 	l.UpdatedAt = l.CreatedAt
 
 	_, err = r.db.ExecContext(ctx,
-		"INSERT INTO locations (id, name, city, country, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		"INSERT INTO locations (id, name, city, country, latitude, longitude, notes, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		l.Id,
 		l.Name,
 		dbString(l.City),
 		dbString(l.Country),
+		dbFloat(l.Latitude),
+		dbFloat(l.Longitude),
 		dbString(l.Notes),
 		l.CreatedAt,
 		l.UpdatedAt,
@@ -79,15 +134,19 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*Location,
 
 	var city sql.NullString
 	var country sql.NullString
+	var latitude sql.NullFloat64
+	var longitude sql.NullFloat64
 	var notes sql.NullString
 	l := &Location{}
 	err := r.db.QueryRowContext(ctx,
-		"SELECT id, name, city, country, notes, created_at, updated_at FROM locations WHERE id = ?",
+		"SELECT id, name, city, country, latitude, longitude, notes, created_at, updated_at FROM locations WHERE id = ?",
 		id).Scan(
 		&l.Id,
 		&l.Name,
 		&city,
 		&country,
+		&latitude,
+		&longitude,
 		&notes,
 		&l.CreatedAt,
 		&l.UpdatedAt,
@@ -101,6 +160,8 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*Location,
 
 	l.City = nullableString(city)
 	l.Country = nullableString(country)
+	l.Latitude = nullableFloat(latitude)
+	l.Longitude = nullableFloat(longitude)
 	l.Notes = nullableString(notes)
 	return l, nil
 }
@@ -108,7 +169,7 @@ func (r *LocationRepository) GetByID(ctx context.Context, id string) (*Location,
 // GetAll returns locations filtered by search and capped by limit.
 // Search spans name/city/country so a single text box can drive the table.
 func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limit int) ([]*Location, error) {
-	query := `SELECT id, name, city, country, notes, created_at, updated_at FROM locations WHERE 1=1`
+	query := `SELECT id, name, city, country, latitude, longitude, notes, created_at, updated_at FROM locations WHERE 1=1`
 	var args []any
 
 	if searchTerm != "" {
@@ -134,6 +195,8 @@ func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limi
 	for rows.Next() {
 		var city sql.NullString
 		var country sql.NullString
+		var latitude sql.NullFloat64
+		var longitude sql.NullFloat64
 		var notes sql.NullString
 		l := &Location{}
 		err := rows.Scan(
@@ -141,6 +204,8 @@ func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limi
 			&l.Name,
 			&city,
 			&country,
+			&latitude,
+			&longitude,
 			&notes,
 			&l.CreatedAt,
 			&l.UpdatedAt,
@@ -151,6 +216,8 @@ func (r *LocationRepository) GetAll(ctx context.Context, searchTerm string, limi
 
 		l.City = nullableString(city)
 		l.Country = nullableString(country)
+		l.Latitude = nullableFloat(latitude)
+		l.Longitude = nullableFloat(longitude)
 		l.Notes = nullableString(notes)
 		locations = append(locations, l)
 	}
@@ -170,10 +237,12 @@ func (r *LocationRepository) Count(ctx context.Context) (int, error) {
 func (r *LocationRepository) Update(ctx context.Context, l *Location) error {
 	l.UpdatedAt = time.Now()
 	_, err := r.db.ExecContext(ctx,
-		"UPDATE locations SET name = ?, city = ?, country = ?, notes = ?, updated_at = ? WHERE id = ?",
+		"UPDATE locations SET name = ?, city = ?, country = ?, latitude = ?, longitude = ?, notes = ?, updated_at = ? WHERE id = ?",
 		l.Name,
 		dbString(l.City),
 		dbString(l.Country),
+		dbFloat(l.Latitude),
+		dbFloat(l.Longitude),
 		dbString(l.Notes),
 		l.UpdatedAt,
 		l.Id,
@@ -200,6 +269,23 @@ func nullableString(value sql.NullString) *string {
 }
 
 func dbString(value *string) any {
+	if value == nil {
+		return nil
+	}
+
+	return *value
+}
+
+func nullableFloat(value sql.NullFloat64) *float64 {
+	if !value.Valid {
+		return nil
+	}
+
+	result := value.Float64
+	return &result
+}
+
+func dbFloat(value *float64) any {
 	if value == nil {
 		return nil
 	}

@@ -155,6 +155,14 @@ func TestDashboardShowsDueSoonLimitAndRecentExpenses(t *testing.T) {
 	if !strings.Contains(body, "Uptime snapshot") || !strings.Contains(body, "Example API") {
 		t.Fatalf("expected dashboard to render uptime summary, got %q", body)
 	}
+
+	if !strings.Contains(body, `aria-label="Dashboard sections"`) ||
+		!strings.Contains(body, "dashboard-panel-summary") ||
+		!strings.Contains(body, "dashboard-panel-inventory") ||
+		!strings.Contains(body, "dashboard-panel-diagnostics") ||
+		!strings.Contains(body, "dashboard-panel-charts") {
+		t.Fatalf("expected dashboard to render tabbed sections, got %q", body)
+	}
 }
 
 func openDashboardTestDB(t *testing.T) *sql.DB {

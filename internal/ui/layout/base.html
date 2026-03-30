@@ -23,18 +23,24 @@
                 <ul role="list">
                     {{if .Nav.SetupRequired}}
                     <li>
-                        <strong>
+                        {{if eq .Section "account-settings"}}<strong>{{end}}
                             <a
                                 href="/account-settings/edit"
                                 class="&lt;button&gt; width:100%"
+                                {{if eq .Section "account-settings"}}aria-current="page"{{end}}
                             >
                                 Initial Account Setup
                             </a>
-                        </strong>
+                        {{if eq .Section "account-settings"}}</strong>{{end}}
                     </li>
                     {{else if .Nav.IsAuthenticated}}
                     <li>
-                        <a href="/dashboard" {{if eq .Section "dashboard"}}aria-current="page"{{end}}>Dashboard</a>
+                        {{if eq .Section "dashboard"}}<strong>{{end}}
+                            <a
+                                href="/dashboard"
+                                {{if eq .Section "dashboard"}}class="&lt;button&gt;" aria-current="page"{{end}}
+                            >Dashboard</a>
+                        {{if eq .Section "dashboard"}}</strong>{{end}}
                     </li>
                     <li>
                         <p>
@@ -42,34 +48,59 @@
                         </p>
                         <ul role="list" class="margin">
                             <li>
-                                <a href="/providers" {{if eq .Section "providers"}}aria-current="page"{{end}}>Providers</a>
+                                {{if eq .Section "providers"}}<strong>{{end}}
+                                    <a href="/providers" {{if eq .Section "providers"}}class="&lt;button&gt;" aria-current="page"{{end}}>Providers</a>
+                                {{if eq .Section "providers"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/locations" {{if eq .Section "locations"}}aria-current="page"{{end}}>Locations</a>
+                                {{if eq .Section "locations"}}<strong>{{end}}
+                                    <a href="/locations" {{if eq .Section "locations"}}class="&lt;button&gt;" aria-current="page"{{end}}>Locations</a>
+                                {{if eq .Section "locations"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/os" {{if eq .Section "os"}}aria-current="page"{{end}}>Operating Systems</a>
+                                {{if eq .Section "os"}}<strong>{{end}}
+                                    <a href="/os" {{if eq .Section "os"}}class="&lt;button&gt;" aria-current="page"{{end}}>Operating Systems</a>
+                                {{if eq .Section "os"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/ips" {{if eq .Section "ips"}}aria-current="page"{{end}}>IP Addresses</a>
+                                {{if eq .Section "ips"}}<strong>{{end}}
+                                    <a href="/ips" {{if eq .Section "ips"}}class="&lt;button&gt;" aria-current="page"{{end}}>IP Addresses</a>
+                                {{if eq .Section "ips"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/dns" {{if eq .Section "dns"}}aria-current="page"{{end}}>DNS Records</a>
+                                {{if eq .Section "dns"}}<strong>{{end}}
+                                    <a href="/dns" {{if eq .Section "dns"}}class="&lt;button&gt;" aria-current="page"{{end}}>DNS Records</a>
+                                {{if eq .Section "dns"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/labels" {{if eq .Section "labels"}}aria-current="page"{{end}}>Labels</a>
+                                {{if eq .Section "labels"}}<strong>{{end}}
+                                    <a href="/labels" {{if eq .Section "labels"}}class="&lt;button&gt;" aria-current="page"{{end}}>Labels</a>
+                                {{if eq .Section "labels"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/domains" {{if eq .Section "domains"}}aria-current="page"{{end}}>Domains</a>
+                                {{if eq .Section "domains"}}<strong>{{end}}
+                                    <a href="/domains" {{if eq .Section "domains"}}class="&lt;button&gt;" aria-current="page"{{end}}>Domains</a>
+                                {{if eq .Section "domains"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/hostings" {{if eq .Section "hostings"}}aria-current="page"{{end}}>Hosting</a>
+                                {{if eq .Section "hostings"}}<strong>{{end}}
+                                    <a href="/hostings" {{if eq .Section "hostings"}}class="&lt;button&gt;" aria-current="page"{{end}}>Hosting</a>
+                                {{if eq .Section "hostings"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/servers" {{if eq .Section "servers"}}aria-current="page"{{end}}>Servers</a>
+                                {{if eq .Section "servers"}}<strong>{{end}}
+                                    <a href="/servers" {{if eq .Section "servers"}}class="&lt;button&gt;" aria-current="page"{{end}}>Servers</a>
+                                {{if eq .Section "servers"}}</strong>{{end}}
                             </li>
                             <li>
-                                <a href="/subscriptions" {{if eq .Section "subscriptions"}}aria-current="page"{{end}}>Subscriptions</a>
+                                {{if eq .Section "subscriptions"}}<strong>{{end}}
+                                    <a href="/subscriptions" {{if eq .Section "subscriptions"}}class="&lt;button&gt;" aria-current="page"{{end}}>Subscriptions</a>
+                                {{if eq .Section "subscriptions"}}</strong>{{end}}
+                            </li>
+                            <li>
+                                {{if eq .Section "uptime"}}<strong>{{end}}
+                                    <a href="/uptime" {{if eq .Section "uptime"}}class="&lt;button&gt;" aria-current="page"{{end}}>Uptime</a>
+                                {{if eq .Section "uptime"}}</strong>{{end}}
                             </li>
                         </ul>
                     </li>
@@ -79,29 +110,33 @@
                         </p>
                         <ul role="list" class="margin">
                             <li>
-                                <a href="/licenses" {{if eq .Section "licenses"}}aria-current="page"{{end}}>Free Software Licenses</a>
+                                {{if eq .Section "licenses"}}<strong>{{end}}
+                                    <a href="/licenses" {{if eq .Section "licenses"}}class="&lt;button&gt;" aria-current="page"{{end}}>Free Software Licenses</a>
+                                {{if eq .Section "licenses"}}</strong>{{end}}
                             </li>
                         </ul>
                     </li>
                     <li>
-                        <strong>
+                        {{if eq .Section "account-settings"}}<strong>{{end}}
                             <a
                                 href="/account-settings"
                                 class="&lt;button&gt; width:100%"
+                                {{if eq .Section "account-settings"}}aria-current="page"{{end}}
                             >
                                 Account Settings
                             </a>
-                        </strong>
+                        {{if eq .Section "account-settings"}}</strong>{{end}}
                     </li>
                     <li>
-                        <strong>
+                        {{if eq .Section "app-settings"}}<strong>{{end}}
                             <a
                                 href="/app-settings"
                                 class="&lt;button&gt; width:100%"
+                                {{if eq .Section "app-settings"}}aria-current="page"{{end}}
                             >
                                 App Settings
                             </a>
-                        </strong>
+                        {{if eq .Section "app-settings"}}</strong>{{end}}
                     </li>
                     <li>
                         <form method="post" action="/logout">
@@ -113,14 +148,15 @@
                     </li>
                     {{else}}
                     <li>
-                        <strong>
+                        {{if eq .Section "login"}}<strong>{{end}}
                             <a
                                 href="/login"
                                 class="&lt;button&gt; width:100%"
+                                {{if eq .Section "login"}}aria-current="page"{{end}}
                             >
                                 Login
                             </a>
-                        </strong>
+                        {{if eq .Section "login"}}</strong>{{end}}
                     </li>
                     {{end}}
                 </ul>
@@ -143,6 +179,7 @@
         <!-- Load HTMX & HyperScript -->
         <script defer src="/static/js/htmx.js"></script>
         <script defer src="/static/js/hyperscript.js"></script>
+        <script type="module" src="/static/js/missing-tabs.js"></script>
         {{block "page_scripts" .}}{{end}}
     </body>
 </html>

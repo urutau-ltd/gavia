@@ -2,6 +2,7 @@ package appsettings
 
 import (
 	"html/template"
+	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
@@ -31,12 +32,25 @@ type Handler struct {
 }
 
 type expenseFormData struct {
-	Title      string
-	Category   string
-	Amount     string
-	Currency   string
-	OccurredOn string
-	Notes      string
+	Title         string
+	EntryType     string
+	AccountName   string
+	Category      string
+	Counterparty  string
+	Scope         string
+	Amount        string
+	Currency      string
+	OccurredOn    string
+	DueOn         string
+	PaidOn        string
+	PaymentMethod string
+	Notes         string
+}
+
+type expenseStat struct {
+	Label string
+	Value string
+	Hint  string
 }
 
 type pageData struct {
@@ -44,6 +58,7 @@ type pageData struct {
 	Settings           *appsetting.AppSettings
 	OSChoices          []string
 	Expenses           []*expenseentry.ExpenseEntry
+	ExpenseStats       []expenseStat
 	ExpenseForm        expenseFormData
 	NoticeHTML         template.HTML
 	ErrorHTML          template.HTML
@@ -81,7 +96,7 @@ func NewHandler(
 
 func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	settings, canExportEncrypted, expenses, err := h.loadPageState(r)
+	settings, canExportEncrypted, expenses, expenseStats, err := h.loadPageState(r)
 	if err != nil {
 		http.Error(w, "Unable to load app settings.", http.StatusInternalServerError)
 		return
@@ -91,7 +106,8 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 		BaseData:           ui.NewBaseData(r, "App settings", start),
 		Settings:           settings,
 		Expenses:           expenses,
-		ExpenseForm:        defaultExpenseForm(settings.DashboardCurrency),
+		ExpenseStats:       expenseStats,
+		ExpenseForm:        defaultExpenseForm(settings.DefaultCurrency),
 		NoticeHTML:         appSettingsNotice(r),
 		Editing:            false,
 		CanExportEncrypted: canExportEncrypted,
@@ -103,7 +119,7 @@ func (h *Handler) Show(w http.ResponseWriter, r *http.Request) {
 
 func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	settings, canExportEncrypted, expenses, err := h.loadPageState(r)
+	settings, canExportEncrypted, expenses, expenseStats, err := h.loadPageState(r)
 	if err != nil {
 		http.Error(w, "Unable to load app settings.", http.StatusInternalServerError)
 		return
@@ -114,7 +130,8 @@ func (h *Handler) Edit(w http.ResponseWriter, r *http.Request) {
 		Settings:           settings,
 		OSChoices:          h.osChoices(r),
 		Expenses:           expenses,
-		ExpenseForm:        defaultExpenseForm(settings.DashboardCurrency),
+		ExpenseStats:       expenseStats,
+		ExpenseForm:        defaultExpenseForm(settings.DefaultCurrency),
 		Editing:            true,
 		CanExportEncrypted: canExportEncrypted,
 	}
@@ -130,7 +147,7 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	start := time.Now()
-	current, canExportEncrypted, expenses, err := h.loadPageState(r)
+	current, canExportEncrypted, expenses, expenseStats, err := h.loadPageState(r)
 	if err != nil {
 		http.Error(w, "Unable to load app settings.", http.StatusInternalServerError)
 		return
@@ -144,7 +161,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 			Settings:           current,
 			OSChoices:          osChoices,
 			Expenses:           expenses,
-			ExpenseForm:        defaultExpenseForm(current.DashboardCurrency),
+			ExpenseStats:       expenseStats,
+			ExpenseForm:        defaultExpenseForm(current.DefaultCurrency),
 			Editing:            true,
 			CanExportEncrypted: canExportEncrypted,
 			ErrorHTML:          ui.BannerHTML("settings-alert", "bad", "Dashboard due-soon amount must be zero or greater."),
@@ -173,7 +191,8 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 		Settings:           settings,
 		OSChoices:          osChoices,
 		Expenses:           expenses,
-		ExpenseForm:        defaultExpenseForm(settings.DashboardCurrency),
+		ExpenseStats:       expenseStats,
+		ExpenseForm:        defaultExpenseForm(settings.DefaultCurrency),
 		Editing:            true,
 		CanExportEncrypted: canExportEncrypted,
 	}
@@ -242,14 +261,30 @@ func (h *Handler) Export(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Import(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Invalid form payload.", http.StatusBadRequest)
+	const maxImportUploadSize = 32 << 20
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxImportUploadSize)
+	if err := r.ParseMultipartForm(maxImportUploadSize); err != nil {
+		http.Error(w, "Invalid backup upload payload.", http.StatusBadRequest)
 		return
 	}
 
-	payload := []byte(strings.TrimSpace(r.Form.Get("import_payload")))
+	file, _, err := r.FormFile("import_file")
+	if err != nil {
+		http.Error(w, "Backup file is required.", http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	payload, err := io.ReadAll(file)
+	if err != nil {
+		http.Error(w, "Unable to read the uploaded backup file.", http.StatusBadRequest)
+		return
+	}
+
+	payload = []byte(strings.TrimSpace(string(payload)))
 	if len(payload) == 0 {
-		http.Error(w, "Import JSON is required.", http.StatusBadRequest)
+		http.Error(w, "Backup file is empty.", http.StatusBadRequest)
 		return
 	}
 
@@ -290,25 +325,33 @@ func (h *Handler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	start := time.Now()
-	settings, canExportEncrypted, expenses, err := h.loadPageState(r)
+	settings, canExportEncrypted, expenses, expenseStats, err := h.loadPageState(r)
 	if err != nil {
 		http.Error(w, "Unable to load app settings.", http.StatusInternalServerError)
 		return
 	}
 
 	form := expenseFormData{
-		Title:      strings.TrimSpace(r.Form.Get("title")),
-		Category:   normalizeText(r.Form.Get("category"), "manual"),
-		Amount:     strings.TrimSpace(r.Form.Get("amount")),
-		Currency:   normalizeCurrency(r.Form.Get("currency")),
-		OccurredOn: normalizeText(r.Form.Get("occurred_on"), time.Now().Format(time.DateOnly)),
-		Notes:      strings.TrimSpace(r.Form.Get("notes")),
+		Title:         strings.TrimSpace(r.Form.Get("title")),
+		EntryType:     normalizeExpenseEntryType(r.Form.Get("entry_type")),
+		AccountName:   normalizeText(r.Form.Get("account_name"), "cash"),
+		Category:      normalizeText(r.Form.Get("category"), "manual"),
+		Counterparty:  strings.TrimSpace(r.Form.Get("counterparty")),
+		Scope:         normalizeExpenseScope(r.Form.Get("scope")),
+		Amount:        strings.TrimSpace(r.Form.Get("amount")),
+		Currency:      normalizeCurrency(r.Form.Get("currency")),
+		OccurredOn:    normalizeText(r.Form.Get("occurred_on"), time.Now().Format(time.DateOnly)),
+		DueOn:         strings.TrimSpace(r.Form.Get("due_on")),
+		PaidOn:        strings.TrimSpace(r.Form.Get("paid_on")),
+		PaymentMethod: strings.TrimSpace(r.Form.Get("payment_method")),
+		Notes:         strings.TrimSpace(r.Form.Get("notes")),
 	}
 
 	data := pageData{
 		BaseData:           ui.NewBaseData(r, "App settings", start),
 		Settings:           settings,
 		Expenses:           expenses,
+		ExpenseStats:       expenseStats,
 		ExpenseForm:        form,
 		NoticeHTML:         appSettingsNotice(r),
 		Editing:            false,
@@ -333,15 +376,22 @@ func (h *Handler) CreateExpense(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entry := &expenseentry.ExpenseEntry{
-		Title:      form.Title,
-		Category:   form.Category,
-		Amount:     amount,
-		Currency:   normalizeCurrency(form.Currency),
-		OccurredOn: form.OccurredOn,
-		Notes:      optionalString(form.Notes),
+		Title:         form.Title,
+		EntryType:     form.EntryType,
+		AccountName:   form.AccountName,
+		Category:      form.Category,
+		Counterparty:  optionalString(form.Counterparty),
+		Scope:         form.Scope,
+		Amount:        amount,
+		Currency:      normalizeCurrency(form.Currency),
+		OccurredOn:    form.OccurredOn,
+		DueOn:         optionalString(form.DueOn),
+		PaidOn:        optionalString(form.PaidOn),
+		PaymentMethod: optionalString(form.PaymentMethod),
+		Notes:         optionalString(form.Notes),
 	}
 	if entry.Currency == "" {
-		entry.Currency = settings.DashboardCurrency
+		entry.Currency = settings.DefaultCurrency
 	}
 
 	if err := h.expenseRepo.Create(r.Context(), entry); err != nil {
@@ -378,10 +428,10 @@ func (h *Handler) render(w http.ResponseWriter, data pageData) {
 	}
 }
 
-func (h *Handler) loadPageState(r *http.Request) (*appsetting.AppSettings, bool, []*expenseentry.ExpenseEntry, error) {
+func (h *Handler) loadPageState(r *http.Request) (*appsetting.AppSettings, bool, []*expenseentry.ExpenseEntry, []expenseStat, error) {
 	settings, err := h.appRepo.Get(r.Context())
 	if err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, nil, err
 	}
 	if settings == nil {
 		settings = appsetting.Defaults()
@@ -389,16 +439,21 @@ func (h *Handler) loadPageState(r *http.Request) (*appsetting.AppSettings, bool,
 
 	account, err := h.accountRepo.Get(r.Context())
 	if err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, nil, err
 	}
 
-	expenses, err := h.expenseRepo.GetRecent(r.Context(), 10)
+	expenses, err := h.expenseRepo.GetRecent(r.Context(), 20)
 	if err != nil {
-		return nil, false, nil, err
+		return nil, false, nil, nil, err
+	}
+
+	allEntries, err := h.expenseRepo.GetAll(r.Context())
+	if err != nil {
+		return nil, false, nil, nil, err
 	}
 
 	canExportEncrypted := account != nil && strings.TrimSpace(account.RecoveryPublicKey) != ""
-	return settings, canExportEncrypted, expenses, nil
+	return settings, canExportEncrypted, expenses, buildExpenseStats(allEntries), nil
 }
 
 func (h *Handler) osChoices(r *http.Request) []string {
@@ -433,9 +488,9 @@ func appSettingsNotice(r *http.Request) template.HTML {
 	case "imported":
 		return ui.BannerHTML("settings-alert", "ok", "Backup imported successfully.")
 	case "expense-created":
-		return ui.BannerHTML("settings-alert", "ok", "Expense entry created successfully.")
+		return ui.BannerHTML("settings-alert", "ok", "Ledger entry created successfully.")
 	case "expense-deleted":
-		return ui.BannerHTML("settings-alert", "ok", "Expense entry deleted successfully.")
+		return ui.BannerHTML("settings-alert", "ok", "Ledger entry deleted successfully.")
 	}
 
 	return ""
@@ -443,9 +498,12 @@ func appSettingsNotice(r *http.Request) template.HTML {
 
 func defaultExpenseForm(currency string) expenseFormData {
 	return expenseFormData{
-		Category:   "manual",
-		Currency:   normalizeCurrency(currency),
-		OccurredOn: time.Now().Format(time.DateOnly),
+		EntryType:   "expense",
+		AccountName: "cash",
+		Category:    "manual",
+		Scope:       "infrastructure",
+		Currency:    normalizeCurrency(currency),
+		OccurredOn:  time.Now().Format(time.DateOnly),
 	}
 }
 
@@ -456,4 +514,44 @@ func optionalString(value string) *string {
 	}
 
 	return &value
+}
+
+func normalizeExpenseEntryType(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "income", "transfer", "refund":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return "expense"
+	}
+}
+
+func normalizeExpenseScope(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "household", "office", "personal", "other":
+		return strings.ToLower(strings.TrimSpace(value))
+	default:
+		return "infrastructure"
+	}
+}
+
+func buildExpenseStats(items []*expenseentry.ExpenseEntry) []expenseStat {
+	counts := map[string]int{
+		"expense":  0,
+		"income":   0,
+		"transfer": 0,
+		"refund":   0,
+	}
+	for _, item := range items {
+		if item == nil {
+			continue
+		}
+		counts[item.EntryTypeValue()]++
+	}
+
+	return []expenseStat{
+		{Label: "Recorded entries", Value: strconv.Itoa(len(items)), Hint: "Everything currently stored in the internal ledger."},
+		{Label: "Expenses", Value: strconv.Itoa(counts["expense"]), Hint: "Outgoing payments such as bills, groceries, or renewals."},
+		{Label: "Income and refunds", Value: strconv.Itoa(counts["income"] + counts["refund"]), Hint: "Money received back or incoming cash flow."},
+		{Label: "Transfers", Value: strconv.Itoa(counts["transfer"]), Hint: "Moves between your own accounts, wallets, or cash boxes."},
+	}
 }

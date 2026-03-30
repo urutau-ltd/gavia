@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -226,20 +227,37 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.Form.Get("name"))
 	city := strings.TrimSpace(r.Form.Get("city"))
 	country := strings.TrimSpace(r.Form.Get("country"))
+	latitudeRaw := strings.TrimSpace(r.Form.Get("latitude"))
+	longitudeRaw := strings.TrimSpace(r.Form.Get("longitude"))
 	notes := strings.TrimSpace(r.Form.Get("notes"))
+	latitude, longitude, coordErr := parseCoordinates(latitudeRaw, longitudeRaw)
 
 	data.EditorMode = "new"
 	data.FormAction = "/locations"
 	data.FormSubmit = "Create location"
 	data.Location = &location.Location{
-		Name:    name,
-		City:    ui.OptionalString(city),
-		Country: ui.OptionalString(country),
-		Notes:   ui.OptionalString(notes),
+		Name:      name,
+		City:      ui.OptionalString(city),
+		Country:   ui.OptionalString(country),
+		Latitude:  latitude,
+		Longitude: longitude,
+		Notes:     ui.OptionalString(notes),
 	}
 
 	if name == "" {
 		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
+		w.WriteHeader(http.StatusBadRequest)
+		if h.isEditorRequest(r) {
+			h.renderTemplate(w, "location-editor-panel", data)
+			return
+		}
+		h.renderTemplate(w, "base", data)
+		return
+	}
+
+	if coordErr != nil {
+		data.ErrorHTML = bannerHTML("bad", coordErr.Error())
 		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
@@ -315,21 +333,38 @@ func (h *Handler) Update(w http.ResponseWriter, r *http.Request) {
 	name := strings.TrimSpace(r.Form.Get("name"))
 	city := strings.TrimSpace(r.Form.Get("city"))
 	country := strings.TrimSpace(r.Form.Get("country"))
+	latitudeRaw := strings.TrimSpace(r.Form.Get("latitude"))
+	longitudeRaw := strings.TrimSpace(r.Form.Get("longitude"))
 	notes := strings.TrimSpace(r.Form.Get("notes"))
+	latitude, longitude, coordErr := parseCoordinates(latitudeRaw, longitudeRaw)
 
 	data.EditorMode = "edit"
 	data.FormAction = fmt.Sprintf("/locations/%s/edit", id)
 	data.FormSubmit = "Update location"
 	data.Location = &location.Location{
-		Id:      id,
-		Name:    name,
-		City:    ui.OptionalString(city),
-		Country: ui.OptionalString(country),
-		Notes:   ui.OptionalString(notes),
+		Id:        id,
+		Name:      name,
+		City:      ui.OptionalString(city),
+		Country:   ui.OptionalString(country),
+		Latitude:  latitude,
+		Longitude: longitude,
+		Notes:     ui.OptionalString(notes),
 	}
 
 	if name == "" {
 		data.ErrorHTML = bannerHTML("bad", "Name is required.")
+		ui.WriteHTMLHeader(w)
+		w.WriteHeader(http.StatusBadRequest)
+		if h.isEditorRequest(r) {
+			h.renderTemplate(w, "location-editor-panel", data)
+			return
+		}
+		h.renderTemplate(w, "base", data)
+		return
+	}
+
+	if coordErr != nil {
+		data.ErrorHTML = bannerHTML("bad", coordErr.Error())
 		ui.WriteHTMLHeader(w)
 		w.WriteHeader(http.StatusBadRequest)
 		if h.isEditorRequest(r) {
@@ -513,4 +548,36 @@ func bannerHTML(kind, msg string) template.HTML {
 
 	escaped := html.EscapeString(msg)
 	return template.HTML(`<p class="location-alert ` + className + `">` + escaped + `</p>`)
+}
+
+func parseCoordinates(latitudeRaw, longitudeRaw string) (*float64, *float64, error) {
+	if latitudeRaw == "" && longitudeRaw == "" {
+		return nil, nil, nil
+	}
+
+	if latitudeRaw == "" || longitudeRaw == "" {
+		return nil, nil, fmt.Errorf("Latitude and longitude must be provided together.")
+	}
+
+	latitude, err := strconv.ParseFloat(latitudeRaw, 64)
+	longitude, err := strconv.ParseFloat(longitudeRaw, 64)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Longitude must be a number between -180 and 180.")
+	}
+
+	if latitude < -90 || latitude > 90 {
+		if latitude >= -180 && latitude <= 180 && longitude >= -90 && longitude <= 90 {
+			return nil, nil, fmt.Errorf("Latitude must be between -90 and 90. It looks like you may have swapped the fields: enter latitude first and longitude second, for example 19.432608 and -99.133209.")
+		}
+		return nil, nil, fmt.Errorf("Latitude must be a number between -90 and 90. Enter latitude first and longitude second.")
+	}
+
+	if longitude < -180 || longitude > 180 {
+		if longitude >= -90 && longitude <= 90 && latitude >= -180 && latitude <= 180 {
+			return nil, nil, fmt.Errorf("Longitude must be between -180 and 180. It looks like you may have swapped the fields: enter latitude first and longitude second, for example 19.432608 and -99.133209.")
+		}
+		return nil, nil, fmt.Errorf("Longitude must be a number between -180 and 180.")
+	}
+
+	return &latitude, &longitude, nil
 }

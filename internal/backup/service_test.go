@@ -63,13 +63,38 @@ func TestExportImportEncryptedJSONRoundTrip(t *testing.T) {
 
 	var expenseExists bool
 	if err := db.QueryRow(`
-		SELECT EXISTS(SELECT 1 FROM expense_entries WHERE title = 'Hetzner invoice' AND amount = 42.50)
+		SELECT EXISTS(
+			SELECT 1
+			FROM expense_entries
+			WHERE title = 'Hetzner invoice'
+				AND amount = 42.50
+				AND account_name = 'banregio checking'
+				AND counterparty = 'Hetzner'
+				AND payment_method = 'wire'
+		)
 	`).Scan(&expenseExists); err != nil {
 		t.Fatalf("could not verify imported expense entry fixture: %v", err)
 	}
 
 	if !expenseExists {
 		t.Fatal("expected backup import to restore the expense entry fixture")
+	}
+
+	var locationMapped bool
+	if err := db.QueryRow(`
+		SELECT EXISTS(
+			SELECT 1
+			FROM locations
+			WHERE id = 'location-1'
+				AND latitude = 25.686613
+				AND longitude = -100.316116
+		)
+	`).Scan(&locationMapped); err != nil {
+		t.Fatalf("could not verify imported location coordinates: %v", err)
+	}
+
+	if !locationMapped {
+		t.Fatal("expected backup import to restore location coordinates")
 	}
 
 	var domainExists bool
@@ -239,8 +264,8 @@ func createBackupFixtures(t *testing.T, db *sql.DB) string {
 	}
 
 	if _, err := db.Exec(`
-		INSERT INTO locations (id, name, city, country, notes, created_at, updated_at)
-		VALUES ('location-1', 'HQ', 'Monterrey', 'Mexico', 'backup fixture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		INSERT INTO locations (id, name, city, country, latitude, longitude, notes, created_at, updated_at)
+		VALUES ('location-1', 'HQ', 'Monterrey', 'Mexico', 25.686613, -100.316116, 'backup fixture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`); err != nil {
 		t.Fatalf("could not insert location fixture: %v", err)
 	}
@@ -319,20 +344,34 @@ func createBackupFixtures(t *testing.T, db *sql.DB) string {
 		INSERT INTO expense_entries (
 			id,
 			title,
+			entry_type,
+			account_name,
 			category,
+			counterparty,
+			scope,
 			amount,
 			currency,
 			occurred_on,
+			due_on,
+			paid_on,
+			payment_method,
 			notes,
 			created_at,
 			updated_at
 		) VALUES (
 			'expense-1',
 			'Hetzner invoice',
+			'expense',
+			'banregio checking',
 			'hosting',
+			'Hetzner',
+			'infrastructure',
 			42.50,
 			'MXN',
 			'2026-03-10',
+			'2026-03-10',
+			'2026-03-10',
+			'wire',
 			'backup fixture',
 			CURRENT_TIMESTAMP,
 			CURRENT_TIMESTAMP

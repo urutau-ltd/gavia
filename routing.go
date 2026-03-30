@@ -32,6 +32,7 @@ type uptimeRoutes interface {
 	Create(http.ResponseWriter, *http.Request)
 	Update(http.ResponseWriter, *http.Request)
 	Delete(http.ResponseWriter, *http.Request)
+	RunNow(http.ResponseWriter, *http.Request)
 }
 
 type appSettingsRoutes interface {
@@ -132,6 +133,7 @@ func mountRoutes(app *aile.App, handlers appHandlers) error {
 	app.GET("/uptime/{id}", handlers.uptime.Show)
 	app.POST("/uptime", handlers.uptime.Create)
 	app.POST("/uptime/{id}/edit", handlers.uptime.Update)
+	app.POST("/uptime/{id}/run", handlers.uptime.RunNow)
 	app.POST("/uptime/{id}/delete", handlers.uptime.Delete)
 
 	return nil

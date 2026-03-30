@@ -13,6 +13,7 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+	"time"
 
 	"codeberg.org/urutau-ltd/aile/v2"
 	"codeberg.org/urutau-ltd/aile/v2/x/combine"
@@ -47,6 +48,7 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/servers"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/subscriptions"
 	uptimepage "codeberg.org/urutau-ltd/gavia/internal/ui/features/uptime"
+	uptimeservice "codeberg.org/urutau-ltd/gavia/internal/uptime"
 	_ "modernc.org/sqlite"
 )
 
@@ -123,6 +125,11 @@ func TestSetupLoginLogoutFlow(t *testing.T) {
 
 	if !strings.Contains(rec.Body.String(), "Free Software Licenses") {
 		t.Fatalf("expected authenticated dashboard to use the classic navigation, got %q", rec.Body.String())
+	}
+
+	if !strings.Contains(rec.Body.String(), `href="/dashboard"`) ||
+		!strings.Contains(rec.Body.String(), `aria-current="page"`) {
+		t.Fatalf("expected authenticated dashboard to mark the current navbar entry as active, got %q", rec.Body.String())
 	}
 
 	req = httptest.NewRequest(http.MethodPost, "/logout", nil)
@@ -213,6 +220,10 @@ func TestJavaScriptLicenseInfoPageIsPublic(t *testing.T) {
 	if !strings.Contains(rec.Body.String(), `id="jslicense-labels1"`) {
 		t.Fatalf("expected JavaScript license information table, got %q", rec.Body.String())
 	}
+
+	if !strings.Contains(rec.Body.String(), "/static/js/missing-tabs.js") {
+		t.Fatalf("expected JavaScript license information page to list Missing tabs, got %q", rec.Body.String())
+	}
 }
 
 func buildAppHandler(t *testing.T) http.Handler {
@@ -233,6 +244,7 @@ func buildAppHandler(t *testing.T) http.Handler {
 	authService := auth.NewService(accountRepo, sessionRepo)
 	backupService := backup.NewService(db)
 	csrfService := csrf.NewService()
+	uptimeService := uptimeservice.NewService(logger, uptimeRepo, nil, time.Second)
 
 	ui.SetShowVersionFooter(true)
 
@@ -271,7 +283,7 @@ func buildAppHandler(t *testing.T) http.Handler {
 	dashboardAPIHandler := dashboardapi.NewHandler(logger, db)
 	licensesHandler := licensespage.NewHandler(logger, uiRoot)
 	jsLicenseInfoHandler := jslicenseinfo.NewHandler(logger, uiRoot)
-	uptimeHandler := uptimepage.NewHandler(logger, uiRoot, uptimeRepo)
+	uptimeHandler := uptimepage.NewHandler(logger, uiRoot, uptimeRepo, uptimeService)
 
 	if err := mountRoutes(app, appHandlers{
 		dashboard:       dashboardHandler,

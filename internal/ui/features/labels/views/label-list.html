@@ -8,14 +8,14 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain <button> iconbutton"
+                class="plain <button>"
                 href="/labels/{{.ID}}"
                 hx-get="/labels/{{.ID}}"
                 hx-target="#label-editor"
                 hx-swap="outerHTML"
             >View</a>
             <a
-                class="ok <button> iconbutton"
+                class="ok <button>"
                 href="/labels/{{.ID}}/edit"
                 hx-get="/labels/{{.ID}}/edit"
                 hx-target="#label-editor"
@@ -23,7 +23,7 @@
             >Edit</a>
             <button
                 type="button"
-                class="bad <button> iconbutton"
+                class="bad <button>"
                 hx-delete="/labels/{{.ID}}"
                 hx-target="#label-editor"
                 hx-swap="outerHTML"

@@ -17,398 +17,455 @@
         </article>
     </section>
 
-    <section class="dashboard-stats" aria-label="Inventory summary">
-        {{range .Stats}}
-        <article class="box dashboard-stat {{.Tone}}">
-            <p class="dashboard-stat-label">{{.Label}}</p>
-            <p class="dashboard-stat-value">{{.Value}}</p>
-            <p class="dashboard-stat-hint">{{.Hint}}</p>
-        </article>
-        {{end}}
+    <div
+        class="tool-bar flex-row flex-wrap:wrap margin-block-start"
+        role="tablist"
+        aria-label="Dashboard sections"
+    >
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="dashboard-tab-summary"
+            aria-controls="dashboard-panel-summary"
+            aria-selected="true"
+        >
+            Summary
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="dashboard-tab-inventory"
+            aria-controls="dashboard-panel-inventory"
+            aria-selected="false"
+        >
+            Inventory
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="dashboard-tab-diagnostics"
+            aria-controls="dashboard-panel-diagnostics"
+            aria-selected="false"
+        >
+            Diagnostics
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="dashboard-tab-charts"
+            aria-controls="dashboard-panel-charts"
+            aria-selected="false"
+        >
+            Charts
+        </button>
+    </div>
+
+    <section id="dashboard-panel-summary" role="tabpanel" class="flow-gap">
+        <section class="dashboard-stats" aria-label="Inventory summary">
+            {{range .Stats}}
+            <article class="box dashboard-stat {{.Tone}}">
+                <p class="dashboard-stat-label">{{.Label}}</p>
+                <p class="dashboard-stat-value">{{.Value}}</p>
+                <p class="dashboard-stat-hint">{{.Hint}}</p>
+            </article>
+            {{end}}
+        </section>
+
+        <section class="dashboard-panels">
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Due soon</h3>
+                    <a href="/app-settings/edit">Adjust limit</a>
+                </div>
+
+                <ul role="list" class="dashboard-list">
+                    {{range .DueSoon.Items}}
+                    <li>
+                        <div class="dashboard-list-item-text">
+                            <strong>{{.SourceType}} · {{.Label}}</strong>
+                            <span>
+                                <time
+                                    class="dashboard-date"
+                                    datetime="{{.DueDate}}"
+                                    data-dashboard-relative-date="future"
+                                >Due on {{.DueDate}}</time>
+                                {{if .Price}} • {{if .Currency}}{{.Currency}}{{else}}{{$.AppSettings.DefaultCurrency}}{{end}} {{.PriceDisplay}}{{end}}
+                            </span>
+                        </div>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">
+                        No due items were found in domains, hostings, servers, or
+                        subscriptions.
+                    </li>
+                    {{end}}
+                </ul>
+
+                {{if .DueSoon.Items}}
+                <p class="dashboard-subtotal">
+                    Visible total in {{.AppSettings.DashboardCurrency}}: {{printf "%.2f" .DueSoon.Total}}
+                </p>
+                {{end}}
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Due by type</h3>
+                    <a href="/app-settings">Settings</a>
+                </div>
+
+                <ul role="list" class="dashboard-breakdown-list">
+                    {{range .DueBreakdown}}
+                    <li class="dashboard-breakdown-row">
+                        <div class="dashboard-breakdown-copy">
+                            <strong>{{.Label}}</strong>
+                            <span>{{.Hint}}</span>
+                        </div>
+                        <meter
+                            class="dashboard-breakdown-meter"
+                            min="0"
+                            max="100"
+                            low="25"
+                            high="60"
+                            optimum="100"
+                            value="{{printf "%.2f" .Share}}"
+                        ></meter>
+                        <strong>{{.Value}}</strong>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No due-soon totals are available yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Recent expenses</h3>
+                    <a href="/app-settings">Manage</a>
+                </div>
+
+                <ul role="list" class="dashboard-list">
+                    {{range .Expenses}}
+                    <li class="gavia-row">
+                        <div>
+                            <strong>{{.Title}}</strong>
+                            <span>
+                                {{.Category}} •
+                                <time
+                                    class="dashboard-date"
+                                    datetime="{{.OccurredOn}}"
+                                    data-dashboard-relative-date="past"
+                                >{{.OccurredOn}}</time>
+                            </span>
+                        </div>
+                        <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No expense entries have been recorded yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Expense categories</h3>
+                    <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
+                </div>
+
+                <ul role="list" class="dashboard-breakdown-list">
+                    {{range .ExpenseBreakdown}}
+                    <li class="dashboard-breakdown-row">
+                        <div class="dashboard-breakdown-copy">
+                            <strong>{{.Label}}</strong>
+                            <span>{{.Hint}}</span>
+                        </div>
+                        <meter
+                            class="dashboard-breakdown-meter"
+                            min="0"
+                            max="100"
+                            low="25"
+                            high="60"
+                            optimum="100"
+                            value="{{printf "%.2f" .Share}}"
+                        ></meter>
+                        <strong>{{.Value}}</strong>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No expense totals are available yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Currency snapshot</h3>
+                    <a href="/app-settings/edit">FX settings</a>
+                </div>
+
+                <ul role="list" class="dashboard-breakdown-list">
+                    {{range .ConvertedTotals}}
+                    <li class="dashboard-breakdown-row">
+                        <div class="dashboard-breakdown-copy">
+                            <strong>{{.Currency}}</strong>
+                            <span>Total visible due exposure</span>
+                        </div>
+                        <meter
+                            class="dashboard-breakdown-meter"
+                            min="0"
+                            max="100"
+                            low="33"
+                            high="66"
+                            optimum="100"
+                            value="{{if .Available}}100{{else}}0{{end}}"
+                        ></meter>
+                        <strong>{{.Value}}</strong>
+                    </li>
+                    {{end}}
+                </ul>
+                <p class="gavia-muted">
+                    Totals above use the latest sampled exchange rates. Items
+                    without a recorded currency fall back to the app default.
+                </p>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>App defaults</h3>
+                    <a href="/app-settings">Open settings</a>
+                </div>
+
+                <dl class="settings-summary table rows">
+                    <div>
+                        <dt>Default server OS</dt>
+                        <dd>{{.AppSettings.DefaultServerOS}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Default currency</dt>
+                        <dd>{{.AppSettings.DefaultCurrency}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Dashboard currency</dt>
+                        <dd>{{.AppSettings.DashboardCurrency}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Due-soon amount</dt>
+                        <dd>{{.AppSettings.DashboardDueSoonAmount}}</dd>
+                    </div>
+                </dl>
+            </article>
+        </section>
     </section>
 
-    <section class="dashboard-panels">
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>App defaults</h3>
-                <a href="/app-settings">Open settings</a>
-            </div>
-
-            <dl class="settings-summary table rows">
-                <div>
-                    <dt>Default server OS</dt>
-                    <dd>{{.AppSettings.DefaultServerOS}}</dd>
+    <section id="dashboard-panel-inventory" role="tabpanel" class="flow-gap" hidden>
+        <section class="dashboard-panels" aria-label="Inventory summary">
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Inventory overview</h3>
+                    <span class="gavia-muted">{{.InventoryTotal}} tracked records across active modules</span>
                 </div>
 
-                <div>
-                    <dt>Default currency</dt>
-                    <dd>{{.AppSettings.DefaultCurrency}}</dd>
+                <ul role="list" class="dashboard-breakdown-list">
+                    {{range .InventoryItems}}
+                    <li class="dashboard-breakdown-row">
+                        <div class="dashboard-breakdown-copy">
+                            <strong><a href="{{.Href}}">{{.Label}}</a></strong>
+                            <span>{{.Hint}}</span>
+                        </div>
+                        <meter
+                            class="dashboard-breakdown-meter"
+                            min="0"
+                            max="100"
+                            low="25"
+                            high="60"
+                            optimum="100"
+                            value="{{printf "%.2f" .Share}}"
+                        ></meter>
+                        <strong>{{.Count}}</strong>
+                    </li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Providers preview</h3>
+                    <a href="/providers">Open module</a>
                 </div>
 
-                <div>
-                    <dt>Dashboard currency</dt>
-                    <dd>{{.AppSettings.DashboardCurrency}}</dd>
+                <ul role="list" class="dashboard-list">
+                    {{range .Providers}}
+                    <li>
+                        <a href="/providers/{{.Id}}">
+                            <strong>{{.Name}}</strong>
+                            {{if .Website}}
+                            <span>{{.WebsiteValue}}</span>
+                            {{else}}
+                            <span>No website yet</span>
+                            {{end}}
+                        </a>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No providers loaded yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Locations preview</h3>
+                    <a href="/locations">Open module</a>
                 </div>
 
-                <div>
-                    <dt>Due-soon amount</dt>
-                    <dd>{{.AppSettings.DashboardDueSoonAmount}}</dd>
-                </div>
-            </dl>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Currency snapshot</h3>
-                <a href="/app-settings/edit">FX settings</a>
-            </div>
-
-            <ul role="list" class="dashboard-breakdown-list">
-                {{range .ConvertedTotals}}
-                <li class="dashboard-breakdown-row">
-                    <div class="dashboard-breakdown-copy">
-                        <strong>{{.Currency}}</strong>
-                        <span>Total visible due exposure</span>
-                    </div>
-                    <meter
-                        class="dashboard-breakdown-meter"
-                        min="0"
-                        max="100"
-                        low="33"
-                        high="66"
-                        optimum="100"
-                        value="{{if .Available}}100{{else}}0{{end}}"
-                    ></meter>
-                    <strong>{{.Value}}</strong>
-                </li>
-                {{end}}
-            </ul>
-            <p class="gavia-muted">
-                Totals above use the latest sampled exchange rates. Items
-                without a recorded currency fall back to the app default.
-            </p>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Due soon</h3>
-                <a href="/app-settings/edit">Adjust limit</a>
-            </div>
-
-            <ul role="list" class="dashboard-list">
-                {{range .DueSoon.Items}}
-                <li>
-                    <div class="dashboard-list-item-text">
-                        <strong>{{.SourceType}} · {{.Label}}</strong>
-                        <span>
-                            <time
-                                class="dashboard-date"
-                                datetime="{{.DueDate}}"
-                                data-dashboard-relative-date="future"
-                            >Due on {{.DueDate}}</time>
-                            {{if .Price}} • {{if .Currency}}{{.Currency}}{{else}}{{$.AppSettings.DefaultCurrency}}{{end}} {{.PriceDisplay}}{{end}}
-                        </span>
-                    </div>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">
-                    No due items were found in domains, hostings, servers, or
-                    subscriptions.
-                </li>
-                {{end}}
-            </ul>
-
-            {{if .DueSoon.Items}}
-            <p class="dashboard-subtotal">
-                Visible total in {{.AppSettings.DashboardCurrency}}: {{printf "%.2f" .DueSoon.Total}}
-            </p>
-            {{end}}
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Due by type</h3>
-                <a href="/app-settings">Settings</a>
-            </div>
-
-            <ul role="list" class="dashboard-breakdown-list">
-                {{range .DueBreakdown}}
-                <li class="dashboard-breakdown-row">
-                    <div class="dashboard-breakdown-copy">
-                        <strong>{{.Label}}</strong>
-                        <span>{{.Hint}}</span>
-                    </div>
-                    <meter
-                        class="dashboard-breakdown-meter"
-                        min="0"
-                        max="100"
-                        low="25"
-                        high="60"
-                        optimum="100"
-                        value="{{printf "%.2f" .Share}}"
-                    ></meter>
-                    <strong>{{.Value}}</strong>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No due-soon totals are available yet.</li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Recent expenses</h3>
-                <a href="/app-settings">Manage</a>
-            </div>
-
-            <ul role="list" class="dashboard-list">
-                {{range .Expenses}}
-                <li class="gavia-row">
-                    <div>
-                        <strong>{{.Title}}</strong>
-                        <span>
-                            {{.Category}} •
-                            <time
-                                class="dashboard-date"
-                                datetime="{{.OccurredOn}}"
-                                data-dashboard-relative-date="past"
-                            >{{.OccurredOn}}</time>
-                        </span>
-                    </div>
-                    <strong>{{.Currency}} {{.AmountDisplay}}</strong>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No expense entries have been recorded yet.</li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Expense categories</h3>
-                <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
-            </div>
-
-            <ul role="list" class="dashboard-breakdown-list">
-                {{range .ExpenseBreakdown}}
-                <li class="dashboard-breakdown-row">
-                    <div class="dashboard-breakdown-copy">
-                        <strong>{{.Label}}</strong>
-                        <span>{{.Hint}}</span>
-                    </div>
-                    <meter
-                        class="dashboard-breakdown-meter"
-                        min="0"
-                        max="100"
-                        low="25"
-                        high="60"
-                        optimum="100"
-                        value="{{printf "%.2f" .Share}}"
-                    ></meter>
-                    <strong>{{.Value}}</strong>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No expense totals are available yet.</li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Runtime diagnostics</h3>
-                <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
-            </div>
-
-            <div class="dashboard-diagnostics-grid">
-                {{range .Diagnostics}}
-                <article class="gavia-mini-stat">
-                    <strong>{{.Label}}</strong>
-                    <span>{{.Value}}</span>
-                    <small>{{.Hint}}</small>
-                </article>
-                {{else}}
-                <p class="dashboard-empty">No runtime samples have been recorded yet.</p>
-                {{end}}
-            </div>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Uptime snapshot</h3>
-                <a href="/uptime">Open module</a>
-            </div>
-
-            {{with .UptimeSummary}}
-            <dl class="settings-summary table rows">
-                <div>
-                    <dt>Total monitors</dt>
-                    <dd>{{.Total}}</dd>
-                </div>
-
-                <div>
-                    <dt>Up</dt>
-                    <dd>{{.Up}}</dd>
-                </div>
-
-                <div>
-                    <dt>Down</dt>
-                    <dd>{{.Down}}</dd>
-                </div>
-
-                <div>
-                    <dt>Unknown</dt>
-                    <dd>{{.Unknown}}</dd>
-                </div>
-            </dl>
-            {{end}}
-
-            <ul role="list" class="dashboard-list">
-                {{range .UptimeRows}}
-                <li class="gavia-row">
-                    <div>
-                        <strong>{{.Name}}</strong>
-                        <span>{{.TargetURL}}</span>
-                    </div>
-                    <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No uptime monitors have been configured yet.</li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Providers preview</h3>
-                <a href="/providers">Open module</a>
-            </div>
-
-            <ul role="list" class="dashboard-list">
-                {{range .Providers}}
-                <li>
-                    <a href="/providers/{{.Id}}">
-                        <strong>{{.Name}}</strong>
-                        {{if .Website}}
-                        <span>{{.WebsiteValue}}</span>
-                        {{else}}
-                        <span>No website yet</span>
-                        {{end}}
-                    </a>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No providers loaded yet.</li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Locations preview</h3>
-                <a href="/locations">Open module</a>
-            </div>
-
-            <ul role="list" class="dashboard-list">
-                {{range .Locations}}
-                <li>
-                    <a href="/locations/{{.Id}}">
-                        <strong>{{.Name}}</strong>
-                        <span>
-                            {{if .City}}{{.CityValue}}{{else}}No city{{end}} •
-                            {{if .Country}}{{.CountryValue}}{{else}}No
-                            country{{end}}
-                        </span>
-                    </a>
-                </li>
-                {{else}}
-                <li class="dashboard-empty">No locations loaded yet.</li>
-                {{end}}
-            </ul>
-        </article>
+                <ul role="list" class="dashboard-list">
+                    {{range .Locations}}
+                    <li>
+                        <a href="/locations/{{.Id}}">
+                            <strong>{{.Name}}</strong>
+                            <span>
+                                {{if .City}}{{.CityValue}}{{else}}No city{{end}} •
+                                {{if .Country}}{{.CountryValue}}{{else}}No
+                                country{{end}}
+                            </span>
+                        </a>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No locations loaded yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+        </section>
     </section>
 
-    <section class="dashboard-charts" aria-label="Dashboard charts">
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Expense history</h3>
-                <span class="gavia-muted">Historical FX conversion when available</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="expense-history-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
+    <section id="dashboard-panel-diagnostics" role="tabpanel" class="flow-gap" hidden>
+        <section class="dashboard-panels">
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Uptime snapshot</h3>
+                    <a href="/uptime">Open module</a>
+                </div>
 
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>FX history</h3>
-                <span class="gavia-muted">1 MXN in USD and XMR</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="fx-history-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
+                {{with .UptimeSummary}}
+                <dl class="settings-summary table rows">
+                    <div>
+                        <dt>Total monitors</dt>
+                        <dd>{{.Total}}</dd>
+                    </div>
 
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Runtime history</h3>
-                <span class="gavia-muted">Heap, goroutines, DB usage</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="runtime-history-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
+                    <div>
+                        <dt>Up</dt>
+                        <dd>{{.Up}}</dd>
+                    </div>
 
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Uptime status</h3>
-                <span class="gavia-muted">Latest monitor states</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="uptime-status-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
+                    <div>
+                        <dt>Down</dt>
+                        <dd>{{.Down}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Unknown</dt>
+                        <dd>{{.Unknown}}</dd>
+                    </div>
+                </dl>
+                {{end}}
+
+                <ul role="list" class="dashboard-list">
+                    {{range .UptimeRows}}
+                    <li class="gavia-row">
+                        <div>
+                            <strong>{{.Name}}</strong>
+                            <span>{{.TargetURL}}</span>
+                        </div>
+                        <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
+                    </li>
+                    {{else}}
+                    <li class="dashboard-empty">No uptime monitors have been configured yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Runtime diagnostics</h3>
+                    <a href="/api/v1/dashboard/summary" hx-boost="false">JSON summary</a>
+                </div>
+
+                <div class="dashboard-diagnostics-grid">
+                    {{range .Diagnostics}}
+                    <article class="gavia-mini-stat">
+                        <strong>{{.Label}}</strong>
+                        <span>{{.Value}}</span>
+                        <small>{{.Hint}}</small>
+                    </article>
+                    {{else}}
+                    <p class="dashboard-empty">No runtime samples have been recorded yet.</p>
+                    {{end}}
+                </div>
+            </article>
+        </section>
+    </section>
+
+    <section id="dashboard-panel-charts" role="tabpanel" class="flow-gap" hidden>
+        <section class="dashboard-charts" aria-label="Dashboard charts">
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Expense history</h3>
+                    <span class="gavia-muted">Historical FX conversion when available</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="expense-history-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>FX history</h3>
+                    <span class="gavia-muted">1 MXN in USD and XMR</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="fx-history-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Inventory distribution</h3>
+                    <span class="gavia-muted">How the current records are spread across modules</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="inventory-distribution-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Runtime history</h3>
+                    <span class="gavia-muted">Heap, goroutines, DB usage</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="runtime-history-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+
+            <article class="box dashboard-panel">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Uptime status</h3>
+                    <span class="gavia-muted">Latest monitor states</span>
+                </div>
+                <div class="dashboard-chart-frame">
+                    <canvas id="uptime-status-chart" class="dashboard-chart-canvas"></canvas>
+                </div>
+            </article>
+        </section>
     </section>
 
     <script id="dashboard-chart-data" type="application/json">{{.ChartsJSON}}</script>
-
-    <section class="dashboard-panels" aria-label="Inventory summary">
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Inventory overview</h3>
-                <span class="gavia-muted">{{.InventoryTotal}} tracked records across active modules</span>
-            </div>
-
-            <ul role="list" class="dashboard-breakdown-list">
-                {{range .InventoryItems}}
-                <li class="dashboard-breakdown-row">
-                    <div class="dashboard-breakdown-copy">
-                        <strong><a href="{{.Href}}">{{.Label}}</a></strong>
-                        <span>{{.Hint}}</span>
-                    </div>
-                    <meter
-                        class="dashboard-breakdown-meter"
-                        min="0"
-                        max="100"
-                        low="25"
-                        high="60"
-                        optimum="100"
-                        value="{{printf "%.2f" .Share}}"
-                    ></meter>
-                    <strong>{{.Count}}</strong>
-                </li>
-                {{end}}
-            </ul>
-        </article>
-
-        <article class="box dashboard-panel">
-            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
-                <h3>Inventory distribution</h3>
-                <span class="gavia-muted">How the current records are spread across modules</span>
-            </div>
-            <div class="dashboard-chart-frame">
-                <canvas id="inventory-distribution-chart" class="dashboard-chart-canvas"></canvas>
-            </div>
-        </article>
-    </section>
 </section>
 {{end}}
 

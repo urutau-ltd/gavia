@@ -12,7 +12,7 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain <button> iconbutton"
+                class="plain <button>"
                 title="View"
                 aria-label="View provider {{.Name}}"
                 href="/providers/{{.Id}}"
@@ -37,7 +37,7 @@
             </a>
 
             <a
-                class="ok <button> iconbutton"
+                class="ok <button>"
                 title="Edit"
                 aria-label="Edit provider {{.Name}}"
                 href="/providers/{{.Id}}/edit"
@@ -63,7 +63,7 @@
             <button
                 type="button"
                 title="Delete"
-                class="bad <button> iconbutton"
+                class="bad <button>"
                 aria-label="Delete provider {{.Name}}"
                 hx-delete="/providers/{{.Id}}"
                 hx-target="#provider-editor"

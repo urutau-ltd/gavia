@@ -266,6 +266,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", http.StatusInternalServerError)
 		return
 	}
+	expenses = filterSpendEntries(expenses)
 
 	allExpenses, err := h.expenseRepo.GetAll(r.Context())
 	if err != nil {
@@ -273,6 +274,7 @@ func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Not found", http.StatusInternalServerError)
 		return
 	}
+	allExpenses = filterSpendEntries(allExpenses)
 
 	runtimeSamples, err := h.runtimeRepo.GetRecent(r.Context(), 32)
 	if err != nil {
@@ -499,6 +501,17 @@ func buildExpenseBreakdown(items []*expenseentry.ExpenseEntry) []breakdownItem {
 	return buildBreakdownItems(buckets, func(bucket dashboardsummary.AmountBucket) string {
 		return fmt.Sprintf("%.2f", bucket.Amount)
 	}, "entry")
+}
+
+func filterSpendEntries(items []*expenseentry.ExpenseEntry) []*expenseentry.ExpenseEntry {
+	filtered := make([]*expenseentry.ExpenseEntry, 0, len(items))
+	for _, item := range items {
+		if item == nil || !item.IsSpendLike() {
+			continue
+		}
+		filtered = append(filtered, item)
+	}
+	return filtered
 }
 
 func buildInventoryItems(items []inventoryItem) []inventoryItem {

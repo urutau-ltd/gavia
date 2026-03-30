@@ -167,7 +167,7 @@ func newHandlers(
 			logger,
 			uiRoot,
 		),
-		uptime: uptimepage.NewHandler(logger, uiRoot, repos.uptimeMonitor),
+		uptime: uptimepage.NewHandler(logger, uiRoot, repos.uptimeMonitor, services.uptime),
 	}
 }
 

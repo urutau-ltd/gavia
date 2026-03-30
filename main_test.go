@@ -161,6 +161,10 @@ func (stubUptimeHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("uptime delete " + r.PathValue("id")))
 }
 
+func (stubUptimeHandler) RunNow(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("uptime run " + r.PathValue("id")))
+}
+
 func TestMountRoutes(t *testing.T) {
 	app := aile.MustNew()
 	err := mountRoutes(app, appHandlers{
@@ -373,6 +377,13 @@ func TestMountRoutes(t *testing.T) {
 			path:       "/uptime/42/edit",
 			statusCode: http.StatusOK,
 			body:       "uptime update 42",
+		},
+		{
+			name:       "uptime run route",
+			method:     http.MethodPost,
+			path:       "/uptime/42/run",
+			statusCode: http.StatusOK,
+			body:       "uptime run 42",
 		},
 	}
 

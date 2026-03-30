@@ -289,21 +289,35 @@ func replaceSnapshot(ctx context.Context, tx *sql.Tx, snapshot *Snapshot) error 
 			INSERT INTO expense_entries (
 				id,
 				title,
+				entry_type,
+				account_name,
 				category,
+				counterparty,
+				scope,
 				amount,
 				currency,
 				occurred_on,
+				due_on,
+				paid_on,
+				payment_method,
 				notes,
 				created_at,
 				updated_at
-			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+			) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 			item.ID,
 			item.Title,
+			defaultString(item.EntryType, "expense"),
+			defaultString(item.AccountName, "cash"),
 			defaultString(item.Category, "manual"),
+			stringPointerValue(item.Counterparty),
+			defaultString(item.Scope, "infrastructure"),
 			item.Amount,
 			defaultString(item.Currency, "MXN"),
 			defaultString(item.OccurredOn, time.Now().UTC().Format(time.DateOnly)),
+			stringPointerValue(item.DueOn),
+			stringPointerValue(item.PaidOn),
+			stringPointerValue(item.PaymentMethod),
 			stringPointerValue(item.Notes),
 			normalizeTime(item.CreatedAt),
 			normalizeTime(item.UpdatedAt),
@@ -330,13 +344,15 @@ func replaceSnapshot(ctx context.Context, tx *sql.Tx, snapshot *Snapshot) error 
 
 	for _, item := range snapshot.Locations {
 		if _, err := tx.ExecContext(ctx, `
-			INSERT INTO locations (id, name, city, country, notes, created_at, updated_at)
-			VALUES (?, ?, ?, ?, ?, ?, ?)
+			INSERT INTO locations (id, name, city, country, latitude, longitude, notes, created_at, updated_at)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 		`,
 			item.Id,
 			item.Name,
 			stringPointerValue(item.City),
 			stringPointerValue(item.Country),
+			floatPointerValue(item.Latitude),
+			floatPointerValue(item.Longitude),
 			stringPointerValue(item.Notes),
 			normalizeTime(item.CreatedAt),
 			normalizeTime(item.UpdatedAt),

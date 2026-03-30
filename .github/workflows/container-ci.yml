@@ -12,6 +12,7 @@ permissions:
 
 env:
     IMG_NAME: ghcr.io/urutau-ltd/gavia
+    CGO_ENABLED: 0
 
 jobs:
     test:

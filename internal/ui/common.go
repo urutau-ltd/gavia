@@ -143,6 +143,8 @@ func navSection(path string) string {
 		return "uptime"
 	case strings.HasPrefix(path, "/login"):
 		return "login"
+	case strings.HasPrefix(path, "/javascript-license-info"):
+		return "licenses"
 	case strings.HasPrefix(path, "/licenses"):
 		return "licenses"
 	default:

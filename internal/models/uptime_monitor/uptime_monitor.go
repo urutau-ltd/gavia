@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -11,17 +12,23 @@ import (
 )
 
 type Monitor struct {
-	ID                   string    `json:"id"`
-	Name                 string    `json:"name"`
-	TargetURL            string    `json:"target_url"`
-	Kind                 string    `json:"kind"`
-	ExpectedStatus       int       `json:"expected_status"`
-	CheckIntervalSeconds int       `json:"check_interval_seconds"`
-	TimeoutMS            int       `json:"timeout_ms"`
-	Enabled              bool      `json:"enabled"`
-	Notes                *string   `json:"notes"`
-	CreatedAt            time.Time `json:"created_at"`
-	UpdatedAt            time.Time `json:"updated_at"`
+	ID                    string    `json:"id"`
+	Name                  string    `json:"name"`
+	TargetURL             string    `json:"target_url"`
+	Kind                  string    `json:"kind"`
+	ExpectedStatus        int       `json:"expected_status"`
+	ExpectedStatusMin     int       `json:"expected_status_min"`
+	ExpectedStatusMax     int       `json:"expected_status_max"`
+	HTTPMethod            string    `json:"http_method"`
+	TLSMode               string    `json:"tls_mode"`
+	RequestHeaders        *string   `json:"request_headers"`
+	ExpectedBodySubstring *string   `json:"expected_body_substring"`
+	CheckIntervalSeconds  int       `json:"check_interval_seconds"`
+	TimeoutMS             int       `json:"timeout_ms"`
+	Enabled               bool      `json:"enabled"`
+	Notes                 *string   `json:"notes"`
+	CreatedAt             time.Time `json:"created_at"`
+	UpdatedAt             time.Time `json:"updated_at"`
 }
 
 type Result struct {
@@ -57,6 +64,51 @@ type Repository struct {
 	db *sql.DB
 }
 
+func (m *Monitor) HTTPMethodValue() string {
+	if m == nil {
+		return "GET"
+	}
+
+	return normalizeHTTPMethod(m.HTTPMethod)
+}
+
+func (m *Monitor) TLSModeValue() string {
+	if m == nil {
+		return "skip"
+	}
+
+	return normalizeTLSMode(m.TLSMode)
+}
+
+func (m *Monitor) StatusRangeDisplay() string {
+	if m == nil {
+		return "200"
+	}
+
+	minimum, maximum := normalizeStatusRange(m.ExpectedStatusMin, m.ExpectedStatusMax, m.ExpectedStatus)
+	if minimum == maximum {
+		return strconv.Itoa(minimum)
+	}
+
+	return strconv.Itoa(minimum) + " to " + strconv.Itoa(maximum)
+}
+
+func (m *Monitor) RequestHeadersValue() string {
+	if m == nil || m.RequestHeaders == nil {
+		return ""
+	}
+
+	return *m.RequestHeaders
+}
+
+func (m *Monitor) ExpectedBodySubstringValue() string {
+	if m == nil || m.ExpectedBodySubstring == nil {
+		return ""
+	}
+
+	return *m.ExpectedBodySubstring
+}
+
 func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
@@ -69,6 +121,12 @@ func (r *Repository) GetAll(ctx context.Context, limit int) ([]*MonitorStatus, e
 			m.target_url,
 			m.kind,
 			m.expected_status,
+			m.expected_status_min,
+			m.expected_status_max,
+			m.http_method,
+			m.tls_mode,
+			m.request_headers,
+			m.expected_body_substring,
 			m.check_interval_seconds,
 			m.timeout_ms,
 			m.enabled,
@@ -120,7 +178,11 @@ func (r *Repository) GetAll(ctx context.Context, limit int) ([]*MonitorStatus, e
 
 func (r *Repository) GetByID(ctx context.Context, id string) (*Monitor, error) {
 	item := &Monitor{}
-	var notes sql.NullString
+	var (
+		requestHeaders        sql.NullString
+		expectedBodySubstring sql.NullString
+		notes                 sql.NullString
+	)
 	err := r.db.QueryRowContext(ctx, `
 		SELECT
 			id,
@@ -128,6 +190,12 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*Monitor, error) {
 			target_url,
 			kind,
 			expected_status,
+			expected_status_min,
+			expected_status_max,
+			http_method,
+			tls_mode,
+			request_headers,
+			expected_body_substring,
 			check_interval_seconds,
 			timeout_ms,
 			enabled,
@@ -142,6 +210,12 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*Monitor, error) {
 		&item.TargetURL,
 		&item.Kind,
 		&item.ExpectedStatus,
+		&item.ExpectedStatusMin,
+		&item.ExpectedStatusMax,
+		&item.HTTPMethod,
+		&item.TLSMode,
+		&requestHeaders,
+		&expectedBodySubstring,
 		&item.CheckIntervalSeconds,
 		&item.TimeoutMS,
 		&item.Enabled,
@@ -156,6 +230,11 @@ func (r *Repository) GetByID(ctx context.Context, id string) (*Monitor, error) {
 		return nil, err
 	}
 
+	item.ExpectedStatusMin, item.ExpectedStatusMax = normalizeStatusRange(item.ExpectedStatusMin, item.ExpectedStatusMax, item.ExpectedStatus)
+	item.HTTPMethod = normalizeHTTPMethod(item.HTTPMethod)
+	item.TLSMode = normalizeTLSMode(item.TLSMode)
+	item.RequestHeaders = nullableString(requestHeaders)
+	item.ExpectedBodySubstring = nullableString(expectedBodySubstring)
 	item.Notes = nullableString(notes)
 	return item, nil
 }
@@ -168,6 +247,12 @@ func (r *Repository) GetEnabled(ctx context.Context) ([]*Monitor, error) {
 			target_url,
 			kind,
 			expected_status,
+			expected_status_min,
+			expected_status_max,
+			http_method,
+			tls_mode,
+			request_headers,
+			expected_body_substring,
 			check_interval_seconds,
 			timeout_ms,
 			enabled,
@@ -206,7 +291,10 @@ func (r *Repository) Create(ctx context.Context, item *Monitor) error {
 	item.Kind = normalizeKind(item.Kind)
 	item.Name = strings.TrimSpace(item.Name)
 	item.TargetURL = strings.TrimSpace(item.TargetURL)
-	item.ExpectedStatus = normalizeInt(item.ExpectedStatus, 200)
+	item.ExpectedStatusMin, item.ExpectedStatusMax = normalizeStatusRange(item.ExpectedStatusMin, item.ExpectedStatusMax, item.ExpectedStatus)
+	item.ExpectedStatus = item.ExpectedStatusMin
+	item.HTTPMethod = normalizeHTTPMethod(item.HTTPMethod)
+	item.TLSMode = normalizeTLSMode(item.TLSMode)
 	item.CheckIntervalSeconds = normalizeInt(item.CheckIntervalSeconds, 300)
 	item.TimeoutMS = normalizeInt(item.TimeoutMS, 5000)
 	item.CreatedAt = now
@@ -219,19 +307,31 @@ func (r *Repository) Create(ctx context.Context, item *Monitor) error {
 			target_url,
 			kind,
 			expected_status,
+			expected_status_min,
+			expected_status_max,
+			http_method,
+			tls_mode,
+			request_headers,
+			expected_body_substring,
 			check_interval_seconds,
 			timeout_ms,
 			enabled,
 			notes,
 			created_at,
 			updated_at
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 	`,
 		item.ID,
 		item.Name,
 		item.TargetURL,
 		item.Kind,
 		item.ExpectedStatus,
+		item.ExpectedStatusMin,
+		item.ExpectedStatusMax,
+		item.HTTPMethod,
+		item.TLSMode,
+		stringPointerValue(item.RequestHeaders),
+		stringPointerValue(item.ExpectedBodySubstring),
 		item.CheckIntervalSeconds,
 		item.TimeoutMS,
 		item.Enabled,
@@ -246,7 +346,10 @@ func (r *Repository) Update(ctx context.Context, item *Monitor) error {
 	item.Kind = normalizeKind(item.Kind)
 	item.Name = strings.TrimSpace(item.Name)
 	item.TargetURL = strings.TrimSpace(item.TargetURL)
-	item.ExpectedStatus = normalizeInt(item.ExpectedStatus, 200)
+	item.ExpectedStatusMin, item.ExpectedStatusMax = normalizeStatusRange(item.ExpectedStatusMin, item.ExpectedStatusMax, item.ExpectedStatus)
+	item.ExpectedStatus = item.ExpectedStatusMin
+	item.HTTPMethod = normalizeHTTPMethod(item.HTTPMethod)
+	item.TLSMode = normalizeTLSMode(item.TLSMode)
 	item.CheckIntervalSeconds = normalizeInt(item.CheckIntervalSeconds, 300)
 	item.TimeoutMS = normalizeInt(item.TimeoutMS, 5000)
 	item.UpdatedAt = time.Now().UTC()
@@ -258,6 +361,12 @@ func (r *Repository) Update(ctx context.Context, item *Monitor) error {
 			target_url = ?,
 			kind = ?,
 			expected_status = ?,
+			expected_status_min = ?,
+			expected_status_max = ?,
+			http_method = ?,
+			tls_mode = ?,
+			request_headers = ?,
+			expected_body_substring = ?,
 			check_interval_seconds = ?,
 			timeout_ms = ?,
 			enabled = ?,
@@ -269,6 +378,12 @@ func (r *Repository) Update(ctx context.Context, item *Monitor) error {
 		item.TargetURL,
 		item.Kind,
 		item.ExpectedStatus,
+		item.ExpectedStatusMin,
+		item.ExpectedStatusMax,
+		item.HTTPMethod,
+		item.TLSMode,
+		stringPointerValue(item.RequestHeaders),
+		stringPointerValue(item.ExpectedBodySubstring),
 		item.CheckIntervalSeconds,
 		item.TimeoutMS,
 		item.Enabled,
@@ -380,13 +495,23 @@ func (r *Repository) GetSummary(ctx context.Context) (*Summary, error) {
 
 func scanMonitor(scanner interface{ Scan(dest ...any) error }) (*Monitor, error) {
 	item := &Monitor{}
-	var notes sql.NullString
+	var (
+		requestHeaders        sql.NullString
+		expectedBodySubstring sql.NullString
+		notes                 sql.NullString
+	)
 	if err := scanner.Scan(
 		&item.ID,
 		&item.Name,
 		&item.TargetURL,
 		&item.Kind,
 		&item.ExpectedStatus,
+		&item.ExpectedStatusMin,
+		&item.ExpectedStatusMax,
+		&item.HTTPMethod,
+		&item.TLSMode,
+		&requestHeaders,
+		&expectedBodySubstring,
 		&item.CheckIntervalSeconds,
 		&item.TimeoutMS,
 		&item.Enabled,
@@ -397,6 +522,11 @@ func scanMonitor(scanner interface{ Scan(dest ...any) error }) (*Monitor, error)
 		return nil, err
 	}
 
+	item.ExpectedStatusMin, item.ExpectedStatusMax = normalizeStatusRange(item.ExpectedStatusMin, item.ExpectedStatusMax, item.ExpectedStatus)
+	item.HTTPMethod = normalizeHTTPMethod(item.HTTPMethod)
+	item.TLSMode = normalizeTLSMode(item.TLSMode)
+	item.RequestHeaders = nullableString(requestHeaders)
+	item.ExpectedBodySubstring = nullableString(expectedBodySubstring)
 	item.Notes = nullableString(notes)
 	return item, nil
 }
@@ -404,12 +534,14 @@ func scanMonitor(scanner interface{ Scan(dest ...any) error }) (*Monitor, error)
 func scanMonitorStatus(scanner interface{ Scan(dest ...any) error }) (*MonitorStatus, error) {
 	item := &MonitorStatus{}
 	var (
-		notes      sql.NullString
-		checkedAt  sql.NullTime
-		lastOK     sql.NullBool
-		statusCode sql.NullInt64
-		latencyMS  sql.NullInt64
-		errorText  sql.NullString
+		requestHeaders        sql.NullString
+		expectedBodySubstring sql.NullString
+		notes                 sql.NullString
+		checkedAt             sql.NullTime
+		lastOK                sql.NullBool
+		statusCode            sql.NullInt64
+		latencyMS             sql.NullInt64
+		errorText             sql.NullString
 	)
 	if err := scanner.Scan(
 		&item.ID,
@@ -417,6 +549,12 @@ func scanMonitorStatus(scanner interface{ Scan(dest ...any) error }) (*MonitorSt
 		&item.TargetURL,
 		&item.Kind,
 		&item.ExpectedStatus,
+		&item.ExpectedStatusMin,
+		&item.ExpectedStatusMax,
+		&item.HTTPMethod,
+		&item.TLSMode,
+		&requestHeaders,
+		&expectedBodySubstring,
 		&item.CheckIntervalSeconds,
 		&item.TimeoutMS,
 		&item.Enabled,
@@ -432,6 +570,11 @@ func scanMonitorStatus(scanner interface{ Scan(dest ...any) error }) (*MonitorSt
 		return nil, err
 	}
 
+	item.ExpectedStatusMin, item.ExpectedStatusMax = normalizeStatusRange(item.ExpectedStatusMin, item.ExpectedStatusMax, item.ExpectedStatus)
+	item.HTTPMethod = normalizeHTTPMethod(item.HTTPMethod)
+	item.TLSMode = normalizeTLSMode(item.TLSMode)
+	item.RequestHeaders = nullableString(requestHeaders)
+	item.ExpectedBodySubstring = nullableString(expectedBodySubstring)
 	item.Notes = nullableString(notes)
 	if checkedAt.Valid {
 		item.LastCheckedAt = &checkedAt.Time
@@ -485,6 +628,34 @@ func normalizeInt(value, fallback int) int {
 		return fallback
 	}
 	return value
+}
+
+func normalizeHTTPMethod(value string) string {
+	switch strings.ToUpper(strings.TrimSpace(value)) {
+	case "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS":
+		return strings.ToUpper(strings.TrimSpace(value))
+	default:
+		return "GET"
+	}
+}
+
+func normalizeTLSMode(value string) string {
+	switch strings.ToLower(strings.TrimSpace(value)) {
+	case "verify":
+		return "verify"
+	default:
+		return "skip"
+	}
+}
+
+func normalizeStatusRange(minimum, maximum, fallback int) (int, int) {
+	fallback = normalizeInt(fallback, 200)
+	minimum = normalizeInt(minimum, fallback)
+	maximum = normalizeInt(maximum, fallback)
+	if maximum < minimum {
+		maximum = minimum
+	}
+	return minimum, maximum
 }
 
 func nullableString(value sql.NullString) *string {

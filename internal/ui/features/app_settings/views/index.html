@@ -17,298 +17,440 @@
     {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
     {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
 
-    <div class="gavia-grid">
-        <article class="box flow-gap">
-            {{if .Editing}}
-            <form method="post" action="/app-settings/edit" class="flow-gap">
-                {{template "csrf_input" .}}
-                <label class="crowded flex-row align-items:center">
+    <div
+        class="tool-bar flex-row flex-wrap:wrap"
+        role="tablist"
+        aria-label="App settings sections"
+    >
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="app-settings-tab-defaults"
+            aria-controls="app-settings-panel-defaults"
+            aria-selected="true"
+        >
+            Defaults
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="app-settings-tab-backup"
+            aria-controls="app-settings-panel-backup"
+            aria-selected="false"
+        >
+            Backup
+        </button>
+        <button
+            type="button"
+            class="<button>"
+            role="tab"
+            id="app-settings-tab-expenses"
+            aria-controls="app-settings-panel-expenses"
+            aria-selected="false"
+        >
+            Ledger
+        </button>
+    </div>
+
+    <section id="app-settings-panel-defaults" role="tabpanel" class="flow-gap">
+        <div class="gavia-grid">
+            <article class="box flow-gap">
+                {{if .Editing}}
+                <form method="post" action="/app-settings/edit" class="flow-gap">
+                    {{template "csrf_input" .}}
+                    <label class="crowded flex-row align-items:center">
+                        <input
+                            type="checkbox"
+                            name="show_version_footer"
+                            value="1"
+                            {{if .Settings.ShowVersionFooter}}checked{{end}}
+                        >
+                        <span>Show version footer</span>
+                    </label>
+
+                    <label for="default-server-os">Default server operating system</label>
                     <input
-                        type="checkbox"
-                        name="show_version_footer"
-                        value="1"
-                        {{if .Settings.ShowVersionFooter}}checked{{end}}
+                        id="default-server-os"
+                        name="default_server_os"
+                        type="text"
+                        list="default-server-os-list"
+                        required
+                        value="{{.Settings.DefaultServerOS}}"
                     >
-                    <span>Show version footer</span>
-                </label>
+                    <datalist id="default-server-os-list">
+                        {{range .OSChoices}}
+                        <option value="{{.}}">
+                        {{end}}
+                    </datalist>
 
-                <label for="default-server-os">Default server operating system</label>
-                <input
-                    id="default-server-os"
-                    name="default_server_os"
-                    type="text"
-                    list="default-server-os-list"
-                    required
-                    value="{{.Settings.DefaultServerOS}}"
-                >
-                <datalist id="default-server-os-list">
-                    {{range .OSChoices}}
-                    <option value="{{.}}">
-                    {{end}}
-                </datalist>
+                    <label for="default-currency">Default currency</label>
+                    <input
+                        id="default-currency"
+                        name="default_currency"
+                        type="text"
+                        maxlength="8"
+                        required
+                        value="{{.Settings.DefaultCurrency}}"
+                    >
 
-                <label for="default-currency">Default currency</label>
-                <input
-                    id="default-currency"
-                    name="default_currency"
-                    type="text"
-                    maxlength="8"
-                    required
-                    value="{{.Settings.DefaultCurrency}}"
-                >
+                    <label for="dashboard-currency">Dashboard currency</label>
+                    <input
+                        id="dashboard-currency"
+                        name="dashboard_currency"
+                        type="text"
+                        maxlength="8"
+                        required
+                        value="{{.Settings.DashboardCurrency}}"
+                    >
 
-                <label for="dashboard-currency">Dashboard currency</label>
-                <input
-                    id="dashboard-currency"
-                    name="dashboard_currency"
-                    type="text"
-                    maxlength="8"
-                    required
-                    value="{{.Settings.DashboardCurrency}}"
-                >
+                    <label for="dashboard-due-soon-amount">Dashboard due-soon amount</label>
+                    <input
+                        id="dashboard-due-soon-amount"
+                        name="dashboard_due_soon_amount"
+                        type="number"
+                        min="0"
+                        required
+                        value="{{.Settings.DashboardDueSoonAmount}}"
+                    >
 
-                <label for="dashboard-due-soon-amount">Dashboard due-soon amount</label>
-                <input
-                    id="dashboard-due-soon-amount"
-                    name="dashboard_due_soon_amount"
-                    type="number"
-                    min="0"
-                    required
-                    value="{{.Settings.DashboardDueSoonAmount}}"
-                >
-
-                <div class="crowded flex-row flex-wrap:wrap align-items:center">
-                    <button type="submit" class="ok <button>">Save changes</button>
-                    <a class="plain <button>" href="/app-settings">Cancel</a>
-                </div>
-            </form>
-            {{else}}
-            <h3>Summary</h3>
-            <dl class="settings-summary table rows">
-                <div>
-                    <dt>Version footer</dt>
-                    <dd>{{if .Settings.ShowVersionFooter}}Visible{{else}}Hidden{{end}}</dd>
-                </div>
-
-                <div>
-                    <dt>Default server OS</dt>
-                    <dd>{{.Settings.DefaultServerOS}}</dd>
-                </div>
-
-                <div>
-                    <dt>Default currency</dt>
-                    <dd>{{.Settings.DefaultCurrency}}</dd>
-                </div>
-
-                <div>
-                    <dt>Dashboard currency</dt>
-                    <dd>{{.Settings.DashboardCurrency}}</dd>
-                </div>
-
-                <div>
-                    <dt>Dashboard due-soon amount</dt>
-                    <dd>{{.Settings.DashboardDueSoonAmount}}</dd>
-                </div>
-            </dl>
-
-            <h3>Recent expenses</h3>
-            <ul role="list" class="crowded flow-gap padding:0 margin:0">
-                {{range .Expenses}}
-                <li class="gavia-row">
-                    <div>
-                        <strong>{{.Title}}</strong>
-                        <div class="gavia-muted">
-                            {{.Category}} · {{.OccurredOn}}
-                            {{if .Notes}} · {{.NotesValue}}{{end}}
-                        </div>
+                    <div class="crowded flex-row flex-wrap:wrap align-items:center">
+                        <button type="submit" class="ok <button>">Save changes</button>
+                        <a class="plain <button>" href="/app-settings">Cancel</a>
                     </div>
-                    <strong>{{.Currency}} {{.AmountDisplay}}</strong>
-                </li>
+                </form>
                 {{else}}
-                <li class="gavia-muted">No expenses have been recorded yet.</li>
+                <h3>Summary</h3>
+                <dl class="settings-summary table rows">
+                    <div>
+                        <dt>Version footer</dt>
+                        <dd>{{if .Settings.ShowVersionFooter}}Visible{{else}}Hidden{{end}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Default server OS</dt>
+                        <dd>{{.Settings.DefaultServerOS}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Default currency</dt>
+                        <dd>{{.Settings.DefaultCurrency}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Dashboard currency</dt>
+                        <dd>{{.Settings.DashboardCurrency}}</dd>
+                    </div>
+
+                    <div>
+                        <dt>Dashboard due-soon amount</dt>
+                        <dd>{{.Settings.DashboardDueSoonAmount}}</dd>
+                    </div>
+                </dl>
                 {{end}}
-            </ul>
-            {{end}}
-        </article>
-
-        <article class="box flow-gap">
-            <h3>Export</h3>
-            <p class="gavia-muted">
-                Export the supported settings and collection data as JSON. The
-                encrypted variant uses the configured ML-KEM recovery key.
-            </p>
-
-            <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-end">
-                <a
-                    class="plain <button>"
-                    href="/app-settings/export"
-                    hx-boost="false"
-                >
-                    Download JSON
-                </a>
-
-                {{if .CanExportEncrypted}}
-                <a
-                    class="ok <button>"
-                    href="/app-settings/export?encrypted=1"
-                    hx-boost="false"
-                >
-                    Download encrypted JSON
-                </a>
-                {{else}}
-                <p class="gavia-muted">
-                    Configure a recovery key in account settings to enable
-                    encrypted export.
-                </p>
-                {{end}}
-            </div>
-
-            <h3>Import</h3>
-            <p class="gavia-muted">
-                Import replaces the current supported data snapshot and signs
-                out every active session.
-            </p>
-            <button
-                type="button"
-                class="plain <button>"
-                _="on click toggle @hidden on #import-precautions"
-            >
-                Show or hide import precautions
-            </button>
-            <article id="import-precautions" class="box flow-gap" hidden>
-                <h4>Import precautions</h4>
-                <ul>
-                    <li>Imports replace the currently supported snapshot.</li>
-                    <li>All active browser sessions are invalidated after import.</li>
-                    <li>
-                        Encrypted backups require the recovery key generated in
-                        account settings.
-                    </li>
-                </ul>
             </article>
 
-            <form method="post" action="/app-settings/import" class="flow-gap">
-                {{template "csrf_input" .}}
-                <label for="import-file">Backup file</label>
-                <input
-                    id="import-file"
-                    type="file"
-                    accept=".json,application/json"
-                >
-                <p id="import-file-status" class="gavia-muted" aria-live="polite">
-                    Choose a JSON backup file to load it into the text area below.
+            <article class="box flow-gap">
+                <h3>Where these defaults apply</h3>
+                <ul>
+                    <li>New servers use the default operating system as the first suggested value.</li>
+                    <li>Missing billing currencies fall back to the app default currency.</li>
+                    <li>Dashboard totals use the configured dashboard currency for display.</li>
+                    <li>The due-soon limit controls how many upcoming renewals are surfaced first.</li>
+                </ul>
+
+                {{if not .Editing}}
+                <h3>Recent ledger snapshot</h3>
+                <ul role="list" class="crowded flow-gap padding:0 margin:0">
+                    {{range .Expenses}}
+                    <li class="gavia-row">
+                        <div>
+                            <strong>{{.Title}}</strong>
+                            <div class="gavia-muted">
+                                {{.EntryTypeValue}} · {{.ScopeValue}} · {{.AccountNameValue}} · {{.OccurredOn}}
+                                {{if .Counterparty}} · {{.CounterpartyValue}}{{end}}
+                                {{if .Notes}} · {{.NotesValue}}{{end}}
+                            </div>
+                        </div>
+                        <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                    </li>
+                    {{else}}
+                    <li class="gavia-muted">No expenses have been recorded yet.</li>
+                    {{end}}
+                </ul>
+                {{end}}
+            </article>
+        </div>
+    </section>
+
+    <section id="app-settings-panel-backup" role="tabpanel" class="flow-gap" hidden>
+        <div class="gavia-grid">
+            <article class="box flow-gap">
+                <h3>Export</h3>
+                <p class="gavia-muted">
+                    Export the supported settings and collection data as JSON. The
+                    encrypted variant uses the configured ML-KEM recovery key.
                 </p>
 
-                <label for="import-payload">Backup JSON</label>
-                <textarea
-                    id="import-payload"
-                    name="import_payload"
-                    rows="10"
-                    required
-                ></textarea>
+                <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-end">
+                    <a
+                        class="plain <button>"
+                        href="/app-settings/export"
+                        hx-boost="false"
+                    >
+                        Download JSON
+                    </a>
 
-                <label for="import-recovery-key">
-                    Recovery key for encrypted backups
-                </label>
-                <textarea
-                    id="import-recovery-key"
-                    name="import_recovery_key"
-                    rows="4"
-                ></textarea>
+                    {{if .CanExportEncrypted}}
+                    <a
+                        class="ok <button>"
+                        href="/app-settings/export?encrypted=1"
+                        hx-boost="false"
+                    >
+                        Download encrypted JSON
+                    </a>
+                    {{else}}
+                    <p class="gavia-muted">
+                        Configure a recovery key in account settings to enable
+                        encrypted export.
+                    </p>
+                    {{end}}
+                </div>
+            </article>
 
-                <button type="submit" class="bad <button>">Import snapshot</button>
-            </form>
-
-            <h3>Expense entries</h3>
-            <p class="gavia-muted">
-                Add manual expenses so the dashboard shows a real recent
-                history instead of free-form notes.
-            </p>
-
-            <form method="post" action="/app-settings/expenses" class="flow-gap">
-                {{template "csrf_input" .}}
-                <label for="expense-title">Title</label>
-                <input
-                    id="expense-title"
-                    name="title"
-                    type="text"
-                    required
-                    value="{{.ExpenseForm.Title}}"
+            <article class="box flow-gap">
+                <h3>Import</h3>
+                <p class="gavia-muted">
+                    Import replaces the current supported data snapshot and signs
+                    out every active session.
+                </p>
+                <button
+                    type="button"
+                    class="plain <button>"
+                    _="on click toggle @hidden on #import-precautions"
                 >
+                    Show or hide import precautions
+                </button>
+                <article id="import-precautions" class="box flow-gap" hidden>
+                    <h4>Import precautions</h4>
+                    <ul>
+                        <li>Imports replace the currently supported snapshot.</li>
+                        <li>All active browser sessions are invalidated after import.</li>
+                        <li>
+                            Encrypted backups require the recovery key generated in
+                            account settings.
+                        </li>
+                    </ul>
+                </article>
 
-                <label for="expense-category">Category</label>
-                <input
-                    id="expense-category"
-                    name="category"
-                    type="text"
-                    value="{{.ExpenseForm.Category}}"
+                <form
+                    method="post"
+                    action="/app-settings/import"
+                    class="flow-gap"
+                    enctype="multipart/form-data"
                 >
+                    {{template "csrf_input" .}}
+                    <label for="import-file">Backup file</label>
+                    <input
+                        id="import-file"
+                        name="import_file"
+                        type="file"
+                        accept=".json,application/json"
+                        required
+                    >
+                    <p id="import-file-status" class="gavia-muted" aria-live="polite">
+                        Choose a JSON backup file to import it directly.
+                    </p>
 
-                <label for="expense-amount">Amount</label>
-                <input
-                    id="expense-amount"
-                    name="amount"
-                    type="number"
-                    min="0.01"
-                    step="0.01"
-                    required
-                    value="{{.ExpenseForm.Amount}}"
-                >
+                    <label for="import-recovery-key">
+                        Recovery key for encrypted backups
+                    </label>
+                    <textarea
+                        id="import-recovery-key"
+                        name="import_recovery_key"
+                        rows="4"
+                    ></textarea>
 
-                <label for="expense-currency">Currency</label>
-                <input
-                    id="expense-currency"
-                    name="currency"
-                    type="text"
-                    maxlength="8"
-                    required
-                    value="{{.ExpenseForm.Currency}}"
-                >
+                    <button type="submit" class="bad <button>">Import snapshot</button>
+                </form>
+            </article>
+        </div>
+    </section>
 
-                <label for="expense-occurred-on">Occurred on</label>
-                <input
-                    id="expense-occurred-on"
-                    name="occurred_on"
-                    type="date"
-                    required
-                    value="{{.ExpenseForm.OccurredOn}}"
-                >
+    <section id="app-settings-panel-expenses" role="tabpanel" class="flow-gap" hidden>
+        <div class="gavia-grid">
+            <article class="box flow-gap">
+                <h3>Add ledger entry</h3>
+                <p class="gavia-muted">
+                    Track infrastructure costs, household spending, reimbursements,
+                    income, and transfers without leaving the app.
+                </p>
 
-                <label for="expense-notes">Notes</label>
-                <textarea
-                    id="expense-notes"
-                    name="notes"
-                    rows="4"
-                >{{.ExpenseForm.Notes}}</textarea>
+                <form method="post" action="/app-settings/expenses" class="flow-gap">
+                    {{template "csrf_input" .}}
+                    <label for="expense-title">Title</label>
+                    <input
+                        id="expense-title"
+                        name="title"
+                        type="text"
+                        required
+                        value="{{.ExpenseForm.Title}}"
+                    >
 
-                <button type="submit" class="ok <button>">Add expense</button>
-            </form>
+                    <label for="expense-entry-type">Entry type</label>
+                    <select id="expense-entry-type" name="entry_type">
+                        <option value="expense" {{if eq .ExpenseForm.EntryType "expense"}}selected{{end}}>Expense</option>
+                        <option value="income" {{if eq .ExpenseForm.EntryType "income"}}selected{{end}}>Income</option>
+                        <option value="transfer" {{if eq .ExpenseForm.EntryType "transfer"}}selected{{end}}>Transfer</option>
+                        <option value="refund" {{if eq .ExpenseForm.EntryType "refund"}}selected{{end}}>Refund</option>
+                    </select>
 
-            <ul role="list" class="crowded flow-gap padding:0 margin:0">
-                {{range .Expenses}}
-                <li class="gavia-row">
-                    <div>
-                        <strong>{{.Title}}</strong>
-                        <div class="gavia-muted">
-                            {{.Category}} · {{.OccurredOn}}
-                            {{if .Notes}} · {{.NotesValue}}{{end}}
-                        </div>
-                    </div>
+                    <label for="expense-account-name">Account, wallet, or cash box</label>
+                    <input
+                        id="expense-account-name"
+                        name="account_name"
+                        type="text"
+                        required
+                        value="{{.ExpenseForm.AccountName}}"
+                    >
 
-                    <div class="gavia-actions-stack">
-                        <strong>{{.Currency}} {{.AmountDisplay}}</strong>
-                        <form method="post" action="/app-settings/expenses/{{.ID}}/delete">
-                            {{template "csrf_input" $}}
-                            <button type="submit" class="bad <button>">Delete</button>
-                        </form>
-                    </div>
-                </li>
-                {{else}}
-                <li class="gavia-muted">No expenses have been recorded yet.</li>
+                    <label for="expense-category">Category</label>
+                    <input
+                        id="expense-category"
+                        name="category"
+                        type="text"
+                        value="{{.ExpenseForm.Category}}"
+                    >
+
+                    <label for="expense-counterparty">Counterparty or destination</label>
+                    <input
+                        id="expense-counterparty"
+                        name="counterparty"
+                        type="text"
+                        value="{{.ExpenseForm.Counterparty}}"
+                    >
+
+                    <label for="expense-scope">Scope</label>
+                    <select id="expense-scope" name="scope">
+                        <option value="infrastructure" {{if eq .ExpenseForm.Scope "infrastructure"}}selected{{end}}>Infrastructure</option>
+                        <option value="household" {{if eq .ExpenseForm.Scope "household"}}selected{{end}}>Household</option>
+                        <option value="office" {{if eq .ExpenseForm.Scope "office"}}selected{{end}}>Office</option>
+                        <option value="personal" {{if eq .ExpenseForm.Scope "personal"}}selected{{end}}>Personal</option>
+                        <option value="other" {{if eq .ExpenseForm.Scope "other"}}selected{{end}}>Other</option>
+                    </select>
+
+                    <label for="expense-amount">Amount</label>
+                    <input
+                        id="expense-amount"
+                        name="amount"
+                        type="number"
+                        min="0.01"
+                        step="0.01"
+                        required
+                        value="{{.ExpenseForm.Amount}}"
+                    >
+
+                    <label for="expense-currency">Currency</label>
+                    <input
+                        id="expense-currency"
+                        name="currency"
+                        type="text"
+                        maxlength="8"
+                        required
+                        value="{{.ExpenseForm.Currency}}"
+                    >
+
+                    <label for="expense-occurred-on">Occurred on</label>
+                    <input
+                        id="expense-occurred-on"
+                        name="occurred_on"
+                        type="date"
+                        required
+                        value="{{.ExpenseForm.OccurredOn}}"
+                    >
+
+                    <label for="expense-due-on">Due on</label>
+                    <input
+                        id="expense-due-on"
+                        name="due_on"
+                        type="date"
+                        value="{{.ExpenseForm.DueOn}}"
+                    >
+
+                    <label for="expense-paid-on">Paid on</label>
+                    <input
+                        id="expense-paid-on"
+                        name="paid_on"
+                        type="date"
+                        value="{{.ExpenseForm.PaidOn}}"
+                    >
+
+                    <label for="expense-payment-method">Payment method</label>
+                    <input
+                        id="expense-payment-method"
+                        name="payment_method"
+                        type="text"
+                        value="{{.ExpenseForm.PaymentMethod}}"
+                    >
+
+                    <label for="expense-notes">Notes</label>
+                    <textarea
+                        id="expense-notes"
+                        name="notes"
+                        rows="4"
+                    >{{.ExpenseForm.Notes}}</textarea>
+
+                    <button type="submit" class="ok <button>">Add expense</button>
+                </form>
+            </article>
+
+            <article class="box flow-gap">
+                <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                    <h3>Recent ledger history</h3>
+                    <span class="gavia-muted">{{len .Expenses}} visible entries</span>
+                </div>
+                {{if .ExpenseStats}}
+                <section class="dashboard-diagnostics-grid" aria-label="Ledger overview">
+                    {{range .ExpenseStats}}
+                    <article class="gavia-mini-stat">
+                        <strong>{{.Label}}</strong>
+                        <span>{{.Value}}</span>
+                        <small>{{.Hint}}</small>
+                    </article>
+                    {{end}}
+                </section>
                 {{end}}
-            </ul>
-        </article>
-    </div>
+                <ul role="list" class="crowded flow-gap padding:0 margin:0">
+                    {{range .Expenses}}
+                    <li class="gavia-row">
+                        <div>
+                            <strong>{{.Title}}</strong>
+                            <div class="gavia-muted">
+                                {{.EntryTypeValue}} · {{.ScopeValue}} · {{.AccountNameValue}} · {{.Category}} · {{.OccurredOn}}
+                                {{if .Counterparty}} · {{.CounterpartyValue}}{{end}}
+                                {{if .DueOn}} · due {{.DueOnValue}}{{end}}
+                                {{if .PaidOn}} · paid {{.PaidOnValue}}{{end}}
+                                {{if .PaymentMethod}} · {{.PaymentMethodValue}}{{end}}
+                                {{if .Notes}} · {{.NotesValue}}{{end}}
+                            </div>
+                        </div>
+
+                        <div class="gavia-actions-stack">
+                            <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                            <form method="post" action="/app-settings/expenses/{{.ID}}/delete">
+                                {{template "csrf_input" $}}
+                                <button type="submit" class="bad <button>">Delete</button>
+                            </form>
+                        </div>
+                    </li>
+                    {{else}}
+                    <li class="gavia-muted">No expenses have been recorded yet.</li>
+                    {{end}}
+                </ul>
+            </article>
+        </div>
+    </section>
 </section>
 {{end}}
 
