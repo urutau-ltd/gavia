@@ -12,13 +12,15 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
 "edit"}}{{template "label-form" .}}{{else if eq .EditorMode "detail"}}{{template
 "label-detail" .}}{{else}}{{template "label-empty" .}}{{end}} {{end}} {{define
 "label-editor-response"}} {{template "label-editor-panel" .}}
-<tbody id="labels-body" hx-swap-oob="outerHTML">
-    {{template "label-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="labels-body" hx-swap-oob="outerHTML">
+        {{template "label-list" .}}
+    </tbody>
+</table>
 {{end}} {{define "label-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Labels panel</h3>
-    <p class="crud-muted">Select a label from the list or create a new one.</p>
+    <p class="gavia-muted">Select a label from the list or create a new one.</p>
 </div>
 {{end}} {{define "label-detail"}} {{with .Label}}
 <header
@@ -26,7 +28,7 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
 >
     <h3>{{.Name}}</h3>
     <a
-        class="ok crud-action-control"
+        class="ok <button>"
         href="/labels/{{.ID}}/edit"
         hx-get="/labels/{{.ID}}/edit"
         hx-target="#label-editor"
@@ -41,7 +43,7 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
     <div>
         <dt>Notes</dt>
         <dd class="crud-note">
-            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="gavia-muted"
             >No notes</span>{{end}}
         </dd>
     </div>
@@ -51,7 +53,7 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
 >
     <button
         type="button"
-        class="bad crud-action-control"
+        class="bad <button>"
         hx-delete="/labels/{{.ID}}"
         hx-target="#label-editor"
         hx-swap="outerHTML"
@@ -61,7 +63,7 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
         Delete
     </button>
     <a
-        class="plain crud-action-control"
+        class="plain <button>"
         href="/labels"
         hx-get="/labels"
         hx-target="#label-editor"
@@ -71,7 +73,7 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
 {{else}}{{template "label-empty" .}}{{end}} {{end}} {{define "label-form"}}
 <h3>{{if eq .EditorMode "edit"}}Edit label{{else}}New label{{end}}</h3>
 <form
-    class="crud-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -95,11 +97,11 @@ eq .EditorMode "new"}}{{template "label-form" .}}{{else if eq .EditorMode
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok crud-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain crud-action-control"
+            class="plain <button>"
             href="/labels"
             hx-get="/labels"
             hx-target="#label-editor"

@@ -1,10 +1,10 @@
 {{define "content"}}
-<section class="auth-view">
-    <article class="box auth-card">
-        <header class="auth-head">
+<section class="gavia-page flow-gap">
+    <article class="box flow-gap">
+        <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
             <div>
                 <h2>{{.Title}}</h2>
-                <p class="auth-subtitle">
+                <p class="gavia-subtitle">
                     Sign in with the local administrator account or recover the
                     password with the saved recovery key.
                 </p>
@@ -14,10 +14,10 @@
         {{if .NoticeHTML}}{{.NoticeHTML}}{{end}} {{if
         .ErrorHTML}}{{.ErrorHTML}}{{end}}
 
-        <div class="auth-grid">
-            <section class="auth-panel">
+        <div class="gavia-grid">
+            <section class="flow-gap">
                 <h3>Sign in</h3>
-                <form method="post" action="/login" class="auth-form">
+                <form method="post" action="/login" class="flow-gap">
                     {{template "csrf_input" .}}
                     <input type="hidden" name="intent" value="login">
 
@@ -48,14 +48,14 @@
 
             <hr />
 
-            <section class="auth-panel">
+            <section class="flow-gap">
                 <h3>Password recovery</h3>
-                <p class="auth-muted">
+                <p class="gavia-muted">
                     Email is not used here. Keep the recovery key generated in
                     account settings and paste it here to replace the password.
                 </p>
 
-                <form method="post" action="/login" class="auth-form">
+                <form method="post" action="/login" class="flow-gap">
                     {{template "csrf_input" .}}
                     <input type="hidden" name="intent" value="recover">
 

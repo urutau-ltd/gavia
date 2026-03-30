@@ -6,13 +6,13 @@
         <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
         >{{.WebsiteValue}}</a>
         {{- else -}}
-        <span class="provider-muted">No website</span>
+        <span class="gavia-muted">No website</span>
         {{- end -}}
     </td>
     <td data-label="Actions">
-        <div class="provider-actions">
+        <div class="crud-actions">
             <a
-                class="plain block provider-action-control"
+                class="plain <button> iconbutton"
                 title="View"
                 aria-label="View provider {{.Name}}"
                 href="/providers/{{.Id}}"
@@ -37,7 +37,7 @@
             </a>
 
             <a
-                class="ok provider-action-control"
+                class="ok <button> iconbutton"
                 title="Edit"
                 aria-label="Edit provider {{.Name}}"
                 href="/providers/{{.Id}}/edit"
@@ -63,7 +63,7 @@
             <button
                 type="button"
                 title="Delete"
-                class="bad provider-action-control"
+                class="bad <button> iconbutton"
                 aria-label="Delete provider {{.Name}}"
                 hx-delete="/providers/{{.Id}}"
                 hx-target="#provider-editor"

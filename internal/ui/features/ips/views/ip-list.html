@@ -4,20 +4,20 @@
     <td data-label="Type">{{.Type}}</td>
     <td data-label="Origin">
         {{if .Org}}{{.OrgValue}}{{else if
-        .Country}}{{.CountryValue}}{{else}}<span class="crud-muted"
+        .Country}}{{.CountryValue}}{{else}}<span class="gavia-muted"
         >No origin info</span>{{end}}
     </td>
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 href="/ips/{{.ID}}"
                 hx-get="/ips/{{.ID}}"
                 hx-target="#ip-editor"
                 hx-swap="outerHTML"
             >View</a>
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 href="/ips/{{.ID}}/edit"
                 hx-get="/ips/{{.ID}}/edit"
                 hx-target="#ip-editor"
@@ -25,7 +25,7 @@
             >Edit</a>
             <button
                 type="button"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 hx-delete="/ips/{{.ID}}"
                 hx-target="#ip-editor"
                 hx-swap="outerHTML"

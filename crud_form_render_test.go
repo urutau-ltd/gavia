@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/domains"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/hostings"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/ips"
+	providersui "codeberg.org/urutau-ltd/gavia/internal/ui/features/providers"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/servers"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/subscriptions"
 )
@@ -158,6 +160,45 @@ func TestNewCRUDFormsRenderExpectedOptions(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+func TestProvidersCreateHTMXResponseWrapsListBodyInHiddenTable(t *testing.T) {
+	db := openFlowTestDB(t)
+	runFlowMigrations(t, db)
+
+	logger := slog.New(slog.NewTextHandler(io.Discard, nil))
+	uiRoot, err := fs.Sub(UIFS, "internal/ui")
+	if err != nil {
+		t.Fatalf("fs.Sub returned error: %v", err)
+	}
+
+	form := url.Values{
+		"name":    {"Urutau Limited"},
+		"website": {"https://urutau-ltd.org/"},
+	}
+
+	req := httptest.NewRequest(http.MethodPost, "/providers", strings.NewReader(form.Encode()))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("HX-Request", "true")
+	req.Header.Set("HX-Target", "provider-editor")
+	rec := httptest.NewRecorder()
+
+	providersui.NewHandler(logger, uiRoot, db).Create(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	body := rec.Body.String()
+	for _, want := range []string{
+		"Provider created successfully.",
+		`<table hidden aria-hidden="true">`,
+		`<tbody id="providers-body" hx-swap-oob="outerHTML">`,
+	} {
+		if !strings.Contains(body, want) {
+			t.Fatalf("expected HTMX create response to include %q, got %q", want, body)
+		}
 	}
 }
 

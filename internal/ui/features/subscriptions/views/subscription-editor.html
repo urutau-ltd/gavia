@@ -25,15 +25,17 @@
 
 {{define "subscription-editor-response"}}
 {{template "subscription-editor-panel" .}}
-<tbody id="subscriptions-body" hx-swap-oob="outerHTML">
-    {{template "subscription-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="subscriptions-body" hx-swap-oob="outerHTML">
+        {{template "subscription-list" .}}
+    </tbody>
+</table>
 {{end}}
 
 {{define "subscription-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Subscriptions panel</h3>
-    <p class="crud-muted">
+    <p class="gavia-muted">
         Select a subscription from the list or create a new one.
     </p>
 </div>
@@ -44,7 +46,7 @@
 <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:center">
     <h3>{{.Name}}</h3>
     <a
-        class="ok crud-action-control"
+        class="ok <button>"
         href="/subscriptions/{{.ID}}/edit"
         hx-get="/subscriptions/{{.ID}}/edit"
         hx-target="#subscription-editor"
@@ -71,7 +73,7 @@
             {{if .RenewalPeriod}}
             {{.RenewalPeriodValue}}
             {{else}}
-            <span class="crud-muted">No renewal period</span>
+            <span class="gavia-muted">No renewal period</span>
             {{end}}
         </dd>
     </div>
@@ -82,7 +84,7 @@
             {{if .SinceDate}}
             {{.SinceDateValue}}
             {{else}}
-            <span class="crud-muted">No since date</span>
+            <span class="gavia-muted">No since date</span>
             {{end}}
         </dd>
     </div>
@@ -93,7 +95,7 @@
             {{if .DueDate}}
             {{.DueDateValue}}
             {{else}}
-            <span class="crud-muted">No due date</span>
+            <span class="gavia-muted">No due date</span>
             {{end}}
         </dd>
     </div>
@@ -104,7 +106,7 @@
             {{if .Price}}
             {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
             {{else}}
-            <span class="crud-muted">No price</span>
+            <span class="gavia-muted">No price</span>
             {{end}}
         </dd>
     </div>
@@ -115,7 +117,7 @@
             {{if .Notes}}
             {{.NotesValue}}
             {{else}}
-            <span class="crud-muted">No notes</span>
+            <span class="gavia-muted">No notes</span>
             {{end}}
         </dd>
     </div>
@@ -124,7 +126,7 @@
 <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start">
     <button
         type="button"
-        class="bad crud-action-control"
+        class="bad <button>"
         hx-delete="/subscriptions/{{.ID}}"
         hx-target="#subscription-editor"
         hx-swap="outerHTML"
@@ -135,7 +137,7 @@
     </button>
 
     <a
-        class="plain crud-action-control"
+        class="plain <button>"
         href="/subscriptions"
         hx-get="/subscriptions"
         hx-target="#subscription-editor"
@@ -153,7 +155,7 @@
 <h3>{{if eq .EditorMode "edit"}}Edit subscription{{else}}New subscription{{end}}</h3>
 
 <form
-    class="crud-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -199,7 +201,7 @@
         <option value="semiannual">
         <option value="yearly">
     </datalist>
-    <small class="crud-muted">Use this field for the billing cadence. Keep custom values if the provider uses a different cycle.</small>
+    <small class="gavia-muted">Use this field for the billing cadence. Keep custom values if the provider uses a different cycle.</small>
 
     <label for="subscription-since-date">Started on</label>
     <input
@@ -208,7 +210,7 @@
         type="date"
         value="{{with .Subscription}}{{.SinceDateValue}}{{end}}"
     >
-    <small class="crud-muted">Optional. This is when the subscription started.</small>
+    <small class="gavia-muted">Optional. This is when the subscription started.</small>
 
     <label for="subscription-due-date">Next charge date</label>
     <input
@@ -217,7 +219,7 @@
         type="date"
         value="{{with .Subscription}}{{.DueDateValue}}{{end}}"
     >
-    <small class="crud-muted">Optional. This is the next expected renewal or billing date.</small>
+    <small class="gavia-muted">Optional. This is the next expected renewal or billing date.</small>
 
     <label for="subscription-price">Price</label>
     <input
@@ -242,9 +244,9 @@
     <textarea id="subscription-notes" name="notes" rows="6">{{with .Subscription}}{{.NotesValue}}{{end}}</textarea>
 
     <div class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start">
-        <button type="submit" class="ok crud-action-control">{{.FormSubmit}}</button>
+        <button type="submit" class="ok <button>">{{.FormSubmit}}</button>
         <a
-            class="plain crud-action-control"
+            class="plain <button>"
             href="/subscriptions"
             hx-get="/subscriptions"
             hx-target="#subscription-editor"

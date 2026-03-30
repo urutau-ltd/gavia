@@ -13,13 +13,15 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
 "edit"}} {{template "domain-form" .}} {{else if eq .EditorMode "detail"}}
 {{template "domain-detail" .}} {{else}} {{template "domain-empty" .}} {{end}}
 {{end}} {{define "domain-editor-response"}} {{template "domain-editor-panel" .}}
-<tbody id="domains-body" hx-swap-oob="outerHTML">
-    {{template "domain-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="domains-body" hx-swap-oob="outerHTML">
+        {{template "domain-list" .}}
+    </tbody>
+</table>
 {{end}} {{define "domain-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Domains panel</h3>
-    <p class="crud-muted">
+    <p class="gavia-muted">
         Select a domain from the list or create a new one.
     </p>
 </div>
@@ -29,7 +31,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
 >
     <h3>{{.Domain}}</h3>
     <a
-        class="ok crud-action-control"
+        class="ok <button>"
         href="/domains/{{.ID}}/edit"
         hx-get="/domains/{{.ID}}/edit"
         hx-target="#domain-editor"
@@ -49,7 +51,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
         <dt>Provider</dt>
         <dd>
             {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
-            <span class="crud-muted">No provider</span>
+            <span class="gavia-muted">No provider</span>
             {{end}}
         </dd>
     </div>
@@ -58,7 +60,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
         <dt>Due date</dt>
         <dd>
             {{if .DueDate}} {{.DueDateValue}} {{else}}
-            <span class="crud-muted">No due date</span>
+            <span class="gavia-muted">No due date</span>
             {{end}}
         </dd>
     </div>
@@ -68,7 +70,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
         <dd>
             {{if .Price}} {{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}
             {{else}}
-            <span class="crud-muted">No price</span>
+            <span class="gavia-muted">No price</span>
             {{end}}
         </dd>
     </div>
@@ -77,7 +79,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
         <dt>Notes</dt>
         <dd class="crud-note">
             {{if .Notes}} {{.NotesValue}} {{else}}
-            <span class="crud-muted">No notes</span>
+            <span class="gavia-muted">No notes</span>
             {{end}}
         </dd>
     </div>
@@ -88,7 +90,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
 >
     <button
         type="button"
-        class="bad crud-action-control"
+        class="bad <button>"
         hx-delete="/domains/{{.ID}}"
         hx-target="#domain-editor"
         hx-swap="outerHTML"
@@ -99,7 +101,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
     </button>
 
     <a
-        class="plain crud-action-control"
+        class="plain <button>"
         href="/domains"
         hx-get="/domains"
         hx-target="#domain-editor"
@@ -112,7 +114,7 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
 <h3>{{if eq .EditorMode "edit"}}Edit domain{{else}}New domain{{end}}</h3>
 
 <form
-    class="crud-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -183,11 +185,11 @@ eq .EditorMode "new"}} {{template "domain-form" .}} {{else if eq .EditorMode
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok crud-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain crud-action-control"
+            class="plain <button>"
             href="/domains"
             hx-get="/domains"
             hx-target="#domain-editor"

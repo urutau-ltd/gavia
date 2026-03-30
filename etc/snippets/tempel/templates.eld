@@ -117,11 +117,11 @@ html-mode nhtml-mode web-mode
 
 (htmxindex
  "{{define \"content\"}}" n
- "<section class=\"" (p "view class" "providers-view") "\">" n
- > "<header class=\"" (p "head class" "providers-head") "\">" n
+ "<section class=\"" (p "view class" "gavia-page") "\">" n
+ > "<header class=\"" (p "head class" "crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end") "\">" n
  > > "<h2>{{.Title}}</h2>" n
  > "</header>" n n
- > "<section class=\"" (p "grid class" "providers-grid") "\">" n
+ > "<section class=\"" (p "grid class" "crud-grid") "\">" n
  > > "<article class=\"box width:100%\">" n
  > > > "<table class=\"width:100%\">" n
  > > > > "<tbody id=\"" (p "tbody id" "providers-body") "\">" n
@@ -141,15 +141,15 @@ html-mode nhtml-mode web-mode
  "{{- range ." (p "collection field" "Providers") "}}" n
  "<tr id=\"" (p "row id prefix" "provider-row") "-{{." (p "id field" "Id") "}}\">" n
  > "<td>{{." (p "main label" "Name") "}}</td>" n
- > "<td class=\"" (p "actions class" "provider-actions") "\">" n
+ > "<td class=\"" (p "actions class" "crud-actions") "\">" n
  > > "<a href=\"/" (p "resource" "providers") "/{{." (p "id field" "Id") "}}\"" n
  > > "   hx-get=\"/" (p "resource" "providers") "/{{." (p "id field" "Id") "}}\"" n
  > > "   hx-target=\"#" (p "editor id" "provider-editor") "\"" n
- > > "   hx-swap=\"outerHTML\">Ver</a>" n
+ > > "   hx-swap=\"outerHTML\">View</a>" n
  > "</td>" n
  "</tr>" n
  "{{- else}}" n
- "<tr><td colspan=\"3\"><em>No hay registros.</em></td></tr>" n
+ "<tr><td colspan=\"3\"><em>No records found.</em></td></tr>" n
  "{{- end}}" n
  "{{end}}"
  :ann "HTMX list partial"
@@ -157,7 +157,7 @@ html-mode nhtml-mode web-mode
 
 (htmxeditor
  "{{define \"" (p "panel template" "provider-editor-panel") "\"}}" n
- "<section id=\"" (p "editor id" "provider-editor") "\" class=\"box " (p "editor class" "provider-editor") "\">" n
+ "<section id=\"" (p "editor id" "provider-editor") "\" class=\"box " (p "editor class" "crud-editor") "\">" n
  > "{{template \"" (p "content template" "provider-editor-content") "\" .}}" n
  "</section>" n
  "{{end}}"
@@ -166,11 +166,11 @@ html-mode nhtml-mode web-mode
 
 (dashboardview
  "{{define \"content\"}}" n
- "<section class=\"dashboard-view\">" n
+ "<section class=\"gavia-page\">" n
  > "<section class=\"dashboard-hero\">" n
  > > "<article class=\"box dashboard-intro\">" n
  > > > "<h2>{{.Title}}</h2>" n
- > > > "<p class=\"dashboard-subtitle\">" (p "subtitle" "A compact view of started and pending modules.") "</p>" n
+ > > > "<p class=\"gavia-subtitle\">" (p "subtitle" "Financial visibility, runtime diagnostics, and inventory summaries in one place.") "</p>" n
  > > > "<div class=\"dashboard-actions\">" n
  > > > > "<a class=\"ok &lt;button&gt;\" href=\"/" (p "primary route" "providers") "\">" (p "primary label" "Open providers") "</a>" n
  > > > > "<a class=\"plain &lt;button&gt;\" href=\"/" (p "secondary route" "locations") "\">" (p "secondary label" "Open locations") "</a>" n
@@ -202,7 +202,7 @@ html-mode nhtml-mode web-mode
 css-mode
 
 (crudcss
- "." (p "view class" "providers-view") " {" n
+ "." (p "view class" "gavia-page") " {" n
  > "display: grid;" n
  > "gap: var(--gap);" n
  "}" n n

@@ -16,6 +16,7 @@ import (
 	dashboardapi "codeberg.org/urutau-ltd/gavia/internal/api/dashboard"
 	"codeberg.org/urutau-ltd/gavia/internal/auth"
 	"codeberg.org/urutau-ltd/gavia/internal/backup"
+	"codeberg.org/urutau-ltd/gavia/internal/compression"
 	"codeberg.org/urutau-ltd/gavia/internal/csrf"
 	"codeberg.org/urutau-ltd/gavia/internal/finance"
 	accountsetting "codeberg.org/urutau-ltd/gavia/internal/models/account_setting"
@@ -63,6 +64,7 @@ type appRepositories struct {
 type appServices struct {
 	auth          *auth.Service
 	backup        *backup.Service
+	compression   *compression.Service
 	csrf          *csrf.Service
 	finance       *finance.Service
 	observability *observability.Service
@@ -109,6 +111,7 @@ func newServices(logger *slog.Logger, db *sql.DB, repos appRepositories) appServ
 	return appServices{
 		auth:          auth.NewService(repos.account, repos.session),
 		backup:        backup.NewService(db),
+		compression:   compression.NewService(),
 		csrf:          csrf.NewService(),
 		finance:       finance.NewService(logger, repos.exchangeRate, finance.ServiceConfig{}),
 		observability: observability.NewService(logger, db, repos.runtimeSample, 30*time.Second),
@@ -180,13 +183,14 @@ func applyUISettings(ctx context.Context, logger *slog.Logger, repo *appsetting.
 	}
 }
 
-func configureMiddleware(app *aile.App, logger *slog.Logger, csrfService *csrf.Service, authService *auth.Service) {
+func configureMiddleware(app *aile.App, logger *slog.Logger, compressionService *compression.Service, csrfService *csrf.Service, authService *auth.Service) {
 	app.Use(combine.Middleware(
 		aile.Recovery(),
 		requestid.Middleware(requestid.Config{
 			Header: "X-Request-ID",
 		}),
 		xlogger.Middleware(logger),
+		compressionService.Middleware(),
 		csrfService.Middleware(),
 		authService.Middleware(),
 	))

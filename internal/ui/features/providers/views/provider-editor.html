@@ -1,7 +1,7 @@
 {{define "provider-editor-panel"}}
 <section
     id="provider-editor"
-    class="box provider-editor"
+    class="box crud-editor"
     _="on htmx:beforeRequest add .is-loading to me end
        on htmx:afterSwap remove .is-loading from me"
 >
@@ -13,13 +13,15 @@
 "provider-form" .}} {{else if eq .EditorMode "detail"}} {{template
 "provider-detail" .}} {{else}} {{template "provider-empty" .}} {{end}} {{end}}
 {{define "provider-editor-response"}} {{template "provider-editor-panel" .}}
-<tbody id="providers-body" hx-swap-oob="outerHTML">
-    {{template "provider-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="providers-body" hx-swap-oob="outerHTML">
+        {{template "provider-list" .}}
+    </tbody>
+</table>
 {{end}} {{define "provider-empty"}}
-<div class="provider-empty-state flow-gap">
+<div class="crud-empty-state flow-gap">
     <h3>Providers panel</h3>
-    <p class="provider-muted">
+    <p class="gavia-muted">
         Select a provider from the list or create a new one.
     </p>
 </div>
@@ -29,7 +31,7 @@
 >
     <h3>{{.Name}}</h3>
     <a
-        class="ok provider-action-control"
+        class="ok <button>"
         href="/providers/{{.Id}}/edit"
         hx-get="/providers/{{.Id}}/edit"
         hx-target="#provider-editor"
@@ -39,7 +41,7 @@
     </a>
 </header>
 
-<dl class="provider-meta table rows">
+<dl class="crud-meta table rows">
     <div>
         <dt>ID</dt>
         <dd><code>{{.Id}}</code></dd>
@@ -52,16 +54,16 @@
             <a href="{{.WebsiteValue}}" target="_blank" rel="noreferrer"
             >{{.WebsiteValue}}</a>
             {{else}}
-            <span class="provider-muted">No website</span>
+            <span class="gavia-muted">No website</span>
             {{end}}
         </dd>
     </div>
 
     <div>
         <dt>Notes</dt>
-        <dd class="provider-note">
+        <dd class="crud-note">
             {{if .Notes}} {{.NotesValue}} {{else}}
-            <span class="provider-muted">No notes</span>
+            <span class="gavia-muted">No notes</span>
             {{end}}
         </dd>
     </div>
@@ -72,7 +74,7 @@
 >
     <button
         type="button"
-        class="bad provider-action-control"
+        class="bad <button>"
         hx-delete="/providers/{{.Id}}"
         hx-target="#provider-editor"
         hx-swap="outerHTML"
@@ -83,7 +85,7 @@
     </button>
 
     <a
-        class="plain provider-action-control"
+        class="plain <button>"
         href="/providers"
         hx-get="/providers"
         hx-target="#provider-editor"
@@ -99,7 +101,7 @@
 </h3>
 
 <form
-    class="provider-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -134,11 +136,11 @@
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok provider-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain provider-action-control"
+            class="plain <button>"
             href="/providers"
             hx-get="/providers"
             hx-target="#provider-editor"

@@ -1,11 +1,11 @@
 {{define "content"}}
-<section class="os-view fullbleed padding-inline">
+<section class="gavia-page fullbleed padding-inline">
     <header
         class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
     >
         <div>
             <h2>{{.Title}}</h2>
-            <p class="os-subtitle">Manage your operating systems here.</p>
+            <p class="gavia-subtitle">Manage your operating systems here.</p>
         </div>
 
         <a
@@ -19,17 +19,17 @@
         </a>
     </header>
 
-    <section class="os-grid flex-switch">
-        <article class="box os-list-box width:100%">
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
             <form
                 id="os-filters"
-                class="tool-bar os-toolbar margin-block-end"
+                class="tool-bar crud-toolbar margin-block-end"
                 method="get"
                 action="/os"
                 role="toolbar"
                 aria-label="Filter os..."
             >
-                <div class="os-field">
+                <div class="crud-field">
                     <label for="os-limit">Show</label>
                     <select
                         id="os-limit"
@@ -59,7 +59,7 @@
                     </select>
                 </div>
 
-                <div class="os-field os-search-field">
+                <div class="crud-field crud-search-field">
                     <label for="os-search">Search</label>
                     <input
                         id="os-search"
@@ -90,7 +90,7 @@
                 aria-live="polite"
             >Updating view...</small>
 
-            <table class="os-table width:100%">
+            <table class="crud-table os-table width:100%">
                 <thead>
                     <tr>
                         <th scope="col">Operating System</th>

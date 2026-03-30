@@ -2,20 +2,20 @@
 <tr id="label-row-{{.ID}}">
     <td data-label="Label"><strong>{{.Name}}</strong></td>
     <td data-label="Notes">
-        {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+        {{if .Notes}}{{.NotesValue}}{{else}}<span class="gavia-muted"
         >No notes</span>{{end}}
     </td>
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 href="/labels/{{.ID}}"
                 hx-get="/labels/{{.ID}}"
                 hx-target="#label-editor"
                 hx-swap="outerHTML"
             >View</a>
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 href="/labels/{{.ID}}/edit"
                 hx-get="/labels/{{.ID}}/edit"
                 hx-target="#label-editor"
@@ -23,7 +23,7 @@
             >Edit</a>
             <button
                 type="button"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 hx-delete="/labels/{{.ID}}"
                 hx-target="#label-editor"
                 hx-swap="outerHTML"

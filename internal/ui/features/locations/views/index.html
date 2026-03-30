@@ -1,11 +1,11 @@
 {{define "content"}}
-<section class="locations-view fullbleed padding-inline">
+<section class="gavia-page fullbleed padding-inline">
     <header
         class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
     >
         <div>
             <h2>{{.Title}}</h2>
-            <p class="location-subtitle">
+            <p class="gavia-subtitle">
                 Manage the location of your assets here.
             </p>
         </div>
@@ -21,17 +21,17 @@
         </a>
     </header>
 
-    <section class="locations-grid flex-switch">
-        <article class="box locations-list-box width:100%">
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
             <form
                 id="locations-filters"
-                class="tool-bar locations-toolbar margin-block-end"
+                class="tool-bar crud-toolbar margin-block-end"
                 method="get"
                 action="/locations"
                 role="toolbar"
                 aria-label="Filter locations"
             >
-                <div class="location-field">
+                <div class="crud-field">
                     <label for="location-limit">Show</label>
                     <select
                         id="location-limit"
@@ -61,7 +61,7 @@
                     </select>
                 </div>
 
-                <div class="location-field location-search-field">
+                <div class="crud-field crud-search-field">
                     <label for="location-search">Search</label>
                     <input
                         id="location-search"
@@ -89,7 +89,7 @@
                 aria-live="polite"
             >Updating view...</small>
 
-            <table class="locations-table width:100%">
+            <table class="crud-table locations-table width:100%">
                 <thead>
                     <tr>
                         <th scope="col">Location</th>

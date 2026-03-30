@@ -3,14 +3,14 @@
     <td data-label="Domain"><strong>{{.Domain}}</strong></td>
     <td data-label="Provider">
         {{if .ProviderName}} {{.ProviderNameValue}} {{else}}
-        <span class="crud-muted">No provider</span>
+        <span class="gavia-muted">No provider</span>
         {{end}}
     </td>
     <td data-label="Billing">
         {{if .DueDate}}
         <div>Due {{.DueDateValue}}</div>
         {{else}}
-        <div class="crud-muted">No due date</div>
+        <div class="gavia-muted">No due date</div>
         {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
@@ -18,7 +18,7 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 title="View"
                 aria-label="View domain {{.Domain}}"
                 href="/domains/{{.ID}}"
@@ -30,7 +30,7 @@
             </a>
 
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 title="Edit"
                 aria-label="Edit domain {{.Domain}}"
                 href="/domains/{{.ID}}/edit"
@@ -44,7 +44,7 @@
             <button
                 type="button"
                 title="Delete"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 aria-label="Delete domain {{.Domain}}"
                 hx-delete="/domains/{{.ID}}"
                 hx-target="#domain-editor"

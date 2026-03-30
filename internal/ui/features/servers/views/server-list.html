@@ -6,7 +6,7 @@
     </td>
     <td data-label="Specs">
         <div>
-            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
+            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="gavia-muted"
             >No OS</span>{{end}}
         </div>
         <div>
@@ -18,12 +18,12 @@
     <td data-label="Provider / Location">
         <div>
             {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No provider</span>{{end}}
         </div>
         <div>
             {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No location</span>{{end}}
         </div>
     </td>
@@ -31,7 +31,7 @@
         {{if .DueDate}}
         <div>Due {{.DueDateValue}}</div>
         {{else}}
-        <div class="crud-muted">No due date</div>
+        <div class="gavia-muted">No due date</div>
         {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
@@ -39,7 +39,7 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 href="/servers/{{.ID}}"
                 hx-get="/servers/{{.ID}}"
                 hx-target="#server-editor"
@@ -48,7 +48,7 @@
                 View
             </a>
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 href="/servers/{{.ID}}/edit"
                 hx-get="/servers/{{.ID}}/edit"
                 hx-target="#server-editor"
@@ -58,7 +58,7 @@
             </a>
             <button
                 type="button"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 hx-delete="/servers/{{.ID}}"
                 hx-target="#server-editor"
                 hx-swap="outerHTML"

@@ -2,7 +2,7 @@
 <tr id="dns-row-{{.ID}}">
     <td data-label="Hostname"><strong>{{.Hostname}}</strong></td>
     <td data-label="Domain">
-        {{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="crud-muted"
+        {{if .DomainName}}{{.DomainNameValue}}{{else}}<span class="gavia-muted"
         >No linked domain</span>{{end}}
     </td>
     <td data-label="Type">{{.Type}}</td>
@@ -10,14 +10,14 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 href="/dns/{{.ID}}"
                 hx-get="/dns/{{.ID}}"
                 hx-target="#dns-editor"
                 hx-swap="outerHTML"
             >View</a>
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 href="/dns/{{.ID}}/edit"
                 hx-get="/dns/{{.ID}}/edit"
                 hx-target="#dns-editor"
@@ -25,7 +25,7 @@
             >Edit</a>
             <button
                 type="button"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 hx-delete="/dns/{{.ID}}"
                 hx-target="#dns-editor"
                 hx-swap="outerHTML"

@@ -175,9 +175,9 @@ func redirectAfterLogin(w http.ResponseWriter, r *http.Request, target string) {
 func loginNotice(r *http.Request) template.HTML {
 	switch r.URL.Query().Get("notice") {
 	case "logged-out":
-		return ui.BannerHTML("auth-alert", "ok", "You have been signed out.")
+		return ui.BoxAlertHTML("auth-alert", "ok", "You have been signed out.")
 	case "imported":
-		return ui.BannerHTML("auth-alert", "ok", "Backup imported. Please sign in again.")
+		return ui.BoxAlertHTML("auth-alert", "ok", "Backup imported. Please sign in again.")
 	default:
 		return ""
 	}

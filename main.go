@@ -258,7 +258,7 @@ func main() {
 	repositories := newRepositories(dbConn)
 	services := newServices(logger, dbConn, repositories)
 	applyUISettings(context.Background(), logger, repositories.appSettings)
-	configureMiddleware(app, logger, services.csrf, services.auth)
+	configureMiddleware(app, logger, services.compression, services.csrf, services.auth)
 
 	uiRoot, err := fs.Sub(UIFS, "internal/ui")
 	if err != nil {

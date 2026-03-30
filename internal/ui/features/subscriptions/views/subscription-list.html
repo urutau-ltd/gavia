@@ -6,14 +6,14 @@
     </td>
     <td data-label="Renewal">
         {{if .RenewalPeriod}} {{.RenewalPeriodValue}} {{else}}
-        <span class="crud-muted">No renewal period</span>
+        <span class="gavia-muted">No renewal period</span>
         {{end}}
     </td>
     <td data-label="Billing">
         {{if .DueDate}}
         <div>Due {{.DueDateValue}}</div>
         {{else}}
-        <div class="crud-muted">No due date</div>
+        <div class="gavia-muted">No due date</div>
         {{end}} {{if .Price}}
         <div>{{.CurrencyValue $.DefaultCurrency}} {{.PriceDisplay}}</div>
         {{end}}
@@ -21,7 +21,7 @@
     <td data-label="Actions">
         <div class="crud-actions">
             <a
-                class="plain block crud-action-control"
+                class="plain <button> iconbutton"
                 href="/subscriptions/{{.ID}}"
                 hx-get="/subscriptions/{{.ID}}"
                 hx-target="#subscription-editor"
@@ -30,7 +30,7 @@
                 View
             </a>
             <a
-                class="ok crud-action-control"
+                class="ok <button> iconbutton"
                 href="/subscriptions/{{.ID}}/edit"
                 hx-get="/subscriptions/{{.ID}}/edit"
                 hx-target="#subscription-editor"
@@ -40,7 +40,7 @@
             </a>
             <button
                 type="button"
-                class="bad crud-action-control"
+                class="bad <button> iconbutton"
                 hx-delete="/subscriptions/{{.ID}}"
                 hx-target="#subscription-editor"
                 hx-swap="outerHTML"

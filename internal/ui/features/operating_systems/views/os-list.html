@@ -2,9 +2,9 @@
 <tr id="os-row-{{.Id}}">
     <td data-label="OperatingSystem"><strong>{{.Name}}</strong></td>
     <td data-label="Actions">
-        <div class="os-actions">
+        <div class="crud-actions">
             <a
-                class="plain block os-action-control"
+                class="plain <button> iconbutton"
                 title="View"
                 aria-label="View operating system {{.Name}}"
                 href="/os/{{.Id}}"
@@ -29,7 +29,7 @@
             </a>
 
             <a
-                class="ok os-action-control"
+                class="ok <button> iconbutton"
                 title="Edit"
                 aria-label="Edit operating system {{.Name}}"
                 href="/os/{{.Id}}/edit"
@@ -55,7 +55,7 @@
             <button
                 type="button"
                 title="Delete"
-                class="bad os-action-control"
+                class="bad <button> iconbutton"
                 aria-label="Delete operating system {{.Name}}"
                 hx-delete="/os/{{.Id}}"
                 hx-target="#os-editor"

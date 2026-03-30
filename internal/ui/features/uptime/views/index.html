@@ -1,9 +1,9 @@
 {{define "content"}}
-<section class="settings-view">
-    <header class="settings-head">
+<section class="gavia-page flow-gap">
+    <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="settings-subtitle">
+            <p class="gavia-subtitle">
                 Lightweight uptime checks for HTTP hosts with explicit monitor
                 settings and recent result history.
             </p>
@@ -15,22 +15,22 @@
 
     {{with .Summary}}
     <section class="dashboard-diagnostics-grid" aria-label="Uptime overview">
-        <article class="dashboard-mini-stat">
+        <article class="gavia-mini-stat">
             <strong>Total monitors</strong>
             <span>{{.Total}}</span>
             <small>Configured checks in this module.</small>
         </article>
-        <article class="dashboard-mini-stat">
+        <article class="gavia-mini-stat">
             <strong>Up</strong>
             <span>{{.Up}}</span>
             <small>Latest known healthy state.</small>
         </article>
-        <article class="dashboard-mini-stat">
+        <article class="gavia-mini-stat">
             <strong>Down</strong>
             <span>{{.Down}}</span>
             <small>Latest known failing state.</small>
         </article>
-        <article class="dashboard-mini-stat">
+        <article class="gavia-mini-stat">
             <strong>Unknown</strong>
             <span>{{.Unknown}}</span>
             <small>Monitors without a recent sample yet.</small>
@@ -38,33 +38,33 @@
     </section>
     {{end}}
 
-    <div class="settings-grid">
-        <article class="box settings-panel">
+    <div class="gavia-grid">
+        <article class="box flow-gap">
             <h3>Monitors</h3>
-            <ul role="list" class="settings-history-list">
+            <ul role="list" class="crowded flow-gap padding:0 margin:0">
                 {{range .Monitors}}
-                <li class="settings-expense-row">
+                <li class="gavia-row">
                     <div>
                         <strong><a href="/uptime/{{.ID}}">{{.Name}}</a></strong>
-                        <div class="settings-muted">{{.TargetURL}}</div>
+                        <div class="gavia-muted">{{.TargetURL}}</div>
                         {{if .StatusMeta}}
-                        <div class="settings-muted">Last check: {{.StatusMeta}}</div>
+                        <div class="gavia-muted">Last check: {{.StatusMeta}}</div>
                         {{end}}
                     </div>
                     <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
                 </li>
                 {{else}}
-                <li class="settings-muted">No uptime monitors have been created yet.</li>
+                <li class="gavia-muted">No uptime monitors have been created yet.</li>
                 {{end}}
             </ul>
         </article>
 
-        <article class="box settings-panel">
+        <article class="box flow-gap">
             <h3>{{if .EditingExisting}}Edit monitor{{else}}New monitor{{end}}</h3>
             <form
                 method="post"
                 action="{{if .EditingExisting}}/uptime/{{.Selected.ID}}/edit{{else}}/uptime{{end}}"
-                class="settings-form"
+                class="flow-gap"
             >
                 {{template "csrf_input" .}}
                 <label for="uptime-name">Name</label>
@@ -132,7 +132,7 @@
             {{if .SelectedStats}}
             <div class="dashboard-diagnostics-grid">
                 {{range .SelectedStats}}
-                <article class="dashboard-mini-stat">
+                <article class="gavia-mini-stat">
                     <strong>{{.Label}}</strong>
                     <span>{{.Value}}</span>
                     <small>{{.Hint}}</small>
@@ -147,24 +147,24 @@
             </form>
 
             <h3>Recent results</h3>
-            <ul role="list" class="settings-history-list">
+            <ul role="list" class="crowded flow-gap padding:0 margin:0">
                 {{range .Results}}
-                <li class="settings-expense-row">
+                <li class="gavia-row">
                     <div>
                         <strong>{{.CheckedAt}}</strong>
                         {{if .Detail}}
-                        <div class="settings-muted">{{.Detail}}</div>
+                        <div class="gavia-muted">{{.Detail}}</div>
                         {{end}}
                     </div>
-                    <div class="settings-expense-actions">
+                    <div class="gavia-actions-stack">
                         <chip class="{{.StatusTone}}">{{.StatusText}}</chip>
                         {{if .Latency}}
-                        <span class="settings-muted">{{.Latency}}</span>
+                        <span class="gavia-muted">{{.Latency}}</span>
                         {{end}}
                     </div>
                 </li>
                 {{else}}
-                <li class="settings-muted">No results have been recorded for this monitor yet.</li>
+                <li class="gavia-muted">No results have been recorded for this monitor yet.</li>
                 {{end}}
             </ul>
             {{end}}
@@ -173,20 +173,20 @@
 
     {{if .EditingExisting}}
     <section class="dashboard-charts" aria-label="Uptime charts">
-        <article class="box settings-panel">
+        <article class="box flow-gap">
             <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Recent availability</h3>
-                <span class="settings-muted">Latest checks for this monitor</span>
+                <span class="gavia-muted">Latest checks for this monitor</span>
             </div>
             <div class="dashboard-chart-frame">
                 <canvas id="uptime-results-chart" class="dashboard-chart-canvas"></canvas>
             </div>
         </article>
 
-        <article class="box settings-panel">
+        <article class="box flow-gap">
             <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
                 <h3>Status split</h3>
-                <span class="settings-muted">Up versus down in the recent sample window</span>
+                <span class="gavia-muted">Up versus down in the recent sample window</span>
             </div>
             <div class="dashboard-chart-frame">
                 <canvas id="uptime-distribution-chart" class="dashboard-chart-canvas"></canvas>

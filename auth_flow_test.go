@@ -140,6 +140,23 @@ func TestSetupLoginLogoutFlow(t *testing.T) {
 		t.Fatalf("expected logout redirect to %q, got %q", "/login?notice=logged-out", got)
 	}
 
+	req = httptest.NewRequest(http.MethodGet, "/login?notice=logged-out", nil)
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("expected login notice page status %d, got %d", http.StatusOK, rec.Code)
+	}
+
+	loginNoticePage := rec.Body.String()
+	if !strings.Contains(loginNoticePage, `class="auth-alert box ok"`) {
+		t.Fatalf("expected logout notice to render as a Missing.css box alert, got %q", loginNoticePage)
+	}
+
+	if strings.Contains(loginNoticePage, "gavia-banner") {
+		t.Fatalf("expected logout notice to stop using gavia-banner markup, got %q", loginNoticePage)
+	}
+
 	loginForm := url.Values{
 		"_csrf":    {setupCSRFToken},
 		"username": {"admin"},

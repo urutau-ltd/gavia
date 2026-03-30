@@ -1,7 +1,7 @@
 {{define "os-editor-panel"}}
 <section
     id="os-editor"
-    class="box os-editor"
+    class="box crud-editor"
     _="on htmx:beforeRequest add .is-loading to me end
        on htmx:afterSwap remove .is-loading from me"
 >
@@ -13,13 +13,15 @@
 .}} {{else if eq .EditorMode "detail"}} {{template "os-detail" .}} {{else}}
 {{template "os-empty" .}} {{end}} {{end}} {{define "os-editor-response"}}
 {{template "os-editor-panel" .}}
-<tbody id="os-body" hx-swap-oob="outerHTML">
-    {{template "os-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="os-body" hx-swap-oob="outerHTML">
+        {{template "os-list" .}}
+    </tbody>
+</table>
 {{end}} {{define "os-empty"}}
-<div class="os-empty-state flow-gap">
+<div class="crud-empty-state flow-gap">
     <h3>Operating systems panel</h3>
-    <p class="os-muted">
+    <p class="gavia-muted">
         Select an operating system from the list or create a new one.
     </p>
 </div>
@@ -29,7 +31,7 @@
 >
     <h3>{{.Name}}</h3>
     <a
-        class="ok os-action-control"
+        class="ok <button>"
         href="/os/{{.Id}}/edit"
         hx-get="/os/{{.Id}}/edit"
         hx-target="#os-editor"
@@ -39,16 +41,16 @@
     </a>
 </header>
 
-<dl class="os-meta table rows">
+<dl class="crud-meta table rows">
     <div>
         <dt>ID</dt>
         <dd><code>{{.Id}}</code></dd>
     </div>
     <div>
         <dt>Notes</dt>
-        <dd class="os-note">
+        <dd class="crud-note">
             {{if .Notes}} {{.NotesValue}} {{else}}
-            <span class="os-muted">No notes</span>
+            <span class="gavia-muted">No notes</span>
             {{end}}
         </dd>
     </div>
@@ -59,7 +61,7 @@
 >
     <button
         type="button"
-        class="bad os-action-control"
+        class="bad <button>"
         hx-delete="/os/{{.Id}}"
         hx-target="#os-editor"
         hx-swap="outerHTML"
@@ -70,7 +72,7 @@
     </button>
 
     <a
-        class="plain os-action-control"
+        class="plain <button>"
         href="/os"
         hx-get="/os"
         hx-target="#os-editor"
@@ -86,7 +88,7 @@
 </h3>
 
 <form
-    class="os-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -112,11 +114,11 @@
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok os-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain os-action-control"
+            class="plain <button>"
             href="/os"
             hx-get="/os"
             hx-target="#os-editor"

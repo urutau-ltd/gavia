@@ -3,18 +3,18 @@
     <td data-label="Location"><strong>{{.Name}}</strong></td>
     <td data-label="City">
         {{- if .City -}} {{.CityValue}} {{- else -}}
-        <span class="location-muted">No city</span>
+        <span class="gavia-muted">No city</span>
         {{- end -}}
     </td>
     <td data-label="Country">
         {{- if .Country -}} {{.CountryValue}} {{- else -}}
-        <span class="location-muted">No country</span>
+        <span class="gavia-muted">No country</span>
         {{- end -}}
     </td>
     <td data-label="Actions">
-        <div class="location-actions">
+        <div class="crud-actions">
             <a
-                class="plain location-action-control"
+                class="plain <button> iconbutton"
                 aria-label="View location {{.Name}}"
                 href="/locations/{{.Id}}"
                 hx-get="/locations/{{.Id}}"
@@ -39,7 +39,7 @@
             </a>
 
             <a
-                class="ok location-action-control"
+                class="ok <button> iconbutton"
                 aria-label="Edit location {{.Name}}"
                 href="/locations/{{.Id}}/edit"
                 hx-get="/locations/{{.Id}}/edit"
@@ -64,7 +64,7 @@
 
             <button
                 type="button"
-                class="bad location-action-control"
+                class="bad <button> iconbutton"
                 aria-label="Delete location {{.Name}}"
                 hx-delete="/locations/{{.Id}}"
                 hx-target="#location-editor"

@@ -1,9 +1,9 @@
 {{define "content"}}
-<section class="settings-view">
-    <header class="settings-head">
+<section class="gavia-page flow-gap">
+    <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="settings-subtitle">
+            <p class="gavia-subtitle">
                 Configure defaults used across the app and manage JSON backup
                 import/export.
             </p>
@@ -17,10 +17,10 @@
     {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
     {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
 
-    <div class="settings-grid">
-        <article class="box settings-panel">
+    <div class="gavia-grid">
+        <article class="box flow-gap">
             {{if .Editing}}
-            <form method="post" action="/app-settings/edit" class="settings-form">
+            <form method="post" action="/app-settings/edit" class="flow-gap">
                 {{template "csrf_input" .}}
                 <label class="crowded flex-row align-items:center">
                     <input
@@ -112,12 +112,12 @@
             </dl>
 
             <h3>Recent expenses</h3>
-            <ul role="list" class="settings-history-list">
+            <ul role="list" class="crowded flow-gap padding:0 margin:0">
                 {{range .Expenses}}
-                <li class="settings-expense-row">
+                <li class="gavia-row">
                     <div>
                         <strong>{{.Title}}</strong>
-                        <div class="settings-muted">
+                        <div class="gavia-muted">
                             {{.Category}} · {{.OccurredOn}}
                             {{if .Notes}} · {{.NotesValue}}{{end}}
                         </div>
@@ -125,15 +125,15 @@
                     <strong>{{.Currency}} {{.AmountDisplay}}</strong>
                 </li>
                 {{else}}
-                <li class="settings-muted">No expenses have been recorded yet.</li>
+                <li class="gavia-muted">No expenses have been recorded yet.</li>
                 {{end}}
             </ul>
             {{end}}
         </article>
 
-        <article class="box settings-panel">
+        <article class="box flow-gap">
             <h3>Export</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Export the supported settings and collection data as JSON. The
                 encrypted variant uses the configured ML-KEM recovery key.
             </p>
@@ -156,7 +156,7 @@
                     Download encrypted JSON
                 </a>
                 {{else}}
-                <p class="settings-muted">
+                <p class="gavia-muted">
                     Configure a recovery key in account settings to enable
                     encrypted export.
                 </p>
@@ -164,7 +164,7 @@
             </div>
 
             <h3>Import</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Import replaces the current supported data snapshot and signs
                 out every active session.
             </p>
@@ -175,7 +175,7 @@
             >
                 Show or hide import precautions
             </button>
-            <article id="import-precautions" class="box settings-inline-panel" hidden>
+            <article id="import-precautions" class="box flow-gap" hidden>
                 <h4>Import precautions</h4>
                 <ul>
                     <li>Imports replace the currently supported snapshot.</li>
@@ -187,7 +187,7 @@
                 </ul>
             </article>
 
-            <form method="post" action="/app-settings/import" class="settings-form">
+            <form method="post" action="/app-settings/import" class="flow-gap">
                 {{template "csrf_input" .}}
                 <label for="import-file">Backup file</label>
                 <input
@@ -195,7 +195,7 @@
                     type="file"
                     accept=".json,application/json"
                 >
-                <p id="import-file-status" class="settings-muted" aria-live="polite">
+                <p id="import-file-status" class="gavia-muted" aria-live="polite">
                     Choose a JSON backup file to load it into the text area below.
                 </p>
 
@@ -220,12 +220,12 @@
             </form>
 
             <h3>Expense entries</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Add manual expenses so the dashboard shows a real recent
                 history instead of free-form notes.
             </p>
 
-            <form method="post" action="/app-settings/expenses" class="settings-form">
+            <form method="post" action="/app-settings/expenses" class="flow-gap">
                 {{template "csrf_input" .}}
                 <label for="expense-title">Title</label>
                 <input
@@ -284,18 +284,18 @@
                 <button type="submit" class="ok <button>">Add expense</button>
             </form>
 
-            <ul role="list" class="settings-history-list">
+            <ul role="list" class="crowded flow-gap padding:0 margin:0">
                 {{range .Expenses}}
-                <li class="settings-expense-row">
+                <li class="gavia-row">
                     <div>
                         <strong>{{.Title}}</strong>
-                        <div class="settings-muted">
+                        <div class="gavia-muted">
                             {{.Category}} · {{.OccurredOn}}
                             {{if .Notes}} · {{.NotesValue}}{{end}}
                         </div>
                     </div>
 
-                    <div class="settings-expense-actions">
+                    <div class="gavia-actions-stack">
                         <strong>{{.Currency}} {{.AmountDisplay}}</strong>
                         <form method="post" action="/app-settings/expenses/{{.ID}}/delete">
                             {{template "csrf_input" $}}
@@ -304,7 +304,7 @@
                     </div>
                 </li>
                 {{else}}
-                <li class="settings-muted">No expenses have been recorded yet.</li>
+                <li class="gavia-muted">No expenses have been recorded yet.</li>
                 {{end}}
             </ul>
         </article>

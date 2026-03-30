@@ -1,9 +1,9 @@
 {{define "content"}}
-<section class="licenses-view fullbleed padding">
-    <header class="settings-head">
+<section class="gavia-page fullbleed padding flow-gap">
+    <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="settings-subtitle">
+            <p class="gavia-subtitle">
                 This page serves it's purpose as an attibution list for the
                 code, images, tools and other artifacts used in this project.
                 <br />
@@ -15,13 +15,13 @@
     </header>
 
     <div class="container">
-        <article class="box licenses-panel">
+        <article class="box flow-gap">
             <p class="bold big">GAVIA</p>
             <div class="licenses-logo-slot">
                 <img class="gavia-logo" src="/static/img/logo.png" />
             </div>
 
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Gavia. Copyright 2026 - Urutaú Limited (Urutau LTD). Some rights
                 reserved.
                 <br />
@@ -35,19 +35,19 @@
             </p>
         </article>
 
-        <article class="box licenses-panel">
+        <article class="box flow-gap">
             <h3>Third-party software</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Gavia is possible thanks to these wonderful software sources:
             </p>
 
-            <div class="licenses-stack">
-                <section class="licenses-card">
+            <div class="licenses-stack flow-gap">
+                <section class="box flow-gap">
                     <div class="licenses-logo-slot">
                         <img class="htmx-logo" src="/static/img/htmx-logo.png">
                     </div>
                     <h4>HTMX - High Power Tools for HTML</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Copyright <a href="https://github.com/bigskysoftware"
                         >Big Sky Software</a> | Zero-Clause BSD | <a
                             href="https://github.com/bigskysoftware/htmx"
@@ -55,7 +55,7 @@
                     </p>
                 </section>
 
-                <section class="licenses-card">
+                <section class="box flow-gap">
                     <div class="licenses-logo-slot">
                         <img
                             class="hs-logo"
@@ -63,7 +63,7 @@
                         >
                     </div>
                     <h4>HyperScript</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Copyright <a href="https://github.com/bigskysoftware"
                         >Big Sky Software</a> | Zero-Clause BSD | <a
                             href="https://github.com/bigskysoftware/hyperscript"
@@ -71,12 +71,12 @@
                     </p>
                 </section>
 
-                <section class="licenses-card">
+                <section class="box flow-gap">
                     <div class="licenses-logo-slot">
                         <img src="/static/img/missing-logo.svg">
                     </div>
                     <h4>Missing CSS</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Copyright <a href="https://github.com/bigskysoftware"
                         >Big Sky Software</a> | BSD-2-Clause | <a
                             href="https://github.com/bigskysoftware/missing"
@@ -84,7 +84,7 @@
                     </p>
                 </section>
 
-                <section class="licenses-card">
+                <section class="box flow-gap">
                     <div class="licenses-logo-slot">
                         <img
                             src="/static/img/chartjs-logo.svg"
@@ -92,7 +92,7 @@
                         >
                     </div>
                     <h4>ChartJS</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Copyright ChartJS (Many contributors) | MIT |
                         <a href="https://github.com/chartjs/Chart.js">
                             Upstream repository
@@ -100,10 +100,10 @@
                     </p>
                 </section>
 
-                <section class="licenses-card">
+                <section class="box flow-gap">
                     <div class="licenses-logo-slot">Dependency logo</div>
                     <h4>Dependency name</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Duplicate or remove these cards as needed.
                     </p>
                 </section>
@@ -112,49 +112,49 @@
     </div>
 
     <div class="licenses-grid">
-        <article class="box licenses-panel">
+        <article class="box flow-gap">
             <h3>Images and media</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Put logos, screenshots, badges, fonts, or illustrations used by
                 the project here.
             </p>
 
-            <div class="licenses-media-grid">
-                <figure class="licenses-media-card">
+            <div class="licenses-media-grid flow-gap">
+                <figure class="box flow-gap">
                     <div class="licenses-logo-slot">Image placeholder</div>
-                    <figcaption class="settings-muted">
+                    <figcaption class="gavia-muted">
                         Source, author, license, and usage notes.
                     </figcaption>
                 </figure>
 
-                <figure class="licenses-media-card">
+                <figure class="box flow-gap">
                     <div class="licenses-logo-slot">Image placeholder</div>
-                    <figcaption class="settings-muted">
+                    <figcaption class="gavia-muted">
                         Source, author, license, and usage notes.
                     </figcaption>
                 </figure>
             </div>
         </article>
 
-        <article class="box licenses-panel">
+        <article class="box flow-gap">
             <h3>Full license texts or links</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Keep this section for the final license summaries, excerpts, or
                 links to complete texts.
             </p>
 
-            <div class="licenses-stack">
-                <section class="licenses-card">
+            <div class="licenses-stack flow-gap">
+                <section class="box flow-gap">
                     <h4>License title</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         Add your final wording here, or replace this block with
                         links and long-form legal text.
                     </p>
                 </section>
 
-                <section class="licenses-card">
+                <section class="box flow-gap">
                     <h4>License title</h4>
-                    <p class="settings-muted">
+                    <p class="gavia-muted">
                         This template is intentionally generic so you can
                         rewrite it without touching handlers.
                     </p>

@@ -12,11 +12,13 @@
 if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
 "dns-empty" .}}{{end}} {{end}} {{define "dns-editor-response"}} {{template
 "dns-editor-panel" .}}
-<tbody id="dns-body" hx-swap-oob="outerHTML">{{template "dns-list" .}}</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="dns-body" hx-swap-oob="outerHTML">{{template "dns-list" .}}</tbody>
+</table>
 {{end}} {{define "dns-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>DNS records panel</h3>
-    <p class="crud-muted">
+    <p class="gavia-muted">
         Select a DNS record from the list or create a new one.
     </p>
 </div>
@@ -26,7 +28,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
 >
     <h3>{{.Hostname}}</h3>
     <a
-        class="ok crud-action-control"
+        class="ok <button>"
         href="/dns/{{.ID}}/edit"
         hx-get="/dns/{{.ID}}/edit"
         hx-target="#dns-editor"
@@ -46,7 +48,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
         <dt>Domain</dt>
         <dd>
             {{if .DomainName}}{{.DomainNameValue}}{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No linked domain</span>{{end}}
         </dd>
     </div>
@@ -57,7 +59,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
     <div>
         <dt>Notes</dt>
         <dd class="crud-note">
-            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="gavia-muted"
             >No notes</span>{{end}}
         </dd>
     </div>
@@ -67,7 +69,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
 >
     <button
         type="button"
-        class="bad crud-action-control"
+        class="bad <button>"
         hx-delete="/dns/{{.ID}}"
         hx-target="#dns-editor"
         hx-swap="outerHTML"
@@ -77,7 +79,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
         Delete
     </button>
     <a
-        class="plain crud-action-control"
+        class="plain <button>"
         href="/dns"
         hx-get="/dns"
         hx-target="#dns-editor"
@@ -89,7 +91,7 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
     {{if eq .EditorMode "edit"}}Edit DNS record{{else}}New DNS record{{end}}
 </h3>
 <form
-    class="crud-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -153,11 +155,11 @@ if eq .EditorMode "detail"}}{{template "dns-detail" .}}{{else}}{{template
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok crud-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain crud-action-control"
+            class="plain <button>"
             href="/dns"
             hx-get="/dns"
             hx-target="#dns-editor"

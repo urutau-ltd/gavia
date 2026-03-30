@@ -1,11 +1,11 @@
 {{define "content"}}
-<section class="providers-view fullbleed padding-inline">
+<section class="gavia-page fullbleed padding-inline">
     <header
         class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end"
     >
         <div>
             <h2>{{.Title}}</h2>
-            <p class="provider-subtitle">Manage your service providers here.</p>
+            <p class="gavia-subtitle">Manage your service providers here.</p>
         </div>
 
         <a
@@ -19,17 +19,17 @@
         </a>
     </header>
 
-    <section class="providers-grid flex-switch">
-        <article class="box providers-list-box width:100%">
+    <section class="crud-grid flex-switch">
+        <article class="box crud-list-box width:100%">
             <form
                 id="providers-filters"
-                class="tool-bar providers-toolbar margin-block-end"
+                class="tool-bar crud-toolbar margin-block-end"
                 method="get"
                 action="/providers"
                 role="toolbar"
                 aria-label="Filter providers..."
             >
-                <div class="provider-field">
+                <div class="crud-field">
                     <label for="provider-limit">Show</label>
                     <select
                         id="provider-limit"
@@ -59,7 +59,7 @@
                     </select>
                 </div>
 
-                <div class="provider-field provider-search-field">
+                <div class="crud-field crud-search-field">
                     <label for="provider-search">Search</label>
                     <input
                         id="provider-search"
@@ -90,7 +90,7 @@
                 aria-live="polite"
             >Updating view...</small>
 
-            <table class="providers-table width:100%">
+            <table class="crud-table providers-table width:100%">
                 <thead>
                     <tr>
                         <th scope="col">Provider</th>

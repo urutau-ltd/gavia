@@ -1,9 +1,9 @@
 {{define "content"}}
-<section class="settings-view">
-    <header class="settings-head">
+<section class="gavia-page flow-gap">
+    <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
         <div>
             <h2>{{.Title}}</h2>
-            <p class="settings-subtitle">
+            <p class="gavia-subtitle">
                 {{if .SetupMode}} Create the local administrator account used to
                 access the app. {{else}} Update the administrator identity,
                 rotate secrets, and keep the recovery key safe. {{end}}
@@ -17,28 +17,28 @@
 
     {{if .NoticeHTML}}{{.NoticeHTML}}{{end}} {{if
     .ErrorHTML}}{{.ErrorHTML}}{{end}} {{if .GeneratedAPIToken}}
-    <article class="box settings-secret-box">
+    <article class="box flow-gap">
         <h3>New API token</h3>
-        <p class="settings-muted">
+        <p class="gavia-muted">
             Copy this token now. Only the hash is stored in the database.
         </p>
         <pre class="settings-code">{{.GeneratedAPIToken}}</pre>
     </article>
     {{end}} {{if .GeneratedRecoveryKey}}
-    <article class="box settings-secret-box">
+    <article class="box flow-gap">
         <h3>Recovery key</h3>
-        <p class="settings-muted">
+        <p class="gavia-muted">
             Save this key outside the app. It is required for password recovery
             and encrypted backups.
         </p>
         <pre class="settings-code">{{.GeneratedRecoveryKey}}</pre>
     </article>
     {{end}} {{if .Editing}}
-    <article class="box settings-panel">
+    <article class="box flow-gap">
         <form
             method="post"
             action="/account-settings/edit"
-            class="settings-form"
+            class="flow-gap"
             hx-boost="false"
         >
             {{template "csrf_input" .}}
@@ -80,7 +80,7 @@
                 minlength="8"
                 autocomplete="{{if .SetupMode}}new-password{{else}}new-password{{end}}"
             >
-            <small class="settings-muted">Use at least 8 characters.</small>
+            <small class="gavia-muted">Use at least 8 characters.</small>
 
             <label for="account-password-confirm">
                 {{if .SetupMode}}Confirm password{{else}}Confirm new
@@ -105,7 +105,7 @@
                 >
                 <span>Generate a new API token</span>
             </label>
-            <p id="api-token-warning" class="settings-inline-note warn" hidden>
+            <p id="api-token-warning" class="box warn" hidden>
                 Generating a new token invalidates the previous one. The new
                 value is shown only once after saving.
             </p>
@@ -121,7 +121,7 @@
             </label>
             <p
                 id="recovery-key-warning"
-                class="settings-inline-note warn"
+                class="box warn"
                 hidden
             >
                 Rotating the recovery key invalidates the previous recovery
@@ -139,10 +139,10 @@
         </form>
     </article>
     {{else}} {{with .Account}}
-    <div class="settings-grid">
-        <article class="box settings-panel">
+    <div class="gavia-grid">
+        <article class="box flow-gap">
             <h3>Profile</h3>
-            <div class="settings-profile">
+            <div class="crowded flex-row flex-wrap:wrap align-items:start">
                 <img class="settings-avatar" src="{{.AvatarPath}}" alt="">
                 <dl class="settings-summary table rows">
                     <div>
@@ -171,21 +171,21 @@
             </div>
         </article>
 
-        <article class="box settings-panel">
+        <article class="box flow-gap">
             <h3>Recovery notes</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Password recovery does not use email. Keep the generated
                 recovery key outside the app and use the recovery form on the
                 login page if the password is lost.
             </p>
 
             <h3>API token usage</h3>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 The API token can authenticate backup requests with
                 <code>Authorization: Bearer &lt;token&gt;</code> or
                 <code>X-API-Token</code>.
             </p>
-            <p class="settings-muted">
+            <p class="gavia-muted">
                 Export: <code>GET /api/v1/backup/export</code><br>
                 Import: <code>POST /api/v1/backup/import</code><br>
                 Summary: <code>GET /api/v1/dashboard/summary</code>

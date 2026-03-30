@@ -13,13 +13,15 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
 "edit"}} {{template "server-form" .}} {{else if eq .EditorMode "detail"}}
 {{template "server-detail" .}} {{else}} {{template "server-empty" .}} {{end}}
 {{end}} {{define "server-editor-response"}} {{template "server-editor-panel" .}}
-<tbody id="servers-body" hx-swap-oob="outerHTML">
-    {{template "server-list" .}}
-</tbody>
+<table hidden aria-hidden="true">
+    <tbody id="servers-body" hx-swap-oob="outerHTML">
+        {{template "server-list" .}}
+    </tbody>
+</table>
 {{end}} {{define "server-empty"}}
 <div class="crud-empty-state flow-gap">
     <h3>Servers panel</h3>
-    <p class="crud-muted">
+    <p class="gavia-muted">
         Select a server from the list or create a new one.
     </p>
 </div>
@@ -29,7 +31,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
 >
     <h3>{{.Hostname}}</h3>
     <a
-        class="ok crud-action-control"
+        class="ok <button>"
         href="/servers/{{.ID}}/edit"
         hx-get="/servers/{{.ID}}/edit"
         hx-target="#server-editor"
@@ -53,7 +55,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div>
         <dt>Operating system</dt>
         <dd>
-            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="crud-muted"
+            {{if .OSName}}{{.OSNameValue}}{{else}}<span class="gavia-muted"
             >No OS</span>{{end}}
         </dd>
     </div>
@@ -62,7 +64,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
         <dt>Provider</dt>
         <dd>
             {{if .ProviderName}}{{.ProviderNameValue}}{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No provider</span>{{end}}
         </dd>
     </div>
@@ -71,7 +73,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
         <dt>Location</dt>
         <dd>
             {{if .LocationName}}{{.LocationNameValue}}{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No location</span>{{end}}
         </dd>
     </div>
@@ -80,7 +82,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
         <dt>CPU</dt>
         <dd>
             {{if .CPUCores}}{{.CPUCoresValue}} cores{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No CPU info</span>{{end}}
         </dd>
     </div>
@@ -89,7 +91,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
         <dt>Memory</dt>
         <dd>
             {{if .MemoryGB}}{{.MemoryGBValue}} GB{{else}}<span
-                class="crud-muted"
+                class="gavia-muted"
             >No memory info</span>{{end}}
         </dd>
     </div>
@@ -97,7 +99,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div>
         <dt>Disk</dt>
         <dd>
-            {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="crud-muted"
+            {{if .DiskGB}}{{.DiskGBValue}} GB{{else}}<span class="gavia-muted"
             >No disk info</span>{{end}}
         </dd>
     </div>
@@ -105,7 +107,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div>
         <dt>Since date</dt>
         <dd>
-            {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="crud-muted"
+            {{if .SinceDate}}{{.SinceDateValue}}{{else}}<span class="gavia-muted"
             >No since date</span>{{end}}
         </dd>
     </div>
@@ -113,7 +115,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div>
         <dt>Due date</dt>
         <dd>
-            {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="crud-muted"
+            {{if .DueDate}}{{.DueDateValue}}{{else}}<span class="gavia-muted"
             >No due date</span>{{end}}
         </dd>
     </div>
@@ -122,7 +124,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
         <dt>Price</dt>
         <dd>
             {{if .Price}}{{.CurrencyValue $.DefaultCurrency}}
-            {{.PriceDisplay}}{{else}}<span class="crud-muted"
+            {{.PriceDisplay}}{{else}}<span class="gavia-muted"
             >No price</span>{{end}}
         </dd>
     </div>
@@ -140,7 +142,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
                 {{end}}
             </ul>
             {{else}}
-            <span class="crud-muted">No IP addresses assigned</span>
+            <span class="gavia-muted">No IP addresses assigned</span>
             {{end}}
         </dd>
     </div>
@@ -158,7 +160,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
                 {{end}}
             </ul>
             {{else}}
-            <span class="crud-muted">No labels assigned</span>
+            <span class="gavia-muted">No labels assigned</span>
             {{end}}
         </dd>
     </div>
@@ -166,7 +168,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div>
         <dt>Notes</dt>
         <dd class="crud-note">
-            {{if .Notes}}{{.NotesValue}}{{else}}<span class="crud-muted"
+            {{if .Notes}}{{.NotesValue}}{{else}}<span class="gavia-muted"
             >No notes</span>{{end}}
         </dd>
     </div>
@@ -177,7 +179,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
 >
     <button
         type="button"
-        class="bad crud-action-control"
+        class="bad <button>"
         hx-delete="/servers/{{.ID}}"
         hx-target="#server-editor"
         hx-swap="outerHTML"
@@ -188,7 +190,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     </button>
 
     <a
-        class="plain crud-action-control"
+        class="plain <button>"
         href="/servers"
         hx-get="/servers"
         hx-target="#server-editor"
@@ -201,7 +203,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
 <h3>{{if eq .EditorMode "edit"}}Edit server{{else}}New server{{end}}</h3>
 
 <form
-    class="crud-form"
+    class="flow-gap"
     method="post"
     action="{{.FormAction}}"
     hx-post="{{.FormAction}}"
@@ -365,7 +367,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
             {{end}}
         </div>
         {{else}}
-        <p class="crud-muted">
+        <p class="gavia-muted">
             Create IP addresses first if you want to assign them here.
         </p>
         {{end}}
@@ -393,7 +395,7 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
             {{end}}
         </div>
         {{else}}
-        <p class="crud-muted">
+        <p class="gavia-muted">
             Create labels first if you want to assign them here.
         </p>
         {{end}}
@@ -406,11 +408,11 @@ eq .EditorMode "new"}} {{template "server-form" .}} {{else if eq .EditorMode
     <div
         class="crowded flex-row flex-wrap:wrap align-items:center margin-block-start"
     >
-        <button type="submit" class="ok crud-action-control">
+        <button type="submit" class="ok <button>">
             {{.FormSubmit}}
         </button>
         <a
-            class="plain crud-action-control"
+            class="plain <button>"
             href="/servers"
             hx-get="/servers"
             hx-target="#server-editor"
