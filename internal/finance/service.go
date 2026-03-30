@@ -16,6 +16,7 @@ import (
 type ServiceConfig struct {
 	Client             *http.Client
 	Interval           time.Duration
+	Retention          time.Duration
 	FrankfurterBaseURL string
 	CoinGeckoBaseURL   string
 }
@@ -25,6 +26,7 @@ type Service struct {
 	repo               *exchangerate.Repository
 	client             *http.Client
 	interval           time.Duration
+	retention          time.Duration
 	frankfurterBaseURL string
 	coinGeckoBaseURL   string
 }
@@ -38,6 +40,11 @@ func NewService(logger *slog.Logger, repo *exchangerate.Repository, cfg ServiceC
 	interval := cfg.Interval
 	if interval <= 0 {
 		interval = 30 * time.Minute
+	}
+
+	retention := cfg.Retention
+	if retention <= 0 {
+		retention = 365 * 24 * time.Hour
 	}
 
 	frankfurterBaseURL := strings.TrimRight(cfg.FrankfurterBaseURL, "/")
@@ -55,6 +62,7 @@ func NewService(logger *slog.Logger, repo *exchangerate.Repository, cfg ServiceC
 		repo:               repo,
 		client:             client,
 		interval:           interval,
+		retention:          retention,
 		frankfurterBaseURL: frankfurterBaseURL,
 		coinGeckoBaseURL:   coinGeckoBaseURL,
 	}
@@ -93,6 +101,12 @@ func (s *Service) Refresh(ctx context.Context) error {
 		errs = append(errs, err)
 	} else if err := s.repo.Create(ctx, sample); err != nil {
 		errs = append(errs, err)
+	}
+
+	if s.retention > 0 {
+		if err := s.repo.PruneOlderThan(ctx, time.Now().UTC().Add(-s.retention)); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	return errors.Join(errs...)

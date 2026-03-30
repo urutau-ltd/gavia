@@ -493,6 +493,14 @@ func (r *Repository) GetSummary(ctx context.Context) (*Summary, error) {
 	return summary, nil
 }
 
+func (r *Repository) PruneResultsOlderThan(ctx context.Context, cutoff time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM uptime_monitor_results
+		WHERE checked_at < ?
+	`, cutoff.UTC())
+	return err
+}
+
 func scanMonitor(scanner interface{ Scan(dest ...any) error }) (*Monitor, error) {
 	item := &Monitor{}
 	var (

@@ -140,3 +140,11 @@ func (r *Repository) GetRecent(ctx context.Context, limit int) ([]*Sample, error
 
 	return samples, rows.Err()
 }
+
+func (r *Repository) PruneOlderThan(ctx context.Context, cutoff time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM runtime_samples
+		WHERE observed_at < ?
+	`, cutoff.UTC())
+	return err
+}

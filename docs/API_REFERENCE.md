@@ -124,14 +124,19 @@ These are mounted through Aile `x/resource`.
 
 #### App settings
 
-| Route                                | Method        |
-| ------------------------------------ | ------------- |
-| `/app-settings`                      | `GET`         |
-| `/app-settings/edit`                 | `GET`, `POST` |
-| `/app-settings/export`               | `GET`         |
-| `/app-settings/import`               | `POST`        |
-| `/app-settings/expenses`             | `POST`        |
-| `/app-settings/expenses/{id}/delete` | `POST`        |
+| Route                  | Method        |
+| ---------------------- | ------------- |
+| `/app-settings`        | `GET`         |
+| `/app-settings/edit`   | `GET`, `POST` |
+| `/app-settings/export` | `GET`         |
+| `/app-settings/import` | `POST`        |
+
+#### Ledger
+
+| Route                  | Method        |
+| ---------------------- | ------------- |
+| `/ledger`              | `GET`, `POST` |
+| `/ledger/{id}/delete`  | `POST`        |
 
 ### Uptime module
 

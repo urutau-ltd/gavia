@@ -218,6 +218,36 @@ func TestSeedReferenceDataIsIdempotentAndSettingsAreSingleton(t *testing.T) {
 	}
 }
 
+func TestSeedReferenceDataDoesNotRepopulateDeletedReferenceRows(t *testing.T) {
+	db := openTestDB(t)
+	logger := testLogger()
+
+	if err := RunMigrations(db, logger); err != nil {
+		t.Fatalf("RunMigrations returned error: %v", err)
+	}
+
+	if err := SeedReferenceData(db); err != nil {
+		t.Fatalf("SeedReferenceData returned error: %v", err)
+	}
+
+	if _, err := db.Exec(`DELETE FROM providers WHERE name = 'GoDaddy'`); err != nil {
+		t.Fatalf("could not delete seeded provider: %v", err)
+	}
+
+	if err := SeedReferenceData(db); err != nil {
+		t.Fatalf("SeedReferenceData second run returned error: %v", err)
+	}
+
+	var exists bool
+	if err := db.QueryRow(`SELECT EXISTS(SELECT 1 FROM providers WHERE name = 'GoDaddy')`).Scan(&exists); err != nil {
+		t.Fatalf("could not verify deleted provider state: %v", err)
+	}
+
+	if exists {
+		t.Fatal("expected deleted seeded provider to stay deleted on later startups")
+	}
+}
+
 func TestRunMigrationsFailsForLegacyMultipleAppSettingsRows(t *testing.T) {
 	db := openTestDB(t)
 	logger := testLogger()

@@ -34,12 +34,27 @@ func Client(dbPath string) (*sql.DB, error) {
 	return client, initErr
 }
 
+func ConfigurePool(db *sql.DB) {
+	if db == nil {
+		return
+	}
+
+	// Keep SQLite on a single long-lived physical connection so PRAGMAs stay
+	// consistent and we avoid multiplying page-cache memory across pooled conns.
+	db.SetMaxOpenConns(1)
+	db.SetMaxIdleConns(1)
+	db.SetConnMaxLifetime(0)
+	db.SetConnMaxIdleTime(0)
+}
+
 func SetPragmas(db *sql.DB) error {
 	const q = `
 PRAGMA foreign_keys = ON;
+PRAGMA busy_timeout = 5000;
 PRAGMA synchronous = NORMAL;
 PRAGMA journal_mode = 'WAL';
-PRAGMA cache_size = -64000;`
+PRAGMA wal_autocheckpoint = 1000;
+PRAGMA cache_size = -16384;`
 
 	_, err := db.Exec(q)
 	if err != nil {

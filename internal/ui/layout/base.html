@@ -17,7 +17,7 @@
     </head>
     <body class="sidebar-layout" hx-boost="true" {{if .CSRFToken}}hx-headers='{"X-CSRF-Token":"{{.CSRFToken}}"}'{{end}}>
         <header>
-            <img height="96px" width="96px" src="/static/img/logo.png">
+            <img class="gavia-logo" src="/static/img/logo.png">
             <div class="<h1>">Gavia</div>
             <nav>
                 <ul role="list">
@@ -96,6 +96,11 @@
                                 {{if eq .Section "subscriptions"}}<strong>{{end}}
                                     <a href="/subscriptions" {{if eq .Section "subscriptions"}}class="&lt;button&gt;" aria-current="page"{{end}}>Subscriptions</a>
                                 {{if eq .Section "subscriptions"}}</strong>{{end}}
+                            </li>
+                            <li>
+                                {{if eq .Section "ledger"}}<strong>{{end}}
+                                    <a href="/ledger" {{if eq .Section "ledger"}}class="&lt;button&gt;" aria-current="page"{{end}}>Ledger</a>
+                                {{if eq .Section "ledger"}}</strong>{{end}}
                             </li>
                             <li>
                                 {{if eq .Section "uptime"}}<strong>{{end}}

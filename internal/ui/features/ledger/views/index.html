@@ -1,0 +1,198 @@
+{{define "content"}}
+<section class="gavia-page flow-gap">
+    <header class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:end">
+        <div>
+            <h2>{{.Title}}</h2>
+            <p class="gavia-subtitle">
+                Track expenses, income, refunds, and transfers in a dedicated
+                internal ledger.
+            </p>
+        </div>
+
+        <div class="crowded flex-row flex-wrap:wrap align-items:center">
+            <a class="plain <button>" href="/dashboard">Open dashboard</a>
+            <a class="plain <button>" href="/app-settings">Open app settings</a>
+        </div>
+    </header>
+
+    {{if .NoticeHTML}}{{.NoticeHTML}}{{end}}
+    {{if .ErrorHTML}}{{.ErrorHTML}}{{end}}
+
+    <div class="gavia-grid">
+        <article class="box flow-gap">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                <h3>Add ledger entry</h3>
+                <span class="gavia-muted">Default currency: {{.Settings.DefaultCurrency}}</span>
+            </div>
+            <p class="gavia-muted">
+                Use this for infrastructure bills, household costs, refunds,
+                incoming payments, and transfers between your own accounts.
+            </p>
+
+            <form method="post" action="/ledger" class="flow-gap">
+                {{template "csrf_input" .}}
+                <label for="expense-title">Title</label>
+                <input
+                    id="expense-title"
+                    name="title"
+                    type="text"
+                    required
+                    value="{{.ExpenseForm.Title}}"
+                >
+
+                <label for="expense-entry-type">Entry type</label>
+                <select id="expense-entry-type" name="entry_type">
+                    <option value="expense" {{if eq .ExpenseForm.EntryType "expense"}}selected{{end}}>Expense</option>
+                    <option value="income" {{if eq .ExpenseForm.EntryType "income"}}selected{{end}}>Income</option>
+                    <option value="transfer" {{if eq .ExpenseForm.EntryType "transfer"}}selected{{end}}>Transfer</option>
+                    <option value="refund" {{if eq .ExpenseForm.EntryType "refund"}}selected{{end}}>Refund</option>
+                </select>
+
+                <label for="expense-account-name">Account, wallet, or cash box</label>
+                <input
+                    id="expense-account-name"
+                    name="account_name"
+                    type="text"
+                    required
+                    value="{{.ExpenseForm.AccountName}}"
+                >
+
+                <label for="expense-category">Category</label>
+                <input
+                    id="expense-category"
+                    name="category"
+                    type="text"
+                    value="{{.ExpenseForm.Category}}"
+                >
+
+                <label for="expense-counterparty">Counterparty or destination</label>
+                <input
+                    id="expense-counterparty"
+                    name="counterparty"
+                    type="text"
+                    value="{{.ExpenseForm.Counterparty}}"
+                >
+
+                <label for="expense-scope">Scope</label>
+                <select id="expense-scope" name="scope">
+                    <option value="infrastructure" {{if eq .ExpenseForm.Scope "infrastructure"}}selected{{end}}>Infrastructure</option>
+                    <option value="household" {{if eq .ExpenseForm.Scope "household"}}selected{{end}}>Household</option>
+                    <option value="office" {{if eq .ExpenseForm.Scope "office"}}selected{{end}}>Office</option>
+                    <option value="personal" {{if eq .ExpenseForm.Scope "personal"}}selected{{end}}>Personal</option>
+                    <option value="other" {{if eq .ExpenseForm.Scope "other"}}selected{{end}}>Other</option>
+                </select>
+
+                <label for="expense-amount">Amount</label>
+                <input
+                    id="expense-amount"
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    required
+                    value="{{.ExpenseForm.Amount}}"
+                >
+
+                <label for="expense-currency">Currency</label>
+                <input
+                    id="expense-currency"
+                    name="currency"
+                    type="text"
+                    maxlength="8"
+                    required
+                    value="{{.ExpenseForm.Currency}}"
+                >
+
+                <label for="expense-occurred-on">Occurred on</label>
+                <input
+                    id="expense-occurred-on"
+                    name="occurred_on"
+                    type="date"
+                    required
+                    value="{{.ExpenseForm.OccurredOn}}"
+                >
+
+                <label for="expense-due-on">Due on</label>
+                <input
+                    id="expense-due-on"
+                    name="due_on"
+                    type="date"
+                    value="{{.ExpenseForm.DueOn}}"
+                >
+
+                <label for="expense-paid-on">Paid on</label>
+                <input
+                    id="expense-paid-on"
+                    name="paid_on"
+                    type="date"
+                    value="{{.ExpenseForm.PaidOn}}"
+                >
+
+                <label for="expense-payment-method">Payment method</label>
+                <input
+                    id="expense-payment-method"
+                    name="payment_method"
+                    type="text"
+                    value="{{.ExpenseForm.PaymentMethod}}"
+                >
+
+                <label for="expense-notes">Notes</label>
+                <textarea
+                    id="expense-notes"
+                    name="notes"
+                    rows="4"
+                >{{.ExpenseForm.Notes}}</textarea>
+
+                <button type="submit" class="ok <button>">Add entry</button>
+            </form>
+        </article>
+
+        <article class="box flow-gap">
+            <div class="crowded flex-row flex-wrap:wrap justify-content:space-between align-items:start">
+                <h3>Ledger history</h3>
+                <span class="gavia-muted">{{len .Expenses}} visible entries</span>
+            </div>
+
+            {{if .ExpenseStats}}
+            <section class="dashboard-diagnostics-grid" aria-label="Ledger overview">
+                {{range .ExpenseStats}}
+                <article class="gavia-mini-stat">
+                    <strong>{{.Label}}</strong>
+                    <span>{{.Value}}</span>
+                    <small>{{.Hint}}</small>
+                </article>
+                {{end}}
+            </section>
+            {{end}}
+
+            <ul role="list" class="crowded flow-gap padding:0 margin:0">
+                {{range .Expenses}}
+                <li class="gavia-row">
+                    <div>
+                        <strong>{{.Title}}</strong>
+                        <div class="gavia-muted">
+                            {{.EntryTypeValue}} · {{.ScopeValue}} · {{.AccountNameValue}} · {{.Category}} · {{.OccurredOn}}
+                            {{if .Counterparty}} · {{.CounterpartyValue}}{{end}}
+                            {{if .DueOn}} · due {{.DueOnValue}}{{end}}
+                            {{if .PaidOn}} · paid {{.PaidOnValue}}{{end}}
+                            {{if .PaymentMethod}} · {{.PaymentMethodValue}}{{end}}
+                            {{if .Notes}} · {{.NotesValue}}{{end}}
+                        </div>
+                    </div>
+
+                    <div class="gavia-actions-stack">
+                        <strong>{{.Currency}} {{.AmountDisplay}}</strong>
+                        <form method="post" action="/ledger/{{.ID}}/delete">
+                            {{template "csrf_input" $}}
+                            <button type="submit" class="bad <button>">Delete</button>
+                        </form>
+                    </div>
+                </li>
+                {{else}}
+                <li class="gavia-muted">No ledger entries have been recorded yet.</li>
+                {{end}}
+            </ul>
+        </article>
+    </div>
+</section>
+{{end}}

@@ -103,12 +103,18 @@ func (stubAppSettingsHandler) Import(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("app settings import"))
 }
 
-func (stubAppSettingsHandler) CreateExpense(w http.ResponseWriter, r *http.Request) {
-	_, _ = w.Write([]byte("app settings create expense"))
+type stubLedgerHandler struct{}
+
+func (stubLedgerHandler) Index(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("ledger index"))
 }
 
-func (stubAppSettingsHandler) DeleteExpense(w http.ResponseWriter, r *http.Request) {
-	_, _ = w.Write([]byte("app settings delete expense " + r.PathValue("id")))
+func (stubLedgerHandler) Create(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("ledger create"))
+}
+
+func (stubLedgerHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	_, _ = w.Write([]byte("ledger delete " + r.PathValue("id")))
 }
 
 type stubBackupAPIHandler struct{}
@@ -179,6 +185,7 @@ func TestMountRoutes(t *testing.T) {
 		hosting:         stubCollectionHandler{prefix: "hostings"},
 		server:          stubCollectionHandler{prefix: "servers"},
 		subscription:    stubCollectionHandler{prefix: "subscriptions"},
+		ledger:          stubLedgerHandler{},
 		accountSettings: stubSingletonHandler{prefix: "account settings"},
 		appSettings:     stubAppSettingsHandler{},
 		login:           stubLoginHandler{},
@@ -323,18 +330,25 @@ func TestMountRoutes(t *testing.T) {
 			body:       "logout",
 		},
 		{
-			name:       "expense create route",
-			method:     http.MethodPost,
-			path:       "/app-settings/expenses",
+			name:       "ledger index route",
+			method:     http.MethodGet,
+			path:       "/ledger",
 			statusCode: http.StatusOK,
-			body:       "app settings create expense",
+			body:       "ledger index",
 		},
 		{
-			name:       "expense delete route",
+			name:       "ledger create route",
 			method:     http.MethodPost,
-			path:       "/app-settings/expenses/42/delete",
+			path:       "/ledger",
 			statusCode: http.StatusOK,
-			body:       "app settings delete expense 42",
+			body:       "ledger create",
+		},
+		{
+			name:       "ledger delete route",
+			method:     http.MethodPost,
+			path:       "/ledger/42/delete",
+			statusCode: http.StatusOK,
+			body:       "ledger delete 42",
 		},
 		{
 			name:       "backup api export route",

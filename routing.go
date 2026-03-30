@@ -35,12 +35,16 @@ type uptimeRoutes interface {
 	RunNow(http.ResponseWriter, *http.Request)
 }
 
+type ledgerRoutes interface {
+	Index(http.ResponseWriter, *http.Request)
+	Create(http.ResponseWriter, *http.Request)
+	Delete(http.ResponseWriter, *http.Request)
+}
+
 type appSettingsRoutes interface {
 	singletonSettingsRoutes
 	Export(http.ResponseWriter, *http.Request)
 	Import(http.ResponseWriter, *http.Request)
-	CreateExpense(http.ResponseWriter, *http.Request)
-	DeleteExpense(http.ResponseWriter, *http.Request)
 }
 
 type backupAPIRoutes interface {
@@ -118,10 +122,12 @@ func mountRoutes(app *aile.App, handlers appHandlers) error {
 		return err
 	}
 
+	app.GET("/ledger", handlers.ledger.Index)
+	app.POST("/ledger", handlers.ledger.Create)
+	app.POST("/ledger/{id}/delete", handlers.ledger.Delete)
+
 	app.GET("/app-settings/export", handlers.appSettings.Export)
 	app.POST("/app-settings/import", handlers.appSettings.Import)
-	app.POST("/app-settings/expenses", handlers.appSettings.CreateExpense)
-	app.POST("/app-settings/expenses/{id}/delete", handlers.appSettings.DeleteExpense)
 
 	app.GET("/api/v1/backup/export", handlers.backupAPI.Export)
 	app.POST("/api/v1/backup/import", handlers.backupAPI.Import)

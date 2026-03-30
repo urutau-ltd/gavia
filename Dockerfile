@@ -62,6 +62,8 @@ ENV GAVIA_ADDR=:9091 \
     GAVIA_LOG_FORMAT=text \
     GAVIA_LOG_LEVEL=info
 
+ENV TERM=xterm-256color
+
 COPY --from=builder /out/gv /bin/gv
 COPY --chown=nonroot:nonroot db/.gitkeep /workspace/db/.gitkeep
 

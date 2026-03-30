@@ -39,6 +39,7 @@ import (
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/ips"
 	jslicenseinfo "codeberg.org/urutau-ltd/gavia/internal/ui/features/javascript_license_info"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/labels"
+	ledgerpage "codeberg.org/urutau-ltd/gavia/internal/ui/features/ledger"
 	licensespage "codeberg.org/urutau-ltd/gavia/internal/ui/features/licenses"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/locations"
 	"codeberg.org/urutau-ltd/gavia/internal/ui/features/login"
@@ -274,11 +275,11 @@ func buildAppHandler(t *testing.T) http.Handler {
 		uiRoot,
 		appSettingsRepo,
 		accountRepo,
-		expenseRepo,
 		osRepo,
 		backupService,
 		authService,
 	)
+	ledgerHandler := ledgerpage.NewHandler(logger, uiRoot, appSettingsRepo, expenseRepo)
 	backupAPIHandler := backupapi.NewHandler(logger, backupService, accountRepo)
 	dashboardAPIHandler := dashboardapi.NewHandler(logger, db)
 	licensesHandler := licensespage.NewHandler(logger, uiRoot)
@@ -297,6 +298,7 @@ func buildAppHandler(t *testing.T) http.Handler {
 		hosting:         hostingHandler,
 		server:          serverHandler,
 		subscription:    subscriptionHandler,
+		ledger:          ledgerHandler,
 		accountSettings: accountSettingsHandler,
 		appSettings:     appSettingsHandler,
 		login:           loginHandler,

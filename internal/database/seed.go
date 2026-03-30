@@ -63,6 +63,14 @@ func SeedReferenceData(db *sql.DB) error {
 }
 
 func SeedProviders(db *sql.DB) error {
+	shouldSeed, err := shouldSeedReferenceTable(db, "providers")
+	if err != nil {
+		return err
+	}
+	if !shouldSeed {
+		return nil
+	}
+
 	providers := []seedProvider{
 		{
 			"GoDaddy",
@@ -223,6 +231,14 @@ func SeedAppSettings(db *sql.DB) error {
 }
 
 func SeedOperatingSystems(db *sql.DB) error {
+	shouldSeed, err := shouldSeedReferenceTable(db, "operating_systems")
+	if err != nil {
+		return err
+	}
+	if !shouldSeed {
+		return nil
+	}
+
 	items := []seedOperatingSystem{
 		{Name: "Linux", Notes: "Generic Linux baseline kept for the default server O.S. setting."},
 		{Name: "Ubuntu Server 24.04 LTS", Notes: "Common long-term support default for VPS and bare metal."},
@@ -256,6 +272,14 @@ func SeedOperatingSystems(db *sql.DB) error {
 }
 
 func SeedLabels(db *sql.DB) error {
+	shouldSeed, err := shouldSeedReferenceTable(db, "labels")
+	if err != nil {
+		return err
+	}
+	if !shouldSeed {
+		return nil
+	}
+
 	items := []seedLabel{
 		{Name: "production", Notes: "Live systems or records that should be treated as real."},
 		{Name: "staging", Notes: "Pre-release systems used for verification."},
@@ -286,6 +310,14 @@ func SeedLabels(db *sql.DB) error {
 }
 
 func SeedLocations(db *sql.DB) error {
+	shouldSeed, err := shouldSeedReferenceTable(db, "locations")
+	if err != nil {
+		return err
+	}
+	if !shouldSeed {
+		return nil
+	}
+
 	items := []seedLocation{
 		{
 			Name:      "Mexico City",
@@ -377,6 +409,15 @@ func seedMany[T any](db *sql.DB, query string, rows []T, exec func(*sql.Stmt, T)
 	}
 
 	return tx.Commit()
+}
+
+func shouldSeedReferenceTable(db *sql.DB, table string) (bool, error) {
+	var count int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM ` + table).Scan(&count); err != nil {
+		return false, fmt.Errorf("could not count existing rows in %s: %w", table, err)
+	}
+
+	return count == 0, nil
 }
 
 func nullableSeedText(value string) any {

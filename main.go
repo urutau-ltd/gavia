@@ -229,6 +229,7 @@ func main() {
 		logger.Error("Failed to initialize database", "path", cfg.DBPath, "err", err)
 		os.Exit(1)
 	}
+	database.ConfigurePool(dbConn)
 
 	if err = dbConn.Ping(); err != nil {
 		logger.Error("Failed to ping database", "path", cfg.DBPath, "err", err)
@@ -258,7 +259,7 @@ func main() {
 	repositories := newRepositories(dbConn)
 	services := newServices(logger, dbConn, repositories)
 	applyUISettings(context.Background(), logger, repositories.appSettings)
-	configureMiddleware(app, logger, services.compression, services.csrf, services.auth)
+	configureMiddleware(app, logger, services.compression, services.csrf, services.auth, services.security)
 
 	uiRoot, err := fs.Sub(UIFS, "internal/ui")
 	if err != nil {

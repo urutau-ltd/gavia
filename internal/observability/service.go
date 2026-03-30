@@ -11,10 +11,11 @@ import (
 )
 
 type Service struct {
-	logger   *slog.Logger
-	db       *sql.DB
-	repo     *runtimesample.Repository
-	interval time.Duration
+	logger    *slog.Logger
+	db        *sql.DB
+	repo      *runtimesample.Repository
+	interval  time.Duration
+	retention time.Duration
 }
 
 func NewService(
@@ -28,10 +29,11 @@ func NewService(
 	}
 
 	return &Service{
-		logger:   logger,
-		db:       db,
-		repo:     repo,
-		interval: interval,
+		logger:    logger,
+		db:        db,
+		repo:      repo,
+		interval:  interval,
+		retention: 30 * 24 * time.Hour,
 	}
 }
 
@@ -60,7 +62,7 @@ func (s *Service) Collect(ctx context.Context) error {
 	runtime.ReadMemStats(&mem)
 	dbStats := s.db.Stats()
 
-	return s.repo.Create(ctx, &runtimesample.Sample{
+	if err := s.repo.Create(ctx, &runtimesample.Sample{
 		ObservedAt:        time.Now().UTC(),
 		Goroutines:        runtime.NumGoroutine(),
 		HeapAllocBytes:    mem.HeapAlloc,
@@ -75,5 +77,13 @@ func (s *Service) Collect(ctx context.Context) error {
 		DBWaitCount:       dbStats.WaitCount,
 		DBWaitDurationMS:  dbStats.WaitDuration.Milliseconds(),
 		CPUCount:          runtime.NumCPU(),
-	})
+	}); err != nil {
+		return err
+	}
+
+	if s.retention > 0 {
+		return s.repo.PruneOlderThan(ctx, time.Now().UTC().Add(-s.retention))
+	}
+
+	return nil
 }

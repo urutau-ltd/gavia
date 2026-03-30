@@ -18,6 +18,7 @@ type Service struct {
 	client       *http.Client
 	secureClient *http.Client
 	interval     time.Duration
+	retention    time.Duration
 }
 
 func NewService(
@@ -40,6 +41,7 @@ func NewService(
 		client:       client,
 		secureClient: secureClient,
 		interval:     interval,
+		retention:    30 * 24 * time.Hour,
 	}
 }
 
@@ -87,6 +89,12 @@ func (s *Service) RunDueChecks(ctx context.Context) error {
 			if s.logger != nil {
 				s.logger.Warn("Could not persist uptime result", "monitor_id", status.ID, "err", err)
 			}
+		}
+	}
+
+	if s.retention > 0 {
+		if err := s.repo.PruneResultsOlderThan(ctx, now.Add(-s.retention)); err != nil {
+			return err
 		}
 	}
 
@@ -166,7 +174,13 @@ func (s *Service) RunMonitorNow(ctx context.Context, id string) error {
 		return nil
 	}
 
-	return s.repo.CreateResult(ctx, s.checkMonitor(ctx, monitor))
+	if err := s.repo.CreateResult(ctx, s.checkMonitor(ctx, monitor)); err != nil {
+		return err
+	}
+	if s.retention > 0 {
+		return s.repo.PruneResultsOlderThan(ctx, time.Now().UTC().Add(-s.retention))
+	}
+	return nil
 }
 
 func (s *Service) clientForMonitor(monitor *uptimemonitor.Monitor) *http.Client {

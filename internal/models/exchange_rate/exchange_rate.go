@@ -144,3 +144,11 @@ func (r *Repository) GetRecent(ctx context.Context, baseCurrency, quoteCurrency 
 
 	return samples, rows.Err()
 }
+
+func (r *Repository) PruneOlderThan(ctx context.Context, cutoff time.Time) error {
+	_, err := r.db.ExecContext(ctx, `
+		DELETE FROM exchange_rate_samples
+		WHERE observed_at < ?
+	`, cutoff.UTC())
+	return err
+}
