@@ -30,6 +30,33 @@ func TestSeedReferenceDataIsIdempotentAndSettingsAreSingleton(t *testing.T) {
 		t.Fatal("expected provider seed data to be inserted")
 	}
 
+	var operatingSystemCountBefore int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM operating_systems`).Scan(&operatingSystemCountBefore); err != nil {
+		t.Fatalf("could not count operating systems after first seed: %v", err)
+	}
+
+	if operatingSystemCountBefore == 0 {
+		t.Fatal("expected operating system seed data to be inserted")
+	}
+
+	var labelCountBefore int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM labels`).Scan(&labelCountBefore); err != nil {
+		t.Fatalf("could not count labels after first seed: %v", err)
+	}
+
+	if labelCountBefore == 0 {
+		t.Fatal("expected label seed data to be inserted")
+	}
+
+	var locationCountBefore int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM locations`).Scan(&locationCountBefore); err != nil {
+		t.Fatalf("could not count locations after first seed: %v", err)
+	}
+
+	if locationCountBefore == 0 {
+		t.Fatal("expected location seed data to be inserted")
+	}
+
 	if err := SeedReferenceData(db); err != nil {
 		t.Fatalf("SeedReferenceData second run returned error: %v", err)
 	}
@@ -41,6 +68,33 @@ func TestSeedReferenceDataIsIdempotentAndSettingsAreSingleton(t *testing.T) {
 
 	if providerCountAfter != providerCountBefore {
 		t.Fatalf("expected provider seed count to stay at %d, got %d", providerCountBefore, providerCountAfter)
+	}
+
+	var operatingSystemCountAfter int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM operating_systems`).Scan(&operatingSystemCountAfter); err != nil {
+		t.Fatalf("could not count operating systems after second seed: %v", err)
+	}
+
+	if operatingSystemCountAfter != operatingSystemCountBefore {
+		t.Fatalf("expected operating system seed count to stay at %d, got %d", operatingSystemCountBefore, operatingSystemCountAfter)
+	}
+
+	var labelCountAfter int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM labels`).Scan(&labelCountAfter); err != nil {
+		t.Fatalf("could not count labels after second seed: %v", err)
+	}
+
+	if labelCountAfter != labelCountBefore {
+		t.Fatalf("expected label seed count to stay at %d, got %d", labelCountBefore, labelCountAfter)
+	}
+
+	var locationCountAfter int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM locations`).Scan(&locationCountAfter); err != nil {
+		t.Fatalf("could not count locations after second seed: %v", err)
+	}
+
+	if locationCountAfter != locationCountBefore {
+		t.Fatalf("expected location seed count to stay at %d, got %d", locationCountBefore, locationCountAfter)
 	}
 
 	var appSettingsCount int
@@ -84,6 +138,39 @@ func TestSeedReferenceDataIsIdempotentAndSettingsAreSingleton(t *testing.T) {
 
 	if dashboardCurrency != "MXN" {
 		t.Fatalf("expected dashboard currency %q, got %q", "MXN", dashboardCurrency)
+	}
+
+	var linuxCount int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM operating_systems WHERE name = 'Linux'`).Scan(&linuxCount); err != nil {
+		t.Fatalf("could not verify Linux operating system seed: %v", err)
+	}
+
+	if linuxCount != 1 {
+		t.Fatalf("expected exactly one generic Linux operating system seed, got %d", linuxCount)
+	}
+
+	var productionLabelCount int
+	if err := db.QueryRow(`SELECT COUNT(*) FROM labels WHERE name = 'production'`).Scan(&productionLabelCount); err != nil {
+		t.Fatalf("could not verify production label seed: %v", err)
+	}
+
+	if productionLabelCount != 1 {
+		t.Fatalf("expected exactly one production label seed, got %d", productionLabelCount)
+	}
+
+	var mexicoCityCoordinates int
+	if err := db.QueryRow(`
+		SELECT COUNT(*)
+		FROM locations
+		WHERE name = 'Mexico City'
+		  AND latitude IS NOT NULL
+		  AND longitude IS NOT NULL
+	`).Scan(&mexicoCityCoordinates); err != nil {
+		t.Fatalf("could not verify Mexico City location seed: %v", err)
+	}
+
+	if mexicoCityCoordinates != 1 {
+		t.Fatalf("expected exactly one mapped Mexico City location seed, got %d", mexicoCityCoordinates)
 	}
 
 	if _, err := db.Exec(`

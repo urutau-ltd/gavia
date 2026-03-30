@@ -171,7 +171,7 @@ func TestExportImportEncryptedJSONRoundTrip(t *testing.T) {
 
 	var labelExists bool
 	if err := db.QueryRow(`
-		SELECT EXISTS(SELECT 1 FROM labels WHERE id = 'label-1' AND name = 'production')
+		SELECT EXISTS(SELECT 1 FROM labels WHERE id = 'label-1' AND name = 'fixture-production')
 	`).Scan(&labelExists); err != nil {
 		t.Fatalf("could not verify imported label fixture: %v", err)
 	}
@@ -286,7 +286,7 @@ func createBackupFixtures(t *testing.T, db *sql.DB) string {
 
 	if _, err := db.Exec(`
 		INSERT INTO labels (id, name, notes, created_at, updated_at)
-		VALUES ('label-1', 'production', 'backup fixture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+		VALUES ('label-1', 'fixture-production', 'backup fixture', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
 	`); err != nil {
 		t.Fatalf("could not insert label fixture: %v", err)
 	}
