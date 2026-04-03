@@ -6,7 +6,7 @@ require (
 	codeberg.org/urutau-ltd/aile/v2 v2.1.1
 	codeberg.org/urutau-ltd/vexilo v1.1.0
 	github.com/google/uuid v1.6.0
-	modernc.org/sqlite v1.47.0
+	modernc.org/sqlite v1.48.1
 )
 
 require (
